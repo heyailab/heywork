@@ -1,0 +1,6 @@
+# 上游源码不进仓库，CI 里按 pinned commit 拉取
+deepseek-harness/
+dist/
+notes/_regions.txt
+*.log
+node_modules/

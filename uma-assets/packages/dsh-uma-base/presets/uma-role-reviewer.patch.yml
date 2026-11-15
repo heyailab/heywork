@@ -1,0 +1,74 @@
+# Agent preset uma-role-reviewer: spawn-only role composition for independent
+# reviewers and security audit. Strictly read-only: the reviewer inspects code,
+# artifacts, and evidence, and returns its verdict as a message to the
+# director. There is no mutation or artifact surface at all.
+# Spawn-only: referenced by the uma-team director recipes, not meant as a
+# session mode.
+- insert:
+    - id: preset-uma-role-reviewer
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: uma-role-reviewer
+        name: UMA role — reviewer
+        description: Independent review teammate for the delivery team — read-only code, artifact, and evidence inspection; the verdict is the message.
+        order: 91
+        plugins:
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              prefix: You are a UMA delivery-team teammate. Your role brief comes from your spawn description. You are an independent reviewer — you see artifacts, code, and evidence, never the author's narrative. Your verdict is your message back; you have no mutation surface at all.
+          - id: agent-instructions
+            name: '@deepseek-ai/dsh-agent-instructions'
+            config:
+              maxBytes: 65536
+          - id: time-context
+            name: '@deepseek-ai/dsh-time-context'
+          - id: tool-fs
+            name: '@deepseek-ai/dsh-tool-fs'
+            config:
+              read: true
+              readImage: true
+              write: false
+              edit: false
+              applyPatch: false
+          - id: tool-fs-search
+            name: '@deepseek-ai/dsh-tool-fs-search'
+            config:
+              sampleOverCapGlobResults: false
+          - id: tool-subagent-control
+            name: '@deepseek-ai/dsh-tool-subagent-control'
+            config:
+              interrupt: false
+          - id: skill-filesystem
+            name: '@deepseek-ai/dsh-skill-filesystem'
+          - id: tool-skill
+            name: '@deepseek-ai/dsh-tool-skill'
+          - id: repo-wiki-context
+            name: '@deepseek-ai/dsh-tool-repo-wiki/context'
+            config:
+              automaticContext: false
+          - id: coding-tools
+            name: '@deepseek-ai/dsh-coding-workbench/tools'
+            config:
+              mode: read-only
+          - id: tool-uma-design
+            name: '@deepseek-ai/dsh-tool-uma-design'
+            config:
+              projectWrite: false
+          - id: compaction
+            name: cordis:group
+            group: true
+            isolate:
+              compaction: true
+              toolResultPruner: true
+            config:
+              - id: compaction-basic
+                name: '@deepseek-ai/dsh-compaction-basic'
+              - id: command-compact
+                name: '@deepseek-ai/dsh-command-compact'
+              - id: tool-result-pruner
+                name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+                config:
+                  thresholdChars: 8192
+                  headChars: 4096
+                  tailChars: 1024

@@ -1,0 +1,2596 @@
+let electron = require("electron");
+//#region lib/types/ipc.js
+/** IPC channel names kept private to the desktop application bundle. */
+const DESKTOP_IPC = {
+	fileSave: "dsh-desktop:file-save",
+	clipboardImageRead: "dsh-desktop:clipboard-image-read",
+	shortcutsInput: "dsh-desktop:shortcuts-input",
+	shortcutsCloseWindow: "dsh-desktop:shortcuts-close-window",
+	shortcutsGet: "dsh-desktop:shortcuts-get",
+	shortcutsEdit: "dsh-desktop:shortcuts-edit",
+	shortcutsChanged: "dsh-desktop:shortcuts-changed",
+	shortcutsRecording: "dsh-desktop:shortcuts-recording",
+	boot: "dsh-desktop:boot",
+	bootMounted: "dsh-desktop:boot-mounted",
+	enterWorkspace: "dsh-desktop:enter-workspace",
+	onboardingActive: "dsh-desktop:onboarding-active",
+	onboardingApiKey: "dsh-desktop:onboarding-api-key",
+	bootFailed: "dsh-desktop:boot-failed",
+	browserAcquire: "dsh-desktop:browser-acquire",
+	browserRelease: "dsh-desktop:browser-release",
+	browserOpenRequested: "dsh-desktop:browser-open-requested",
+	directoryPick: "dsh-desktop:directory-pick",
+	fileDragPrepare: "dsh-desktop:file-drag-prepare",
+	fileDragCancel: "dsh-desktop:file-drag-cancel",
+	fileDragStart: "dsh-desktop:file-drag-start",
+	fileDragRelease: "dsh-desktop:file-drag-release",
+	deviceInfo: "dsh-desktop:device-info",
+	openOperations: "uma-desktop:open-operations",
+	operationsList: "uma-desktop:operations-list",
+	operationsSave: "uma-desktop:operations-save",
+	operationsRemove: "uma-desktop:operations-remove",
+	operationsConnect: "uma-desktop:operations-connect",
+	operationsTrust: "uma-desktop:operations-trust",
+	localeBootstrap: "dsh-desktop:locale-bootstrap",
+	localeChanged: "dsh-desktop:locale-changed",
+	updatesChannelGet: "dsh-desktop:updates-channel-get",
+	updatesChannelSet: "dsh-desktop:updates-channel-set",
+	updatesChannelChanged: "dsh-desktop:updates-channel-changed",
+	updatesStatus: "dsh-desktop:updates-status",
+	productVersion: "uma-desktop:product-version",
+	updatesOpen: "dsh-desktop:updates-open",
+	updatesPresentation: "dsh-desktop:updates-presentation",
+	nativeThemeSet: "dsh-desktop:native-theme-set",
+	windowFullscreen: "dsh-desktop:window-fullscreen",
+	windowsAppearance: "dsh-desktop:windows-appearance",
+	windowsMenu: "dsh-desktop:windows-menu",
+	trayPublish: "uma-desktop:tray-publish",
+	trayNavigate: "uma-desktop:tray-navigate"
+};
+//#endregion
+//#region lib/types/platform-ipc.js
+/** Shared names for the desktop Platform bridge. */
+/** Private desktop channels; the Platform renderer receives bootstrap and locale updates. */
+const PLATFORM_IPC = {
+	bootstrap: "dsh-platform:bootstrap",
+	localeChanged: "dsh-platform:locale-changed",
+	open: "dsh-platform:open",
+	bounds: "dsh-platform:bounds",
+	close: "dsh-platform:close"
+};
+//#endregion
+//#region lib/types/preload-platform.js
+/** Marks the document root with the host platform so shared Web UI CSS can scope desktop-only rules. */
+/**
+* Sets `data-platform` (e.g. `darwin`) on `<html>`, deferring to DOMContentLoaded
+* when the preload runs before the document root exists.
+*/
+function markDocumentPlatform() {
+	const mark = () => {
+		document.documentElement.dataset.platform = process.platform;
+	};
+	if (document.documentElement === null) window.addEventListener("DOMContentLoaded", mark);
+	else mark();
+}
+/**
+* Mirrors the window's macOS and Windows fullscreen state onto `<html data-fullscreen>` so
+* CSS drops the clearance for hidden native window controls. The main
+* process sends the state on every transition and after each load.
+*/
+function syncWindowFullscreen() {
+	if (process.platform !== "darwin" && process.platform !== "win32") return;
+	electron.ipcRenderer.on(DESKTOP_IPC.windowFullscreen, (_event, fullscreen) => {
+		const root = document.documentElement;
+		if (root === null) return;
+		if (fullscreen) root.dataset.fullscreen = "true";
+		else delete root.dataset.fullscreen;
+	});
+}
+//#endregion
+//#region lib/types/preload-theme.js
+/** Mirrors the Web UI's theme source into Electron's native theme so native chrome and Platform login pages follow the app palette. */
+/** Root attribute written by the Web UI's theme bootstrap and presenter (ui-theme / ui-layout). */
+const THEME_SOURCE_ATTRIBUTE = "data-ds-theme-source";
+/**
+* Watches `html[data-ds-theme-source]` and forwards each value to the main
+* process, which sets `nativeTheme.themeSource`. Native chrome and renderer
+* `prefers-color-scheme` queries on every platform then follow the app's
+* theme preference instead of the OS appearance while `system` keeps
+* following the OS; the macOS sidebar vibrancy material is one such consumer.
+* The main process reads the same value back as `shouldUseDarkColors` when a
+* Platform login link needs the resolved palette.
+*/
+function syncNativeTheme() {
+	let sent;
+	const send = () => {
+		const value = document.documentElement.getAttribute(THEME_SOURCE_ATTRIBUTE);
+		if (value === null || value === sent) return;
+		sent = value;
+		electron.ipcRenderer.send(DESKTOP_IPC.nativeThemeSet, value);
+	};
+	const observe = () => {
+		new MutationObserver(send).observe(document.documentElement, { attributeFilter: [THEME_SOURCE_ATTRIBUTE] });
+		send();
+	};
+	if (document.readyState === "loading") window.addEventListener("DOMContentLoaded", observe, { once: true });
+	else observe();
+}
+//#endregion
+//#region lib/types/locale.js
+/** Typed shell copy for every shipped language owned by the Electron shell. */
+const en = {
+	updateDevelopmentUnavailable: "This development build does not support in-app updates. Use a published UMA Studio installer to receive updates.",
+	cliCommandMenu: "Manage uma Command…",
+	macPermissionsMenu: "macOS Permissions",
+	operationsMenu: "UMA Operations",
+	macMicrophonePermission: "Microphone",
+	macAccessibilityPermission: "Accessibility",
+	macScreenRecordingPermission: "Screen & System Audio Recording",
+	macPermissionSettingsUnavailable: "Open System Settings, then Privacy & Security, to manage this permission.",
+	cliCommandTitle: "Manage uma Command",
+	cliCommandLocation: "UMA Studio command: {path}",
+	cliCommandSelected: "Current uma command: {path}",
+	cliCommandTarget: "Current launcher target: {path}",
+	cliCommandShadowed: "Another uma takes precedence. Remove or reorder that installation to use the UMA Studio command by default. You can also run the UMA Studio command by its full path.",
+	cliCommandSelectionUnknown: "Your shell command could not be verified. An alias or another uma installation may take precedence.",
+	cliCommandInstalled: "The UMA Studio command is installed.",
+	cliCommandNotInstalled: "Add the UMA Studio command to your terminal.",
+	cliCommandBroken: "The UMA Studio command needs repair.",
+	cliCommandInstall: "Install",
+	cliCommandRepair: "Repair",
+	cliCommandRemove: "Remove",
+	cliCommandClose: "Close",
+	cliCommandSwitch: "Continue with the UMA Studio command?",
+	cliCommandPreserve: "An existing command will be preserved. Other installations and shell startup files will not be changed.",
+	cliCommandContinue: "Continue",
+	cliCommandInstallApp: "Install UMA Studio in your Applications folder before managing the uma command.",
+	cliCommandUpdating: "An update is being installed. Manage the command after installation finishes.",
+	cliCommandNewTerminal: "Open a new terminal and run uma --version.",
+	cliCommandRemoved: "UMA Studio command registration removed.",
+	cliCommandPreviousRestored: "The previous launcher has been restored.",
+	cliCommandOtherKept: "Other command installations have been left in place.",
+	cliCommandBackupKept: "A previous launcher is preserved at: {path}",
+	cliCommandChanged: "The command or PATH changed while this dialog was open. Open Manage uma Command again to review the current state.",
+	cliCommandOwnershipError: "The command registration or backup changed. No unrelated command was removed.",
+	cliCommandFailed: "The command could not be updated. Check that the application is installed and the destination is writable, then retry.",
+	application: "Application",
+	fileMenu: "File",
+	closePage: "Close Page or Window",
+	aboutMenu: "About UMA Studio",
+	aboutProduct: "UMA Studio",
+	aboutDescription: "An AI coding workspace by UMA Studio.",
+	aboutUpstream: "Built on the DeepSeek Harness (DSH) open-source kernel.",
+	aboutSource: "Kernel source",
+	aboutVersion: "Product version {version}",
+	aboutKernel: "Kernel version",
+	aboutChannel: "Update channel",
+	aboutPlatform: "Platform",
+	aboutDevelopment: "Development preview",
+	aboutStable: "Stable",
+	aboutPreview: "Preview",
+	aboutUnavailable: "Unavailable",
+	aboutBuild: "Product build",
+	aboutModified: "Includes local modifications",
+	aboutCopy: "Copy version info",
+	aboutCopied: "Copied",
+	aboutWebsite: "UMA website",
+	aboutLicense: "Open-source licenses",
+	aboutFullLicense: "View full license",
+	hideApplication: "Hide UMA Studio",
+	hideOtherApplications: "Hide Others",
+	showAllApplications: "Show All",
+	substitutionsMenu: "Substitutions",
+	speechMenu: "Speech",
+	quitApplication: "Quit UMA Studio",
+	openApplication: "Open UMA Studio",
+	trayRunning: "Running",
+	trayRecent: "Recent conversations",
+	trayMore: "More",
+	trayTeamWorking: "UMA development team is working",
+	trayRoleWorking: "{roles} working",
+	trayRoles: {
+		pm: "Product manager",
+		architect: "Architect",
+		designer: "UI designer",
+		frontend: "Frontend engineer",
+		backend: "Backend engineer",
+		qa: "QA engineer",
+		reviewer: "Code reviewer",
+		security: "Security engineer",
+		devops: "DevOps engineer",
+		wiki: "Wiki maintainer"
+	},
+	trayUntitled: "Untitled conversation",
+	quit: "Quit",
+	cancel: "Cancel",
+	quitTitle: "Quit UMA Studio?",
+	quitActiveTasks: "Running tasks will be interrupted.",
+	quitScheduledTasks: "Scheduled tasks will not run while the app is closed.",
+	quitActiveAndScheduledTasks: "Running tasks will be interrupted, and scheduled tasks will not run while the app is closed.",
+	backgroundNoticeBody: "Running tasks will continue. You can reopen the window from the system tray.",
+	backgroundNoticeConfirm: "Confirm",
+	edit: "Edit",
+	menuBar: "Application menu",
+	delete: "Delete",
+	undo: "Undo",
+	redo: "Redo",
+	cut: "Cut",
+	copy: "Copy",
+	paste: "Paste",
+	selectAll: "Select All",
+	startupFailed: "UMA Studio is unavailable",
+	fatalSummary: "The application could not start or stopped unexpectedly.",
+	startupAddressInUse: "The application port is in use. Close the process using it and try again.",
+	diagnosticTruncated: "… Error details shortened.",
+	reportWrittenTo: "Diagnostic report: {path}",
+	getDiagnosticReport: "Get diagnostic report",
+	reportPending: "The diagnostic report is still being saved. Choose Get diagnostic report to check again.",
+	reportUnavailable: "The diagnostic report could not be saved. You can provide a screenshot of this dialog when requesting support.",
+	reportShareHint: "The report location has been opened. Attach the selected file to your support ticket.",
+	reportRevealFailed: "The report location could not be opened. Use the path below to find the file.",
+	startupReinstallAdvice: "If application files are missing or damaged, close the application and reinstall it. Your tasks are stored separately.",
+	exitApplication: "Exit",
+	restartApplication: "Restart",
+	recoveryOperationFailed: "The recovery operation failed",
+	disableThirdPartyPlugins: "Disable third-party plugins, back up profile patch, and restart",
+	welcomeTitle: "UMA Studio",
+	welcomeBrand: "UMA Studio",
+	welcomeIntroTitle: "Build good software faster",
+	welcomeIntroDescription: "Open a local workspace and describe the outcome you want. Uma brings the tools into one conversation.",
+	welcomeIntroDesign: "Explore a design",
+	welcomeIntroCode: "Develop in your project",
+	welcomeIntroDeliver: "Verify and deliver",
+	welcomeModelsTitle: "Choose how to use models",
+	welcomeHostedModels: "UMA hosted models",
+	welcomeHostedDescription: "Sign in with UMA and pay the published rates from your account balance.",
+	welcomeCustomModels: "Custom models",
+	welcomeCustomDescription: "Connect your own provider and key in model settings. Usage is billed by that provider.",
+	welcomeLoginTitle: "Sign in to UMA Studio",
+	welcomeLoginDescription: "Use your UMA account to access hosted models and manage your balance.",
+	welcomeNext: "Next",
+	welcomePrevious: "Back",
+	welcomeSkipSignIn: "Sign in later",
+	welcomeAuthStarting: "Opening sign in…",
+	welcomeAuthWaiting: "Browser didn’t open automatically?",
+	welcomeAuthWaitingDescription: "Copy the sign-in link and open it in your browser to sign in.",
+	welcomeAuthExchanging: "Completing sign in…",
+	welcomeAuthExpired: "Sign in timed out",
+	welcomeAuthExpiredDescription: "Sign in again to continue",
+	welcomeAuthFailed: "Could not complete sign in. Please try again.",
+	welcomeAuthCopyLink: "Copy sign-in link",
+	welcomeAuthCopied: "Copied",
+	welcomeAuthCopyFailed: "Could not copy. Try again.",
+	welcomeAuthCancel: "Cancel",
+	welcomeAuthRetry: "Sign in again",
+	welcomeSignIn: "Sign in",
+	welcomeApiKey: "Add API Key",
+	welcomeKeyTitle: "Add an API key to get started",
+	welcomeKeyDescription: "Configure official DeepSeek models to start using UMA Studio",
+	welcomeKeyPlaceholder: "Enter API key",
+	welcomeKeySave: "Save and continue",
+	welcomeKeyLater: "Set up later",
+	welcomeKeyBack: "Back to sign in",
+	welcomeSessionExpired: "You have signed out of your account, please log in again.",
+	welcomeKeyBlank: "Enter an API key.",
+	welcomeKeyInvalid: "Enter the API key itself, without quotes, spaces, or an environment-variable assignment.",
+	welcomeKeyFailed: "Could not save the API key. Please try again.",
+	welcomeContinueFailed: "Could not open the workspace. Please try again.",
+	checkUpdatesMenu: "Check for Updates…",
+	reloadPageMenu: "Reload Page",
+	toggleDevToolsMenu: "Developer tools",
+	restartAppHostMenu: "Restart App and Host",
+	updateConfigurationFailed: "Update settings could not be applied. Fix the configuration file and restart, or select an update channel in Settings.",
+	updateConfigurationRead: "Settings file error; updates are paused",
+	updateConfigurationFormat: "Settings file error; updates are paused",
+	updateConfigurationChannel: "Settings file error; updates are paused",
+	updateConfigurationCleanup: "Updates paused: cannot discard previous update; restart the app",
+	updateReloadSettings: "Reload settings",
+	updateConfigurationDetails: "Review settings",
+	updateShowSettingsFile: "Show settings file",
+	updateCheckFailedTitle: "Update Check Failed",
+	updateCheckFailed: "Could not check for updates. Please try again later.",
+	updateDownloadFailed: "Could not download the update. Please try again.",
+	updateDownloadSpaceFailed: "Not enough disk space to download the update. Free up space, then retry.",
+	updateDownloadPermissionFailed: "Cannot write the update files. Check the folder permissions and retry.",
+	updateDownloadBusyFailed: "An update file is in use. Close the program using it, then retry.",
+	updateInstallFailed: "Could not install the update. Please try again later.",
+	updateCheckNetworkFailed: "Could not check for updates. Check your connection and try again.",
+	updateDownloadNetworkFailed: "Could not download the update. Check your connection and try again.",
+	updateInstallNetworkFailed: "Could not install the update. Check your connection and try again.",
+	unknownError: "Unknown error",
+	updateCheckTitle: "Check for Updates",
+	updateCurrentDetail: "Current version: {version}",
+	updateCurrent: "You’re up to date!",
+	updateChecking: "Checking for updates…",
+	updateDownload: "Download update",
+	updateDownloadedTitle: "Version {version} is ready to install",
+	updateDownloadedDetail: "The app will close during the update and reopen automatically when it is complete.",
+	updateDownloadedDetailWindows: "The app will close temporarily during the update and reopen automatically when it is complete.\n\nThe update may take some time. Please wait and do not launch the app again during installation.",
+	updateClose: "Close",
+	updateAcknowledge: "OK",
+	updateLater: "Update later",
+	updateDownloadInProgress: "Downloading update",
+	updateDownloadDetail: "The update is downloading in the background. You can continue using the app.",
+	updateDownloading: "Downloading {percent}%…",
+	updateVerifying: "Verifying update files…",
+	updateInstalling: "Preparing to restart…",
+	updateRetry: "Retry update",
+	updateActiveTasks: "Tasks are still in progress",
+	updateActiveTasksDetail: "Updating will stop the tasks in progress and restart the app. Continue?",
+	updateStopTasks: "Stop tasks and update",
+	updateTasksChanged: "New tasks have started. Confirm again to stop the tasks and update.",
+	updateTasksUnavailable: "Task status is unavailable. Try updating again when the workspace is ready.",
+	updateInstallLocation: "Move UMA Studio to the Applications folder, reopen it, and try again.",
+	updateFullscreenTimeout: "Could not exit fullscreen. Exit fullscreen, then retry the update.",
+	updateStopFailed: "Could not safely stop the tasks. The update has not been installed. Please try again later.",
+	updateTechnicalDetails: "View technical details",
+	updateTitle: "UMA Studio Update",
+	updateAvailable: "New version available: {version}",
+	updateDetail: "Once the download is complete, you can install the update and restart the app.",
+	installAndRestart: "Install and Restart",
+	later: "Later",
+	updateFailedTitle: "Update Failed",
+	mandatoryTitle: "Update to continue",
+	mandatoryDetail: "This version is no longer supported. Update to continue. Tasks in progress will keep running until you confirm installation and restart.",
+	mandatoryUnavailable: "Could not check update requirements. Please try again later.",
+	policyLoginTitle: "Sign in to the test environment",
+	policyLoginRequired: "Sign in with Feishu to check update requirements for this test build. Signing in will not download or install an update.",
+	policyLogin: "Sign in with Feishu",
+	policyLoginFailed: "Feishu sign-in did not complete. Please try again.",
+	policyLoginLoading: "Loading sign-in page…",
+	mandatoryNoRelease: "No compatible update was found. Check again or contact support.",
+	mandatoryRefresh: "Check again",
+	mandatoryPage: "Download from the official website",
+	mandatoryCopy: "Copy download link",
+	mandatoryPageFailed: "Could not open the official download page. Copy the link and open it in your browser.",
+	mandatoryViewDownload: "Open download page",
+	mandatoryViewPageFailed: "Could not open the download page. Please try again.",
+	mandatoryActionFailed: "The action failed. Please try again. You can use the app again after the update is complete.",
+	mandatoryReady: "Update ready",
+	mandatoryVersion: "New version: {version}",
+	mandatoryReadyDetail: "The app will close during the update and reopen automatically when it is complete.",
+	mandatoryDeferred: "Tasks in progress will keep running. Complete the update before using the app again.",
+	mandatoryContinue: "Continue update",
+	mandatoryInspecting: "Checking tasks…",
+	mandatoryStopping: "Stopping tasks…",
+	mandatoryRestarting: "The app will restart shortly. Please wait.",
+	mandatoryDownloadFailed: "The update files could not be downloaded or prepared. Please retry.",
+	mandatoryInstallFailed: "The update has not been installed. Check the tasks again and retry.",
+	mandatoryOpenHelp: "Page didn’t open?",
+	mandatoryReopen: "Open the official download page again",
+	mandatoryCopied: "Link copied",
+	mandatoryCopyFailed: "Could not copy the link. Select and copy it below.",
+	mandatoryAddress: "Download link",
+	mandatoryNotification: "Return to the application to confirm installation and restart."
+};
+const dictionaries = {
+	en,
+	zh: {
+		updateDevelopmentUnavailable: "当前为开发运行版，不支持应用内更新。请使用已发布的 UMA Studio 安装版。",
+		cliCommandMenu: "管理 uma 命令…",
+		macPermissionsMenu: "macOS 权限",
+		operationsMenu: "UMA 运维",
+		macMicrophonePermission: "麦克风",
+		macAccessibilityPermission: "辅助功能",
+		macScreenRecordingPermission: "屏幕与系统音频录制",
+		macPermissionSettingsUnavailable: "请打开「系统设置 → 隐私与安全性」，手动管理此权限。",
+		cliCommandTitle: "管理 uma 命令",
+		cliCommandLocation: "UMA Studio 命令：{path}",
+		cliCommandSelected: "当前 uma 命令：{path}",
+		cliCommandTarget: "当前启动器目标：{path}",
+		cliCommandShadowed: "另一个 uma 的优先级更高。请移除或调整该安装的顺序，以默认使用 UMA Studio 命令；也可以通过完整路径运行 UMA Studio 命令。",
+		cliCommandSelectionUnknown: "无法确认 shell 中的命令。别名或另一个 uma 安装可能具有更高优先级。",
+		cliCommandInstalled: "UMA Studio 命令已安装。",
+		cliCommandNotInstalled: "将 UMA Studio 命令添加到终端。",
+		cliCommandBroken: "UMA Studio 命令需要修复。",
+		cliCommandInstall: "安装",
+		cliCommandRepair: "修复",
+		cliCommandRemove: "移除",
+		cliCommandClose: "关闭",
+		cliCommandSwitch: "继续使用 UMA Studio 命令？",
+		cliCommandPreserve: "现有命令会被保留，不会修改其他安装或 shell 启动文件。",
+		cliCommandContinue: "继续",
+		cliCommandInstallApp: "请先将 UMA Studio 安装到“应用程序”文件夹，再管理 uma 命令。",
+		cliCommandUpdating: "正在安装更新。请在安装完成后管理命令。",
+		cliCommandNewTerminal: "打开新终端并运行 uma --version。",
+		cliCommandRemoved: "已移除 UMA Studio 命令注册。",
+		cliCommandPreviousRestored: "已恢复之前的启动器。",
+		cliCommandOtherKept: "其他命令安装保持不变。",
+		cliCommandBackupKept: "之前的启动器保留在：{path}",
+		cliCommandChanged: "对话框打开期间命令或 PATH 已改变。请重新打开“管理 uma 命令”检查当前状态。",
+		cliCommandOwnershipError: "命令注册或备份已改变，未移除无关命令。",
+		cliCommandFailed: "无法更新命令。请检查应用是否已安装、目标位置是否可写，然后重试。",
+		application: "应用",
+		fileMenu: "文件",
+		closePage: "关闭页面或窗口",
+		aboutMenu: "关于 UMA Studio",
+		aboutProduct: "UMA Studio",
+		aboutDescription: "专注专业开发的 AI 编程工作台。",
+		aboutUpstream: "基于 DeepSeek Harness（DSH）开源内核构建。",
+		aboutSource: "内核源码",
+		aboutVersion: "产品版本 {version}",
+		aboutKernel: "内核版本",
+		aboutChannel: "更新渠道",
+		aboutPlatform: "运行平台",
+		aboutDevelopment: "开发预览",
+		aboutStable: "稳定版",
+		aboutPreview: "预览版",
+		aboutUnavailable: "不可用",
+		aboutBuild: "产品构建",
+		aboutModified: "包含本地修改",
+		aboutCopy: "复制版本信息",
+		aboutCopied: "已复制",
+		aboutWebsite: "UMA 官网",
+		aboutLicense: "开源许可",
+		aboutFullLicense: "查看完整许可",
+		hideApplication: "隐藏 UMA Studio",
+		hideOtherApplications: "隐藏其他",
+		showAllApplications: "显示全部",
+		substitutionsMenu: "替换",
+		speechMenu: "语音",
+		quitApplication: "退出 UMA Studio",
+		openApplication: "打开 UMA Studio",
+		trayRunning: "正在运行",
+		trayRecent: "最近会话",
+		trayMore: "更多",
+		trayTeamWorking: "UMA 开发团队正在工作",
+		trayRoleWorking: "{roles}正在工作",
+		trayRoles: {
+			pm: "产品经理",
+			architect: "架构师",
+			designer: "UI 设计师",
+			frontend: "前端工程师",
+			backend: "后端工程师",
+			qa: "测试工程师",
+			reviewer: "代码评审员",
+			security: "安全工程师",
+			devops: "运维工程师",
+			wiki: "知识库维护员"
+		},
+		trayUntitled: "未命名会话",
+		quit: "退出",
+		cancel: "取消",
+		quitTitle: "退出 UMA Studio？",
+		quitActiveTasks: "当前正在运行的任务将会中断",
+		quitScheduledTasks: "应用关闭期间，定时任务不会运行",
+		quitActiveAndScheduledTasks: "当前正在运行的任务将会中断，且应用关闭期间，定时任务不会运行",
+		backgroundNoticeBody: "正在运行的任务不会中断，可在系统托盘中重新打开窗口",
+		backgroundNoticeConfirm: "确认",
+		edit: "编辑",
+		menuBar: "应用菜单",
+		delete: "删除",
+		undo: "撤销",
+		redo: "重做",
+		cut: "剪切",
+		copy: "复制",
+		paste: "粘贴",
+		selectAll: "全选",
+		startupFailed: "UMA Studio 无法使用",
+		fatalSummary: "应用无法启动或已意外停止。",
+		startupAddressInUse: "应用端口被其他进程占用，请关闭占用该端口的程序后重试。",
+		diagnosticTruncated: "… 错误详情已截短。",
+		reportWrittenTo: "诊断报告：{path}",
+		getDiagnosticReport: "获取诊断报告",
+		reportPending: "诊断报告仍在保存，可点击“获取诊断报告”再次检查。",
+		reportUnavailable: "诊断报告未能保存，反馈问题时可提供此窗口的截图。",
+		reportShareHint: "已打开报告位置，请将选中的文件附在支持工单中。",
+		reportRevealFailed: "无法打开报告位置，请通过下方路径查找文件。",
+		startupReinstallAdvice: "如果应用文件缺失或损坏，请关闭应用并重新安装。任务数据存储在独立位置。",
+		exitApplication: "退出",
+		restartApplication: "重启",
+		recoveryOperationFailed: "恢复操作失败",
+		disableThirdPartyPlugins: "禁用第三方插件、备份 profile patch 并重启",
+		welcomeTitle: "UMA Studio",
+		welcomeBrand: "UMA Studio",
+		welcomeIntroTitle: "让好的软件更快诞生",
+		welcomeIntroDescription: "打开本地工作区，说出你想完成的事。Uma 会在同一个对话中调用需要的工具。",
+		welcomeIntroDesign: "探索设计方案",
+		welcomeIntroCode: "在原项目里开发",
+		welcomeIntroDeliver: "验证并交付成果",
+		welcomeModelsTitle: "两种模型接入方式",
+		welcomeHostedModels: "官方模型",
+		welcomeHostedDescription: "登录 UMA 账号后即可选择，按公布的费率从人民币余额扣费。",
+		welcomeCustomModels: "自定义模型",
+		welcomeCustomDescription: "在模型设置接入自己的服务商和密钥，由该服务商计费。",
+		welcomeLoginTitle: "登录 UMA Studio",
+		welcomeLoginDescription: "登录 UMA 账号，使用官方模型并管理账户余额。",
+		welcomeNext: "下一步",
+		welcomePrevious: "上一步",
+		welcomeSkipSignIn: "稍后登录",
+		welcomeAuthStarting: "正在打开登录…",
+		welcomeAuthWaiting: "没有自动打开浏览器？",
+		welcomeAuthWaitingDescription: "复制登录链接，用浏览器手动打开完成登录",
+		welcomeAuthExchanging: "正在完成登录…",
+		welcomeAuthExpired: "登录已超时",
+		welcomeAuthExpiredDescription: "请重新登录后继续操作",
+		welcomeAuthFailed: "登录未完成，请重试。",
+		welcomeAuthCopyLink: "复制登录链接",
+		welcomeAuthCopied: "已复制",
+		welcomeAuthCopyFailed: "复制失败，请重试",
+		welcomeAuthCancel: "取消",
+		welcomeAuthRetry: "重新登录",
+		welcomeSignIn: "登录",
+		welcomeApiKey: "添加 API Key",
+		welcomeKeyTitle: "添加一个 API Key 开始使用",
+		welcomeKeyDescription: "配置 DeepSeek 官方模型，即可开始使用",
+		welcomeKeyPlaceholder: "输入 API 密钥",
+		welcomeKeySave: "保存并继续",
+		welcomeKeyLater: "稍后配置",
+		welcomeKeyBack: "返回登录",
+		welcomeSessionExpired: "登录信息已失效，请重新登录",
+		welcomeKeyBlank: "请输入 API 密钥。",
+		welcomeKeyInvalid: "请仅输入 API 密钥，不要包含引号、空格或环境变量赋值。",
+		welcomeKeyFailed: "无法保存 API 密钥，请重试。",
+		welcomeContinueFailed: "无法打开工作区，请重试。",
+		checkUpdatesMenu: "检查更新…",
+		reloadPageMenu: "刷新页面",
+		toggleDevToolsMenu: "开发者工具",
+		restartAppHostMenu: "重启应用与 Host",
+		updateConfigurationFailed: "更新配置无法应用。请修正配置文件并重启，或在设置中选择更新渠道。",
+		updateConfigurationRead: "配置文件异常，更新已暂停",
+		updateConfigurationFormat: "配置文件异常，更新已暂停",
+		updateConfigurationChannel: "配置文件异常，更新已暂停",
+		updateConfigurationCleanup: "更新已暂停：无法清理旧更新，请重启应用",
+		updateReloadSettings: "重新读取配置",
+		updateConfigurationDetails: "查看配置",
+		updateShowSettingsFile: "显示配置文件",
+		updateCheckFailedTitle: "更新检查失败",
+		updateCheckFailed: "检查更新失败，请稍后重试。",
+		updateDownloadFailed: "下载更新失败，请重试。",
+		updateDownloadSpaceFailed: "磁盘空间不足，无法下载更新。请释放空间后重试。",
+		updateDownloadPermissionFailed: "无法写入更新文件，请检查目录权限后重试。",
+		updateDownloadBusyFailed: "更新文件正被占用，请关闭占用它的程序后重试。",
+		updateInstallFailed: "安装更新失败，请稍后重试。",
+		updateCheckNetworkFailed: "检查更新失败，请检查网络连接后重试。",
+		updateDownloadNetworkFailed: "下载更新失败，请检查网络连接后重试。",
+		updateInstallNetworkFailed: "安装更新失败，请检查网络连接后重试。",
+		unknownError: "未知错误",
+		updateCheckTitle: "检查更新",
+		updateCurrentDetail: "当前版本：{version}",
+		updateCurrent: "已是最新版本",
+		updateChecking: "正在检查更新…",
+		updateDownload: "下载更新",
+		updateDownloadedTitle: "新版本 {version} 已准备就绪",
+		updateDownloadedDetail: "更新期间应用将暂时关闭，完成后会自动打开。",
+		updateDownloadedDetailWindows: "更新期间应用将暂时关闭，完成后会自动打开。\n\n更新可能需要一些时间，请耐心等待，期间请勿重复启动应用。",
+		updateClose: "关闭",
+		updateAcknowledge: "确定",
+		updateLater: "稍后更新",
+		updateDownloadInProgress: "正在下载更新",
+		updateDownloadDetail: "更新正在后台下载，你可以继续使用应用。",
+		updateDownloading: "正在下载 {percent}%…",
+		updateVerifying: "正在校验更新文件…",
+		updateInstalling: "正在准备重启…",
+		updateRetry: "重试更新",
+		updateActiveTasks: "仍有进行中的任务",
+		updateActiveTasksDetail: "更新将停止进行中的任务并重启应用，是否继续？",
+		updateStopTasks: "停止任务并更新",
+		updateTasksChanged: "有新任务开始运行，请重新确认是否停止任务并更新。",
+		updateTasksUnavailable: "无法确认任务状态，请在工作区就绪后重试更新。",
+		updateInstallLocation: "请将 UMA Studio 移到「应用程序」文件夹，重新打开后再更新",
+		updateFullscreenTimeout: "无法退出全屏，请退出全屏后重试更新",
+		updateStopFailed: "未能安全停止任务，更新尚未安装，请稍后重试。",
+		updateTechnicalDetails: "查看技术详情",
+		updateTitle: "UMA Studio 更新",
+		updateAvailable: "发现新版本 {version}",
+		updateDetail: "下载完成后，可安装并重启应用。",
+		installAndRestart: "安装并重启",
+		later: "稍后",
+		updateFailedTitle: "更新失败",
+		mandatoryTitle: "请更新后继续使用",
+		mandatoryDetail: "当前版本已停止支持，请更新后继续使用。确认安装并重启前，进行中的任务会继续运行。",
+		mandatoryUnavailable: "暂时无法检查更新要求，请稍后重试。",
+		policyLoginTitle: "登录测试环境",
+		policyLoginRequired: "此测试版需要先通过飞书登录，才能检查更新要求。登录不会下载或安装更新。",
+		policyLogin: "通过飞书登录",
+		policyLoginFailed: "飞书登录未完成，请重试。",
+		policyLoginLoading: "正在加载登录页面…",
+		mandatoryNoRelease: "暂未找到适用的更新，请重新检查或联系支持人员。",
+		mandatoryRefresh: "重新检查",
+		mandatoryPage: "前往官网下载",
+		mandatoryCopy: "复制下载链接",
+		mandatoryPageFailed: "无法打开官网下载页面，请复制链接后在浏览器中打开。",
+		mandatoryViewDownload: "打开下载页面",
+		mandatoryViewPageFailed: "无法打开下载页面，请重试",
+		mandatoryActionFailed: "操作失败，请重试。完成更新后才能继续使用应用。",
+		mandatoryReady: "更新已准备就绪",
+		mandatoryVersion: "新版本：{version}",
+		mandatoryReadyDetail: "更新期间应用将暂时关闭，完成后会自动打开。",
+		mandatoryDeferred: "进行中的任务会继续运行。请完成更新后再操作应用。",
+		mandatoryContinue: "继续更新",
+		mandatoryInspecting: "正在检查任务状态…",
+		mandatoryStopping: "正在停止任务…",
+		mandatoryRestarting: "应用即将重启，请稍候。",
+		mandatoryDownloadFailed: "更新文件下载或准备失败，请重试。",
+		mandatoryInstallFailed: "更新尚未安装，请重新检查任务后重试。",
+		mandatoryOpenHelp: "页面未打开？",
+		mandatoryReopen: "重新前往官网下载",
+		mandatoryCopied: "链接已复制",
+		mandatoryCopyFailed: "复制失败，请手动选择并复制下方链接。",
+		mandatoryAddress: "下载链接",
+		mandatoryNotification: "返回应用确认安装并重启。"
+	},
+	ja: {
+		updateDevelopmentUnavailable: "この開発ビルドはアプリ内更新に対応していません。公開済みの UMA Studio インストーラーをご利用ください。",
+		cliCommandMenu: "uma コマンドを管理…",
+		macPermissionsMenu: "macOS の権限",
+		operationsMenu: "UMA 運用",
+		macMicrophonePermission: "マイク",
+		macAccessibilityPermission: "アクセシビリティ",
+		macScreenRecordingPermission: "画面とシステムオーディオの録音",
+		macPermissionSettingsUnavailable: "システム設定の「プライバシーとセキュリティ」で権限を設定してください。",
+		cliCommandTitle: "uma コマンドを管理",
+		cliCommandLocation: "デスクトップコマンド: {path}",
+		cliCommandSelected: "現在の uma コマンド: {path}",
+		cliCommandTarget: "現在のランチャーターゲット: {path}",
+		cliCommandShadowed: "別の uma が優先されています。デフォルトでデスクトップコマンドを使用するには、そのインストールを削除するか順序を変更してください。デスクトップコマンドはフルパスでも実行できます。",
+		cliCommandSelectionUnknown: "シェルコマンドを確認できませんでした。エイリアスや別の uma インストールが優先されている可能性があります。",
+		cliCommandInstalled: "デスクトップコマンドがインストールされています。",
+		cliCommandNotInstalled: "デスクトップコマンドをターミナルに追加します。",
+		cliCommandBroken: "デスクトップコマンドの修復が必要です。",
+		cliCommandInstall: "インストール",
+		cliCommandRepair: "修復",
+		cliCommandRemove: "削除",
+		cliCommandClose: "閉じる",
+		cliCommandSwitch: "デスクトップコマンドで続行しますか？",
+		cliCommandPreserve: "既存のコマンドは保持されます。他のインストールやシェルの起動ファイルは変更されません。",
+		cliCommandContinue: "続行",
+		cliCommandInstallApp: "uma コマンドを管理する前に、デスクトップをアプリケーションフォルダにインストールしてください。",
+		cliCommandUpdating: "アップデートをインストール中です。インストール完了後にコマンドを管理してください。",
+		cliCommandNewTerminal: "新しいターミナルを開いて uma --version を実行してください。",
+		cliCommandRemoved: "デスクトップコマンドの登録を削除しました。",
+		cliCommandPreviousRestored: "以前のランチャーを復元しました。",
+		cliCommandOtherKept: "他のコマンドインストールはそのまま残されています。",
+		cliCommandBackupKept: "以前のランチャーは次の場所に保持されています: {path}",
+		cliCommandChanged: "このダイアログを開いている間にコマンドまたは PATH が変更されました。現在の状態を確認するには、uma コマンドを管理を再度開いてください。",
+		cliCommandOwnershipError: "コマンド登録またはバックアップが変更されました。無関係なコマンドは削除されていません。",
+		cliCommandFailed: "コマンドを更新できませんでした。アプリケーションがインストールされ、保存先に書き込み権限があることを確認してから再試行してください。",
+		application: "アプリケーション",
+		fileMenu: "ファイル",
+		closePage: "ページまたはウィンドウを閉じる",
+		aboutMenu: "UMA Studio について",
+		aboutProduct: "UMA Studio",
+		aboutDescription: "UMA Studio の AI コーディングワークスペース。",
+		aboutUpstream: "DeepSeek Harness (DSH) のオープンソースカーネルを基盤としています。",
+		aboutSource: "カーネルのソース",
+		aboutVersion: "製品バージョン {version}",
+		aboutKernel: "カーネルバージョン",
+		aboutChannel: "更新チャネル",
+		aboutPlatform: "プラットフォーム",
+		aboutDevelopment: "開発プレビュー",
+		aboutStable: "安定版",
+		aboutPreview: "プレビュー",
+		aboutUnavailable: "利用不可",
+		aboutBuild: "製品ビルド",
+		aboutModified: "ローカル変更を含む",
+		aboutCopy: "バージョン情報をコピー",
+		aboutCopied: "コピーしました",
+		aboutWebsite: "UMA ウェブサイト",
+		aboutLicense: "オープンソースライセンス",
+		aboutFullLicense: "ライセンス全文を表示",
+		hideApplication: "UMA Studio を隠す",
+		hideOtherApplications: "ほかを隠す",
+		showAllApplications: "すべて表示",
+		substitutionsMenu: "自動置換",
+		speechMenu: "スピーチ",
+		quitApplication: "UMA Studio を終了",
+		openApplication: "UMA Studio を開く",
+		trayRunning: "実行中",
+		trayRecent: "最近の会話",
+		trayMore: "その他",
+		trayTeamWorking: "UMA 開発チームが作業中",
+		trayRoleWorking: "{roles}が作業中",
+		trayRoles: {
+			pm: "プロダクトマネージャー",
+			architect: "アーキテクト",
+			designer: "UI デザイナー",
+			frontend: "フロントエンドエンジニア",
+			backend: "バックエンドエンジニア",
+			qa: "QA エンジニア",
+			reviewer: "コードレビュアー",
+			security: "セキュリティエンジニア",
+			devops: "DevOps エンジニア",
+			wiki: "Wiki 管理者"
+		},
+		trayUntitled: "無題の会話",
+		quit: "終了",
+		cancel: "キャンセル",
+		quitTitle: "UMA Studio を終了しますか？",
+		quitActiveTasks: "実行中のタスクは中断されます。",
+		quitScheduledTasks: "アプリの終了中はスケジュールされたタスクが実行されません。",
+		quitActiveAndScheduledTasks: "実行中のタスクは中断され、アプリの終了中はスケジュールされたタスクが実行されません。",
+		backgroundNoticeBody: "実行中のタスクは継続されます。システムトレイからウィンドウを再度開けます。",
+		backgroundNoticeConfirm: "確認",
+		edit: "編集",
+		menuBar: "アプリケーションメニュー",
+		delete: "削除",
+		undo: "元に戻す",
+		redo: "やり直す",
+		cut: "切り取り",
+		copy: "コピー",
+		paste: "貼り付け",
+		selectAll: "すべて選択",
+		startupFailed: "UMA Studio を利用できません",
+		fatalSummary: "アプリケーションを起動できなかったか、予期せず停止しました。",
+		startupAddressInUse: "アプリのポートは使用中です。そのポートを使用しているプロセスを終了して、もう一度お試しください。",
+		diagnosticTruncated: "… エラー詳細は省略されています。",
+		reportWrittenTo: "診断レポート: {path}",
+		getDiagnosticReport: "診断レポートを取得",
+		reportPending: "診断レポートを保存中です。「診断レポートを取得」を選択して再度確認してください。",
+		reportUnavailable: "診断レポートを保存できませんでした。サポートへのお問い合わせ時に、このダイアログのスクリーンショットを提供できます。",
+		reportShareHint: "レポートの保存場所を開きました。選択されたファイルをサポートチケットに添付してください。",
+		reportRevealFailed: "レポートの保存場所を開けませんでした。以下のパスからファイルを探してください。",
+		startupReinstallAdvice: "アプリケーションファイルが見つからないか破損している場合は、アプリケーションを閉じて再インストールしてください。タスクは別途保存されています。",
+		exitApplication: "終了",
+		restartApplication: "再起動",
+		recoveryOperationFailed: "復旧操作に失敗しました",
+		disableThirdPartyPlugins: "サードパーティのプラグインを無効化し、プロファイルパッチをバックアップして再起動",
+		welcomeTitle: "UMA Studio",
+		welcomeBrand: "UMA Studio",
+		welcomeIntroTitle: "良いソフトウェアを、もっと早く",
+		welcomeIntroDescription: "ローカルのワークスペースを開き、やりたいことを伝えてください。Uma が必要なツールを同じ会話で使います。",
+		welcomeIntroDesign: "デザインを検討",
+		welcomeIntroCode: "プロジェクトで開発",
+		welcomeIntroDeliver: "検証して納品",
+		welcomeModelsTitle: "モデルの利用方法",
+		welcomeHostedModels: "UMA 提供モデル",
+		welcomeHostedDescription: "UMA アカウントでログインし、公開料金を残高から支払います。",
+		welcomeCustomModels: "カスタムモデル",
+		welcomeCustomDescription: "設定から独自のプロバイダーとキーを接続します。料金はプロバイダーから請求されます。",
+		welcomeLoginTitle: "UMA Studio にログイン",
+		welcomeLoginDescription: "UMA アカウントでモデルを利用し、残高を管理できます。",
+		welcomeNext: "次へ",
+		welcomePrevious: "戻る",
+		welcomeSkipSignIn: "後でログイン",
+		welcomeAuthStarting: "ログインを開いています…",
+		welcomeAuthWaiting: "ブラウザが自動で開きませんでしたか？",
+		welcomeAuthWaitingDescription: "ログインリンクをコピーしてブラウザで開き、ログインしてください。",
+		welcomeAuthExchanging: "ログインを完了しています…",
+		welcomeAuthExpired: "ログインがタイムアウトしました",
+		welcomeAuthExpiredDescription: "続行するには再度ログインしてください",
+		welcomeAuthFailed: "ログインを完了できませんでした。もう一度お試しください。",
+		welcomeAuthCopyLink: "ログインリンクをコピー",
+		welcomeAuthCopied: "コピーしました",
+		welcomeAuthCopyFailed: "コピーできませんでした。もう一度お試しください。",
+		welcomeAuthCancel: "キャンセル",
+		welcomeAuthRetry: "再度ログイン",
+		welcomeSignIn: "ログイン",
+		welcomeApiKey: "APIキーを追加",
+		welcomeKeyTitle: "APIキーを追加して開始",
+		welcomeKeyDescription: "公式のDeepSeekモデルを設定してUMA Studioを使い始めましょう",
+		welcomeKeyPlaceholder: "APIキーを入力",
+		welcomeKeySave: "保存して続行",
+		welcomeKeyLater: "後で設定",
+		welcomeKeyBack: "ログインに戻る",
+		welcomeSessionExpired: "アカウントからログアウトしました。再度ログインしてください。",
+		welcomeKeyBlank: "APIキーを入力してください。",
+		welcomeKeyInvalid: "引用符、スペース、環境変数の代入を含めず、APIキーそのものを入力してください。",
+		welcomeKeyFailed: "APIキーを保存できませんでした。もう一度お試しください。",
+		welcomeContinueFailed: "ワークスペースを開けませんでした。もう一度お試しください。",
+		checkUpdatesMenu: "アップデートを確認…",
+		reloadPageMenu: "ページを再読み込み",
+		toggleDevToolsMenu: "開発者ツール",
+		restartAppHostMenu: "アプリとホストを再起動",
+		updateConfigurationFailed: "更新設定を適用できませんでした。設定ファイルを修正して再起動するか、設定で更新チャンネルを選択してください。",
+		updateConfigurationRead: "設定ファイルに問題があるため、更新を停止しています",
+		updateConfigurationFormat: "設定ファイルに問題があるため、更新を停止しています",
+		updateConfigurationChannel: "設定ファイルに問題があるため、更新を停止しています",
+		updateConfigurationCleanup: "更新を停止中：以前の更新を削除できません。アプリを再起動してください",
+		updateReloadSettings: "設定を再読み込み",
+		updateConfigurationDetails: "設定を確認",
+		updateShowSettingsFile: "設定ファイルを表示",
+		updateCheckFailedTitle: "アップデートの確認に失敗しました",
+		updateCheckFailed: "アップデートを確認できませんでした。後でもう一度お試しください。",
+		updateDownloadFailed: "アップデートをダウンロードできませんでした。もう一度お試しください。",
+		updateDownloadSpaceFailed: "更新のダウンロードに必要なディスク容量が不足しています。空き容量を増やして再試行してください。",
+		updateDownloadPermissionFailed: "更新ファイルを書き込めません。フォルダーのアクセス権を確認して再試行してください。",
+		updateDownloadBusyFailed: "更新ファイルが使用中です。使用しているプログラムを閉じて再試行してください。",
+		updateInstallFailed: "アップデートをインストールできませんでした。後でもう一度お試しください。",
+		updateCheckNetworkFailed: "アップデートを確認できませんでした。接続を確認してもう一度お試しください。",
+		updateDownloadNetworkFailed: "アップデートをダウンロードできませんでした。接続を確認してもう一度お試しください。",
+		updateInstallNetworkFailed: "アップデートをインストールできませんでした。接続を確認してもう一度お試しください。",
+		unknownError: "不明なエラー",
+		updateCheckTitle: "アップデートを確認",
+		updateCurrentDetail: "現在のバージョン: {version}",
+		updateCurrent: "最新です！",
+		updateChecking: "アップデートを確認中…",
+		updateDownload: "アップデートをダウンロード",
+		updateDownloadedTitle: "バージョン {version} をインストールする準備ができました",
+		updateDownloadedDetail: "アップデート中はアプリが終了し、完了後に自動的に再起動します。",
+		updateDownloadedDetailWindows: "アップデート中はアプリが一時的に終了し、完了後に自動的に再起動します。\n\nアップデートには時間がかかる場合があります。インストール中はアプリを再度起動せずにお待ちください。",
+		updateClose: "閉じる",
+		updateAcknowledge: "OK",
+		updateLater: "後でアップデート",
+		updateDownloadInProgress: "アップデートをダウンロード中",
+		updateDownloadDetail: "アップデートをバックグラウンドでダウンロードしています。アプリは引き続き使用できます。",
+		updateDownloading: "ダウンロード中 {percent}%…",
+		updateVerifying: "アップデートファイルを検証中…",
+		updateInstalling: "再起動の準備中…",
+		updateRetry: "アップデートを再試行",
+		updateActiveTasks: "タスクがまだ実行中です",
+		updateActiveTasksDetail: "アップデートすると実行中のタスクが停止し、アプリが再起動します。続行しますか？",
+		updateStopTasks: "タスクを停止してアップデート",
+		updateTasksChanged: "新しいタスクが開始されました。タスクを停止してアップデートするには再度確認してください。",
+		updateTasksUnavailable: "タスクの状態を取得できません。ワークスペースの準備ができてから再度アップデートをお試しください。",
+		updateInstallLocation: "UMA Studio を「アプリケーション」フォルダに移動し、開き直してからアップデートをお試しください。",
+		updateFullscreenTimeout: "フルスクリーンを終了できませんでした。フルスクリーンを終了してからアップデートを再試行してください。",
+		updateStopFailed: "タスクを安全に停止できませんでした。アップデートはインストールされていません。後でもう一度お試しください。",
+		updateTechnicalDetails: "技術的な詳細を表示",
+		updateTitle: "UMA Studio アップデート",
+		updateAvailable: "新しいバージョンがあります: {version}",
+		updateDetail: "ダウンロードが完了したら、アップデートをインストールしてアプリを再起動できます。",
+		installAndRestart: "インストールして再起動",
+		later: "後で",
+		updateFailedTitle: "アップデートに失敗しました",
+		mandatoryTitle: "続行するにはアップデートしてください",
+		mandatoryDetail: "このバージョンはサポートされなくなりました。続行するにはアップデートしてください。実行中のタスクは、インストールの確認と再起動を行うまで実行を継続します。",
+		mandatoryUnavailable: "アップデートの要件を確認できませんでした。後でもう一度お試しください。",
+		policyLoginTitle: "テスト環境にログイン",
+		policyLoginRequired: "Feishuでログインして、このテストビルドのアップデート要件を確認します。ログインしてもアップデートのダウンロードやインストールは行われません。",
+		policyLogin: "Feishuでログイン",
+		policyLoginFailed: "Feishuのログインが完了しませんでした。もう一度お試しください。",
+		policyLoginLoading: "ログインページを読み込み中…",
+		mandatoryNoRelease: "互換性のあるアップデートが見つかりませんでした。再度確認するか、サポートにお問い合わせください。",
+		mandatoryRefresh: "再確認",
+		mandatoryPage: "公式サイトからダウンロード",
+		mandatoryCopy: "ダウンロードリンクをコピー",
+		mandatoryPageFailed: "公式ダウンロードページを開けませんでした。リンクをコピーしてブラウザで開いてください。",
+		mandatoryViewDownload: "ダウンロードページを開く",
+		mandatoryViewPageFailed: "ダウンロードページを開けませんでした。もう一度お試しください。",
+		mandatoryActionFailed: "操作に失敗しました。もう一度お試しください。アップデートが完了すると、アプリを再度使用できます。",
+		mandatoryReady: "アップデートの準備完了",
+		mandatoryVersion: "新しいバージョン: {version}",
+		mandatoryReadyDetail: "アップデート中にアプリが終了し、完了後に自動的に再起動します。",
+		mandatoryDeferred: "実行中のタスクはそのまま続行されます。アプリを再度使用する前にアップデートを完了してください。",
+		mandatoryContinue: "アップデートを続行",
+		mandatoryInspecting: "タスクを確認中…",
+		mandatoryStopping: "タスクを停止中…",
+		mandatoryRestarting: "まもなくアプリが再起動します。しばらくお待ちください。",
+		mandatoryDownloadFailed: "アップデートファイルをダウンロードまたは準備できませんでした。再試行してください。",
+		mandatoryInstallFailed: "アップデートはインストールされていません。タスクを再度確認して再試行してください。",
+		mandatoryOpenHelp: "ページが開きませんでしたか？",
+		mandatoryReopen: "公式ダウンロードページを再度開く",
+		mandatoryCopied: "リンクをコピーしました",
+		mandatoryCopyFailed: "リンクをコピーできませんでした。以下から選択してコピーしてください。",
+		mandatoryAddress: "ダウンロードリンク",
+		mandatoryNotification: "アプリに戻り、インストールと再起動を確認してください。"
+	},
+	es: {
+		updateDevelopmentUnavailable: "Esta versión de desarrollo no admite actualizaciones desde la aplicación. Usa un instalador publicado de UMA Studio.",
+		cliCommandMenu: "Administrar el comando uma…",
+		macPermissionsMenu: "Permisos de macOS",
+		operationsMenu: "Operaciones de UMA",
+		macMicrophonePermission: "Micrófono",
+		macAccessibilityPermission: "Accesibilidad",
+		macScreenRecordingPermission: "Grabación de pantalla y audio del sistema",
+		macPermissionSettingsUnavailable: "Abre Ajustes del Sistema y luego Privacidad y seguridad para gestionar este permiso.",
+		cliCommandTitle: "Administrar el comando uma",
+		cliCommandLocation: "Comando de escritorio: {path}",
+		cliCommandSelected: "Comando uma actual: {path}",
+		cliCommandTarget: "Objetivo actual del lanzador: {path}",
+		cliCommandShadowed: "Otro uma tiene prioridad. Elimine o reordene esa instalación para usar el comando Escritorio de forma predeterminada. También puede ejecutar el comando Escritorio por su ruta completa.",
+		cliCommandSelectionUnknown: "No se pudo verificar su comando de shell. Un alias u otra instalación de uma puede tener prioridad.",
+		cliCommandInstalled: "El comando Escritorio está instalado.",
+		cliCommandNotInstalled: "Agregue el comando Escritorio a su terminal.",
+		cliCommandBroken: "El comando de escritorio necesita reparación.",
+		cliCommandInstall: "Instalar",
+		cliCommandRepair: "Reparación",
+		cliCommandRemove: "Quitar",
+		cliCommandClose: "Cerrar",
+		cliCommandSwitch: "¿Continuar con el comando Escritorio?",
+		cliCommandPreserve: "Se conservará un comando existente. Otras instalaciones y archivos de inicio del shell no se modificarán.",
+		cliCommandContinue: "Continuar",
+		cliCommandInstallApp: "Instale UMA Studio en su carpeta de Aplicaciones antes de administrar el comando uma.",
+		cliCommandUpdating: "Se está instalando una actualización. Administre el comando una vez finalizada la instalación.",
+		cliCommandNewTerminal: "Abra una nueva terminal y ejecute uma --version.",
+		cliCommandRemoved: "Se eliminó el registro de comandos de escritorio.",
+		cliCommandPreviousRestored: "El lanzador anterior ha sido restaurado.",
+		cliCommandOtherKept: "Otras instalaciones de mando se han dejado en su lugar.",
+		cliCommandBackupKept: "Se conserva un lanzador anterior en: {path}",
+		cliCommandChanged: "El comando o RUTA cambió mientras este cuadro de diálogo estaba abierto. Abra Administrar comando uma nuevamente para revisar el estado actual.",
+		cliCommandOwnershipError: "El registro del comando o la copia de seguridad cambió. No se eliminó ningún comando no relacionado.",
+		cliCommandFailed: "El comando no se pudo actualizar. Verifique que la aplicación esté instalada y que se pueda escribir en el destino, luego vuelva a intentarlo.",
+		application: "Solicitud",
+		fileMenu: "Archivo",
+		closePage: "Cerrar página o ventana",
+		aboutMenu: "Acerca de UMA Studio",
+		aboutProduct: "UMA Studio",
+		aboutDescription: "Un espacio de programación con IA de UMA Studio.",
+		aboutUpstream: "Basado en el núcleo de código abierto DeepSeek Harness (DSH).",
+		aboutSource: "Código del núcleo",
+		aboutVersion: "Versión del producto {version}",
+		aboutKernel: "Versión del núcleo",
+		aboutChannel: "Canal de actualizaciones",
+		aboutPlatform: "Plataforma",
+		aboutDevelopment: "Vista previa de desarrollo",
+		aboutStable: "Estable",
+		aboutPreview: "Vista previa",
+		aboutUnavailable: "No disponible",
+		aboutBuild: "Compilación del producto",
+		aboutModified: "Incluye cambios locales",
+		aboutCopy: "Copiar información de versión",
+		aboutCopied: "Copiado",
+		aboutWebsite: "Sitio web de UMA",
+		aboutLicense: "Licencias de código abierto",
+		aboutFullLicense: "Ver licencia completa",
+		hideApplication: "Ocultar UMA Studio",
+		hideOtherApplications: "Ocultar otros",
+		showAllApplications: "Mostrar todo",
+		substitutionsMenu: "Sustituciones",
+		speechMenu: "Voz",
+		quitApplication: "Salir de UMA Studio",
+		openApplication: "Abrir UMA Studio",
+		trayRunning: "En ejecución",
+		trayRecent: "Conversaciones recientes",
+		trayMore: "Más",
+		trayTeamWorking: "El equipo UMA está trabajando",
+		trayRoleWorking: "{roles} en actividad",
+		trayRoles: {
+			pm: "Gerente de producto",
+			architect: "Arquitectura",
+			designer: "Diseño de interfaz",
+			frontend: "Ingeniería frontend",
+			backend: "Ingeniería backend",
+			qa: "Control de calidad",
+			reviewer: "Revisión de código",
+			security: "Seguridad",
+			devops: "DevOps",
+			wiki: "Mantenimiento de Wiki"
+		},
+		trayUntitled: "Conversación sin título",
+		quit: "Salir",
+		cancel: "Cancelar",
+		quitTitle: "¿Salir de UMA Studio?",
+		quitActiveTasks: "Las tareas en ejecución se interrumpirán.",
+		quitScheduledTasks: "Las tareas programadas no se ejecutarán mientras la aplicación esté cerrada.",
+		quitActiveAndScheduledTasks: "Las tareas en ejecución se interrumpirán y las tareas programadas no se ejecutarán mientras la aplicación esté cerrada.",
+		backgroundNoticeBody: "Las tareas en ejecución continuarán. Puede volver a abrir la ventana desde la bandeja del sistema.",
+		backgroundNoticeConfirm: "Confirmar",
+		edit: "Editar",
+		menuBar: "Menú de aplicaciones",
+		delete: "Eliminar",
+		undo: "Deshacer",
+		redo: "Rehacer",
+		cut: "cortar",
+		copy: "Copiar",
+		paste: "Pegar",
+		selectAll: "Seleccionar todo",
+		startupFailed: "UMA Studio no está disponible",
+		fatalSummary: "La aplicación no pudo iniciarse o se detuvo inesperadamente.",
+		startupAddressInUse: "El puerto de la aplicación está en uso. Cierra el proceso que lo utiliza e inténtalo de nuevo.",
+		diagnosticTruncated: "… Detalles del error acortados.",
+		reportWrittenTo: "Informe de diagnóstico: {path}",
+		getDiagnosticReport: "Obtener informe de diagnóstico",
+		reportPending: "El informe de diagnóstico se está guardando. Seleccione Obtener informe de diagnóstico para volver a comprobarlo.",
+		reportUnavailable: "No se pudo guardar el informe de diagnóstico. Puede proporcionar una captura de pantalla de este diálogo al solicitar asistencia.",
+		reportShareHint: "Se ha abierto la ubicación del informe. Adjunte el archivo seleccionado a su solicitud de asistencia.",
+		reportRevealFailed: "No se pudo abrir la ubicación del informe. Use la ruta que aparece a continuación para encontrar el archivo.",
+		startupReinstallAdvice: "Si faltan archivos de la aplicación o están dañados, ciérrela y vuelva a instalarla. Sus tareas se almacenan por separado.",
+		exitApplication: "Salir",
+		restartApplication: "Reiniciar",
+		recoveryOperationFailed: "La operación de recuperación falló",
+		disableThirdPartyPlugins: "Deshabilite los complementos de terceros, haga una copia de seguridad del parche del perfil y reinicie",
+		welcomeTitle: "UMA Studio",
+		welcomeBrand: "UMA Studio",
+		welcomeIntroTitle: "Crea buen software más rápido",
+		welcomeIntroDescription: "Abre un espacio de trabajo local y describe el resultado. Uma usa las herramientas necesarias en una conversación.",
+		welcomeIntroDesign: "Explorar el diseño",
+		welcomeIntroCode: "Desarrollar en tu proyecto",
+		welcomeIntroDeliver: "Verificar y entregar",
+		welcomeModelsTitle: "Elige cómo usar los modelos",
+		welcomeHostedModels: "Modelos de UMA",
+		welcomeHostedDescription: "Inicia sesión y paga las tarifas publicadas desde el saldo de tu cuenta.",
+		welcomeCustomModels: "Modelos personalizados",
+		welcomeCustomDescription: "Conecta tu proveedor y tu clave en los ajustes. El proveedor factura el uso.",
+		welcomeLoginTitle: "Inicia sesión en UMA Studio",
+		welcomeLoginDescription: "Usa tu cuenta UMA para acceder a los modelos y gestionar el saldo.",
+		welcomeNext: "Siguiente",
+		welcomePrevious: "Atrás",
+		welcomeSkipSignIn: "Iniciar sesión más tarde",
+		welcomeAuthStarting: "Abriendo inicio de sesión…",
+		welcomeAuthWaiting: "¿El navegador no se abrió automáticamente?",
+		welcomeAuthWaitingDescription: "Copie el enlace de inicio de sesión y ábralo en su navegador para iniciar sesión.",
+		welcomeAuthExchanging: "Completando el inicio de sesión…",
+		welcomeAuthExpired: "Se agotó el tiempo de inicio de sesión",
+		welcomeAuthExpiredDescription: "Inicia sesión nuevamente para continuar",
+		welcomeAuthFailed: "No se pudo completar el inicio de sesión. Inténtelo de nuevo.",
+		welcomeAuthCopyLink: "Copiar enlace de inicio de sesión",
+		welcomeAuthCopied: "Copiado",
+		welcomeAuthCopyFailed: "No se pudo copiar. Intentar otra vez.",
+		welcomeAuthCancel: "Cancelar",
+		welcomeAuthRetry: "Iniciar sesión nuevamente",
+		welcomeSignIn: "Iniciar sesión",
+		welcomeApiKey: "Agregar clave API",
+		welcomeKeyTitle: "Agregue una clave API para comenzar",
+		welcomeKeyDescription: "Configura los modelos oficiales DeepSeek para empezar a utilizar UMA Studio",
+		welcomeKeyPlaceholder: "Ingrese la clave API",
+		welcomeKeySave: "Guardar y continuar",
+		welcomeKeyLater: "Configurar más tarde",
+		welcomeKeyBack: "Volver para iniciar sesión",
+		welcomeSessionExpired: "Has cerrado sesión en tu cuenta, inicia sesión nuevamente.",
+		welcomeKeyBlank: "Ingrese una clave API.",
+		welcomeKeyInvalid: "Ingrese la clave API, sin comillas, espacios ni una asignación de variable de entorno.",
+		welcomeKeyFailed: "No se pudo guardar la clave API. Por favor inténtalo de nuevo.",
+		welcomeContinueFailed: "No se pudo abrir el espacio de trabajo. Por favor inténtalo de nuevo.",
+		checkUpdatesMenu: "Buscar actualizaciones...",
+		reloadPageMenu: "Recargar página",
+		toggleDevToolsMenu: "Herramientas de desarrollo",
+		restartAppHostMenu: "Reiniciar la aplicación y el host",
+		updateConfigurationFailed: "No se pudo aplicar la configuración de actualización. Corrige el archivo y reinicia, o selecciona un canal en Ajustes.",
+		updateConfigurationRead: "Error en el archivo de ajustes; actualizaciones pausadas",
+		updateConfigurationFormat: "Error en el archivo de ajustes; actualizaciones pausadas",
+		updateConfigurationChannel: "Error en el archivo de ajustes; actualizaciones pausadas",
+		updateConfigurationCleanup: "Actualizaciones pausadas: no se pudo descartar la actualización anterior; reinicia la aplicación",
+		updateReloadSettings: "Volver a cargar ajustes",
+		updateConfigurationDetails: "Revisar ajustes",
+		updateShowSettingsFile: "Mostrar archivo de ajustes",
+		updateCheckFailedTitle: "Error en la comprobación de actualización",
+		updateCheckFailed: "No se pudo buscar actualizaciones. Inténtelo de nuevo más tarde.",
+		updateDownloadFailed: "No se pudo descargar la actualización. Por favor inténtalo de nuevo.",
+		updateDownloadSpaceFailed: "No hay espacio suficiente para descargar la actualización. Libera espacio y vuelve a intentarlo.",
+		updateDownloadPermissionFailed: "No se pueden escribir los archivos de actualización. Revisa los permisos de la carpeta y vuelve a intentarlo.",
+		updateDownloadBusyFailed: "Un archivo de actualización está en uso. Cierra el programa que lo usa y vuelve a intentarlo.",
+		updateInstallFailed: "No se pudo instalar la actualización. Inténtelo de nuevo más tarde.",
+		updateCheckNetworkFailed: "No se pudo buscar actualizaciones. Comprueba tu conexión y vuelve a intentarlo.",
+		updateDownloadNetworkFailed: "No se pudo descargar la actualización. Comprueba tu conexión y vuelve a intentarlo.",
+		updateInstallNetworkFailed: "No se pudo instalar la actualización. Comprueba tu conexión y vuelve a intentarlo.",
+		unknownError: "Error desconocido",
+		updateCheckTitle: "Buscar actualizaciones",
+		updateCurrentDetail: "Versión actual: {version}",
+		updateCurrent: "¡Estás al día!",
+		updateChecking: "Buscando actualizaciones...",
+		updateDownload: "Descargar actualización",
+		updateDownloadedTitle: "La versión {version} está lista para instalar.",
+		updateDownloadedDetail: "La aplicación se cerrará durante la actualización y se volverá a abrir automáticamente cuando se complete.",
+		updateDownloadedDetailWindows: "La aplicación se cerrará temporalmente durante la actualización y se volverá a abrir automáticamente cuando se complete.\n\nLa actualización puede tardar algún tiempo. Espere y no vuelva a iniciar la aplicación durante la instalación.",
+		updateClose: "Cerrar",
+		updateAcknowledge: "OK",
+		updateLater: "Actualizar más tarde",
+		updateDownloadInProgress: "Descargando actualización",
+		updateDownloadDetail: "La actualización se está descargando en segundo plano. Puede seguir usando la aplicación.",
+		updateDownloading: "Descargando {percent}%…",
+		updateVerifying: "Verificando archivos de actualización...",
+		updateInstalling: "Preparándose para reiniciar…",
+		updateRetry: "Reintentar actualización",
+		updateActiveTasks: "Las tareas aún están en progreso",
+		updateActiveTasksDetail: "La actualización detendrá las tareas en curso y reiniciará la aplicación. ¿Continuar?",
+		updateStopTasks: "Detener tareas y actualizar",
+		updateTasksChanged: "Han comenzado nuevas tareas. Confirme nuevamente para detener las tareas y actualizar.",
+		updateTasksUnavailable: "El estado de la tarea no está disponible. Intente actualizar nuevamente cuando el espacio de trabajo esté listo.",
+		updateInstallLocation: "Mueve UMA Studio a la carpeta Aplicaciones, vuelve a abrirlo e inténtalo de nuevo.",
+		updateFullscreenTimeout: "No se pudo salir de la pantalla completa. Salga de la pantalla completa y luego vuelva a intentar la actualización.",
+		updateStopFailed: "No se pudieron detener las tareas de forma segura. La actualización no se ha instalado. Inténtelo de nuevo más tarde.",
+		updateTechnicalDetails: "Ver detalles técnicos",
+		updateTitle: "Actualización UMA Studio",
+		updateAvailable: "Nueva versión disponible: {version}",
+		updateDetail: "Una vez que se completa la descarga, puede instalar la actualización y reiniciar la aplicación.",
+		installAndRestart: "Instalar y reiniciar",
+		later: "Más tarde",
+		updateFailedTitle: "Actualización fallida",
+		mandatoryTitle: "Actualizar para continuar",
+		mandatoryDetail: "Esta versión ya no es compatible. Actualiza para continuar. Las tareas en curso seguirán ejecutándose hasta que confirme la instalación y reinicie.",
+		mandatoryUnavailable: "No se pudieron verificar los requisitos de actualización. Inténtelo de nuevo más tarde.",
+		policyLoginTitle: "Inicie sesión en el entorno de prueba",
+		policyLoginRequired: "Inicie sesión con Feishu para verificar los requisitos de actualización para esta versión de prueba. Iniciar sesión no descargará ni instalará una actualización.",
+		policyLogin: "Iniciar sesión con Feishu",
+		policyLoginFailed: "El inicio de sesión de Feishu no se completó. Por favor inténtalo de nuevo.",
+		policyLoginLoading: "Cargando página de inicio de sesión...",
+		mandatoryNoRelease: "No se encontró ninguna actualización compatible. Verifique nuevamente o comuníquese con el soporte.",
+		mandatoryRefresh: "Comprobar de nuevo",
+		mandatoryPage: "Descargar desde el sitio web oficial.",
+		mandatoryCopy: "Copiar enlace de descarga",
+		mandatoryPageFailed: "No se pudo abrir la página de descarga oficial. Copie el enlace y ábralo en su navegador.",
+		mandatoryViewDownload: "Abrir página de descarga",
+		mandatoryViewPageFailed: "No se pudo abrir la página de descarga. Por favor inténtalo de nuevo.",
+		mandatoryActionFailed: "La acción fracasó. Por favor inténtalo de nuevo. Puede utilizar la aplicación nuevamente una vez completada la actualización.",
+		mandatoryReady: "Actualización lista",
+		mandatoryVersion: "Nueva versión: {version}",
+		mandatoryReadyDetail: "La aplicación se cerrará durante la actualización y se volverá a abrir automáticamente cuando se complete.",
+		mandatoryDeferred: "Las tareas en curso seguirán ejecutándose. Complete la actualización antes de volver a utilizar la aplicación.",
+		mandatoryContinue: "Continuar actualizando",
+		mandatoryInspecting: "Comprobando tareas...",
+		mandatoryStopping: "Deteniendo tareas…",
+		mandatoryRestarting: "La aplicación se reiniciará en breve. Espere por favor.",
+		mandatoryDownloadFailed: "Los archivos de actualización no se pudieron descargar ni preparar. Vuelva a intentarlo.",
+		mandatoryInstallFailed: "La actualización no se ha instalado. Verifique las tareas nuevamente y vuelva a intentarlo.",
+		mandatoryOpenHelp: "¿La página no se abrió?",
+		mandatoryReopen: "Abre la página de descarga oficial nuevamente.",
+		mandatoryCopied: "Enlace copiado",
+		mandatoryCopyFailed: "No se pudo copiar el enlace. Selecciónelo y cópielo a continuación.",
+		mandatoryAddress: "Enlace de descarga",
+		mandatoryNotification: "Regrese a la aplicación para confirmar la instalación y reiniciar."
+	},
+	fr: {
+		updateDevelopmentUnavailable: "Cette version de développement ne prend pas en charge les mises à jour intégrées. Utilisez un programme d’installation publié de UMA Studio.",
+		cliCommandMenu: "Gérer la commande uma…",
+		macPermissionsMenu: "Autorisations macOS",
+		operationsMenu: "Opérations UMA",
+		macMicrophonePermission: "Microphone",
+		macAccessibilityPermission: "Accessibilité",
+		macScreenRecordingPermission: "Enregistrement de l’écran et de l’audio système",
+		macPermissionSettingsUnavailable: "Ouvrez Réglages Système, puis Confidentialité et sécurité, pour gérer cette autorisation.",
+		cliCommandTitle: "Gérer la commande uma",
+		cliCommandLocation: "Commande de bureau\xA0: {path}",
+		cliCommandSelected: "Commande uma actuelle\xA0: {path}",
+		cliCommandTarget: "Cible actuelle du lanceur\xA0: {path}",
+		cliCommandShadowed: "Un autre uma est prioritaire. Supprimez ou réorganisez cette installation pour utiliser la commande Bureau par défaut. Vous pouvez également exécuter la commande UMA Studio par son chemin complet.",
+		cliCommandSelectionUnknown: "Votre commande shell n'a pas pu être vérifiée. Un alias ou une autre installation uma peut être prioritaire.",
+		cliCommandInstalled: "La commande Bureau est installée.",
+		cliCommandNotInstalled: "Ajoutez la commande Bureau à votre terminal.",
+		cliCommandBroken: "La commande Bureau doit être réparée.",
+		cliCommandInstall: "Installer",
+		cliCommandRepair: "Réparer",
+		cliCommandRemove: "Supprimer",
+		cliCommandClose: "Fermer",
+		cliCommandSwitch: "Continuer avec la commande Bureau\xA0?",
+		cliCommandPreserve: "Une commande existante sera conservée. Les autres installations et fichiers de démarrage du shell ne seront pas modifiés.",
+		cliCommandContinue: "Continuer",
+		cliCommandInstallApp: "Installez UMA Studio dans votre dossier Applications avant de gérer la commande uma.",
+		cliCommandUpdating: "Une mise à jour est en cours d'installation. Gérez la commande une fois l'installation terminée.",
+		cliCommandNewTerminal: "Ouvrez un nouveau terminal et exécutez uma --version.",
+		cliCommandRemoved: "Enregistrement des commandes de bureau supprimé.",
+		cliCommandPreviousRestored: "Le lanceur précédent a été restauré.",
+		cliCommandOtherKept: "D'autres installations de commandement ont été laissées en place.",
+		cliCommandBackupKept: "Un lanceur précédent est conservé à\xA0: {path}",
+		cliCommandChanged: "La commande ou PATH a changé pendant que cette boîte de dialogue était ouverte. Ouvrez à nouveau la commande Gérer uma pour vérifier l'état actuel.",
+		cliCommandOwnershipError: "L'enregistrement ou la sauvegarde de la commande a été modifiée. Aucune commande sans rapport n'a été supprimée.",
+		cliCommandFailed: "La commande n'a pas pu être mise à jour. Vérifiez que l'application est installée et que la destination est accessible en écriture, puis réessayez.",
+		application: "Application",
+		fileMenu: "Fichier",
+		closePage: "Fermer la page ou la fenêtre",
+		aboutMenu: "À propos de UMA Studio",
+		aboutProduct: "UMA Studio",
+		aboutDescription: "Un espace de programmation avec IA par UMA Studio.",
+		aboutUpstream: "Basé sur le noyau open source DeepSeek Harness (DSH).",
+		aboutSource: "Code source du noyau",
+		aboutVersion: "Version du produit {version}",
+		aboutKernel: "Version du noyau",
+		aboutChannel: "Canal de mise à jour",
+		aboutPlatform: "Plateforme",
+		aboutDevelopment: "Aperçu de développement",
+		aboutStable: "Stable",
+		aboutPreview: "Aperçu",
+		aboutUnavailable: "Indisponible",
+		aboutBuild: "Compilation du produit",
+		aboutModified: "Inclut des modifications locales",
+		aboutCopy: "Copier les informations de version",
+		aboutCopied: "Copié",
+		aboutWebsite: "Site UMA",
+		aboutLicense: "Licences open source",
+		aboutFullLicense: "Voir la licence complète",
+		hideApplication: "Masquer UMA Studio",
+		hideOtherApplications: "Masquer les autres",
+		showAllApplications: "Afficher tout",
+		substitutionsMenu: "Substitutions",
+		speechMenu: "Parole",
+		quitApplication: "Quitter UMA Studio",
+		openApplication: "Ouvrir UMA Studio",
+		trayRunning: "En cours",
+		trayRecent: "Conversations récentes",
+		trayMore: "Plus",
+		trayTeamWorking: "L’équipe UMA travaille",
+		trayRoleWorking: "{roles} en cours",
+		trayRoles: {
+			pm: "Chef de produit",
+			architect: "Architecte",
+			designer: "Design UI",
+			frontend: "Ingénierie frontend",
+			backend: "Ingénierie backend",
+			qa: "Assurance qualité",
+			reviewer: "Revue de code",
+			security: "Sécurité",
+			devops: "DevOps",
+			wiki: "Maintenance du Wiki"
+		},
+		trayUntitled: "Conversation sans titre",
+		quit: "Quitter",
+		cancel: "Annuler",
+		quitTitle: "Quitter UMA Studio\xA0?",
+		quitActiveTasks: "Les tâches en cours seront interrompues.",
+		quitScheduledTasks: "Les tâches planifiées ne s'exécuteront pas lorsque l'application est fermée.",
+		quitActiveAndScheduledTasks: "Les tâches en cours d'exécution seront interrompues et les tâches planifiées ne s'exécuteront pas tant que l'application sera fermée.",
+		backgroundNoticeBody: "Les tâches en cours continueront. Vous pouvez rouvrir la fenêtre à partir de la barre d'état système.",
+		backgroundNoticeConfirm: "Confirmer",
+		edit: "Modifier",
+		menuBar: "Menu des applications",
+		delete: "Supprimer",
+		undo: "Annuler",
+		redo: "Refaire",
+		cut: "Couper",
+		copy: "Copier",
+		paste: "Coller",
+		selectAll: "Sélectionner tout",
+		startupFailed: "UMA Studio n'est pas disponible",
+		fatalSummary: "L'application n'a pas pu démarrer ou s'est arrêtée de manière inattendue.",
+		startupAddressInUse: "Le port de l’application est utilisé. Fermez le processus qui l’utilise, puis réessayez.",
+		diagnosticTruncated: "… Détails de l’erreur raccourcis.",
+		reportWrittenTo: "Rapport de diagnostic\xA0: {path}",
+		getDiagnosticReport: "Obtenir le rapport de diagnostic",
+		reportPending: "Le rapport de diagnostic est en cours d’enregistrement. Sélectionnez Obtenir le rapport de diagnostic pour vérifier à nouveau.",
+		reportUnavailable: "Le rapport de diagnostic n’a pas pu être enregistré. Vous pouvez fournir une capture d’écran de cette boîte de dialogue lorsque vous contactez l’assistance.",
+		reportShareHint: "L’emplacement du rapport a été ouvert. Joignez le fichier sélectionné à votre demande d’assistance.",
+		reportRevealFailed: "L’emplacement du rapport n’a pas pu être ouvert. Utilisez le chemin ci-dessous pour trouver le fichier.",
+		startupReinstallAdvice: "Si les fichiers de l'application sont manquants ou endommagés, fermez l'application et réinstallez-la. Vos tâches sont stockées séparément.",
+		exitApplication: "Quitter",
+		restartApplication: "Redémarrer",
+		recoveryOperationFailed: "L'opération de récupération a échoué",
+		disableThirdPartyPlugins: "Désactivez les plugins tiers, sauvegardez le correctif de profil et redémarrez",
+		welcomeTitle: "UMA Studio",
+		welcomeBrand: "UMA Studio",
+		welcomeIntroTitle: "Créez de bons logiciels plus vite",
+		welcomeIntroDescription: "Ouvrez un espace de travail local et décrivez le résultat. Uma mobilise les outils nécessaires dans une conversation.",
+		welcomeIntroDesign: "Explorer un design",
+		welcomeIntroCode: "Développer dans votre projet",
+		welcomeIntroDeliver: "Vérifier et livrer",
+		welcomeModelsTitle: "Choisissez vos modèles",
+		welcomeHostedModels: "Modèles hébergés par UMA",
+		welcomeHostedDescription: "Connectez-vous et payez le tarif publié avec le solde de votre compte.",
+		welcomeCustomModels: "Modèles personnalisés",
+		welcomeCustomDescription: "Connectez votre fournisseur et votre clé dans les réglages. Le fournisseur facture les appels.",
+		welcomeLoginTitle: "Connectez-vous à UMA Studio",
+		welcomeLoginDescription: "Utilisez votre compte UMA pour accéder aux modèles et gérer votre solde.",
+		welcomeNext: "Suivant",
+		welcomePrevious: "Retour",
+		welcomeSkipSignIn: "Se connecter plus tard",
+		welcomeAuthStarting: "Ouverture de la connexion…",
+		welcomeAuthWaiting: "Le navigateur ne s'est pas ouvert automatiquement ?",
+		welcomeAuthWaitingDescription: "Copiez le lien de connexion et ouvrez-le dans votre navigateur pour vous connecter.",
+		welcomeAuthExchanging: "Connexion terminée…",
+		welcomeAuthExpired: "La connexion a expiré",
+		welcomeAuthExpiredDescription: "Connectez-vous à nouveau pour continuer",
+		welcomeAuthFailed: "Impossible de terminer la connexion. Veuillez réessayer.",
+		welcomeAuthCopyLink: "Copier le lien de connexion",
+		welcomeAuthCopied: "Copié",
+		welcomeAuthCopyFailed: "Impossible de copier. Essayer à nouveau.",
+		welcomeAuthCancel: "Annuler",
+		welcomeAuthRetry: "Connectez-vous à nouveau",
+		welcomeSignIn: "Connectez-vous",
+		welcomeApiKey: "Ajouter une clé API",
+		welcomeKeyTitle: "Ajoutez une clé API pour commencer",
+		welcomeKeyDescription: "Configurez les modèles DeepSeek officiels pour commencer à utiliser UMA Studio",
+		welcomeKeyPlaceholder: "Entrez la clé API",
+		welcomeKeySave: "Enregistrer et continuer",
+		welcomeKeyLater: "Configurer plus tard",
+		welcomeKeyBack: "Retour pour vous connecter",
+		welcomeSessionExpired: "Vous vous êtes déconnecté de votre compte, veuillez vous reconnecter.",
+		welcomeKeyBlank: "Entrez une clé API.",
+		welcomeKeyInvalid: "Entrez la clé API elle-même, sans guillemets, espaces ni affectation de variable d'environnement.",
+		welcomeKeyFailed: "Impossible d'enregistrer la clé API. Veuillez réessayer.",
+		welcomeContinueFailed: "Impossible d'ouvrir l'espace de travail. Veuillez réessayer.",
+		checkUpdatesMenu: "Vérifiez les mises à jour…",
+		reloadPageMenu: "Recharger la page",
+		toggleDevToolsMenu: "Outils de développement",
+		restartAppHostMenu: "Redémarrez l'application et l'hôte",
+		updateConfigurationFailed: "Impossible d’appliquer les paramètres de mise à jour. Corrigez le fichier et redémarrez, ou sélectionnez un canal dans les paramètres.",
+		updateConfigurationRead: "Erreur du fichier de paramètres ; mises à jour suspendues",
+		updateConfigurationFormat: "Erreur du fichier de paramètres ; mises à jour suspendues",
+		updateConfigurationChannel: "Erreur du fichier de paramètres ; mises à jour suspendues",
+		updateConfigurationCleanup: "Mises à jour suspendues : suppression de la mise à jour précédente impossible ; redémarrez l’application",
+		updateReloadSettings: "Recharger les paramètres",
+		updateConfigurationDetails: "Vérifier les paramètres",
+		updateShowSettingsFile: "Afficher le fichier de paramètres",
+		updateCheckFailedTitle: "Échec de la vérification de la mise à jour",
+		updateCheckFailed: "Impossible de vérifier les mises à jour. Veuillez réessayer plus tard.",
+		updateDownloadFailed: "Impossible de télécharger la mise à jour. Veuillez réessayer.",
+		updateDownloadSpaceFailed: "Espace disque insuffisant pour télécharger la mise à jour. Libérez de l’espace, puis réessayez.",
+		updateDownloadPermissionFailed: "Impossible d’écrire les fichiers de mise à jour. Vérifiez les autorisations du dossier, puis réessayez.",
+		updateDownloadBusyFailed: "Un fichier de mise à jour est utilisé. Fermez le programme qui l’utilise, puis réessayez.",
+		updateInstallFailed: "Impossible d'installer la mise à jour. Veuillez réessayer plus tard.",
+		updateCheckNetworkFailed: "Impossible de vérifier les mises à jour. Vérifiez votre connexion et réessayez.",
+		updateDownloadNetworkFailed: "Impossible de télécharger la mise à jour. Vérifiez votre connexion et réessayez.",
+		updateInstallNetworkFailed: "Impossible d'installer la mise à jour. Vérifiez votre connexion et réessayez.",
+		unknownError: "Erreur inconnue",
+		updateCheckTitle: "Vérifier les mises à jour",
+		updateCurrentDetail: "Version actuelle\xA0: {version}",
+		updateCurrent: "Vous êtes à jour\xA0!",
+		updateChecking: "Vérification des mises à jour…",
+		updateDownload: "Télécharger la mise à jour",
+		updateDownloadedTitle: "La version {version} est prête à installer",
+		updateDownloadedDetail: "L'application se fermera pendant la mise à jour et rouvrira automatiquement une fois celle-ci terminée.",
+		updateDownloadedDetailWindows: "L'application se fermera temporairement pendant la mise à jour et rouvrira automatiquement une fois celle-ci terminée.\n\nLa mise à jour peut prendre un certain temps. Veuillez patienter et ne pas relancer l'application pendant l'installation.",
+		updateClose: "Fermer",
+		updateAcknowledge: "OK",
+		updateLater: "Mettre à jour plus tard",
+		updateDownloadInProgress: "Téléchargement de la mise à jour",
+		updateDownloadDetail: "La mise à jour se télécharge en arrière-plan. Vous pouvez continuer à utiliser l’application.",
+		updateDownloading: "Téléchargement de {percent}%…",
+		updateVerifying: "Vérification des fichiers de mise à jour…",
+		updateInstalling: "Préparation du redémarrage…",
+		updateRetry: "Réessayez la mise à jour",
+		updateActiveTasks: "Les tâches sont toujours en cours",
+		updateActiveTasksDetail: "La mise à jour arrêtera les tâches en cours et redémarrera l'application. Continuer?",
+		updateStopTasks: "Arrêter les tâches et mettre à jour",
+		updateTasksChanged: "De nouvelles tâches ont commencé. Confirmez à nouveau pour arrêter les tâches et mettre à jour.",
+		updateTasksUnavailable: "L'état de la tâche n'est pas disponible. Essayez à nouveau de mettre à jour lorsque l'espace de travail est prêt.",
+		updateInstallLocation: "Déplacez UMA Studio dans le dossier Applications, rouvrez-le et réessayez.",
+		updateFullscreenTimeout: "Impossible de quitter le mode plein écran. Quittez le mode plein écran, puis réessayez la mise à jour.",
+		updateStopFailed: "Impossible d'arrêter les tâches en toute sécurité. La mise à jour n'a pas été installée. Veuillez réessayer plus tard.",
+		updateTechnicalDetails: "Voir les détails techniques",
+		updateTitle: "Mise à jour UMA Studio",
+		updateAvailable: "Nouvelle version disponible : {version}",
+		updateDetail: "Une fois le téléchargement terminé, vous pouvez installer la mise à jour et redémarrer l'application.",
+		installAndRestart: "Installer et redémarrer",
+		later: "Plus tard",
+		updateFailedTitle: "Échec de la mise à jour",
+		mandatoryTitle: "Mettre à jour pour continuer",
+		mandatoryDetail: "Cette version n'est plus prise en charge. Mettez à jour pour continuer. Les tâches en cours continueront à s'exécuter jusqu'à ce que vous confirmiez l'installation et redémarriez.",
+		mandatoryUnavailable: "Impossible de vérifier les exigences de mise à jour. Veuillez réessayer plus tard.",
+		policyLoginTitle: "Connectez-vous à l'environnement de test",
+		policyLoginRequired: "Connectez-vous avec Feishu pour vérifier les exigences de mise à jour pour cette version de test. La connexion ne téléchargera ni n’installera de mise à jour.",
+		policyLogin: "Connectez-vous avec Feishu",
+		policyLoginFailed: "La connexion à Feishu n’a pas abouti. Veuillez réessayer.",
+		policyLoginLoading: "Chargement de la page de connexion…",
+		mandatoryNoRelease: "Aucune mise à jour compatible n'a été trouvée. Vérifiez à nouveau ou contactez l'assistance.",
+		mandatoryRefresh: "Vérifiez à nouveau",
+		mandatoryPage: "Télécharger depuis le site officiel",
+		mandatoryCopy: "Copier le lien de téléchargement",
+		mandatoryPageFailed: "Impossible d'ouvrir la page de téléchargement officielle. Copiez le lien et ouvrez-le dans votre navigateur.",
+		mandatoryViewDownload: "Ouvrir la page de téléchargement",
+		mandatoryViewPageFailed: "Impossible d'ouvrir la page de téléchargement. Veuillez réessayer.",
+		mandatoryActionFailed: "L'action a échoué. Veuillez réessayer. Vous pourrez réutiliser l'application une fois la mise à jour terminée.",
+		mandatoryReady: "Mise à jour prête",
+		mandatoryVersion: "Nouvelle version\xA0: {version}",
+		mandatoryReadyDetail: "L'application se fermera pendant la mise à jour et rouvrira automatiquement une fois celle-ci terminée.",
+		mandatoryDeferred: "Les tâches en cours continueront à s'exécuter. Terminez la mise à jour avant d'utiliser à nouveau l'application.",
+		mandatoryContinue: "Continuer la mise à jour",
+		mandatoryInspecting: "Vérification des tâches…",
+		mandatoryStopping: "Arrêt des tâches…",
+		mandatoryRestarting: "L'application redémarrera sous peu. S'il vous plaît, attendez.",
+		mandatoryDownloadFailed: "Les fichiers de mise à jour n'ont pas pu être téléchargés ou préparés. Veuillez réessayer.",
+		mandatoryInstallFailed: "La mise à jour n'a pas été installée. Vérifiez à nouveau les tâches et réessayez.",
+		mandatoryOpenHelp: "La page ne s'est pas ouverte ?",
+		mandatoryReopen: "Ouvrez à nouveau la page de téléchargement officielle",
+		mandatoryCopied: "Lien copié",
+		mandatoryCopyFailed: "Impossible de copier le lien. Sélectionnez-le et copiez-le ci-dessous.",
+		mandatoryAddress: "Lien de téléchargement",
+		mandatoryNotification: "Revenez à l'application pour confirmer l'installation et redémarrer."
+	},
+	de: {
+		updateDevelopmentUnavailable: "Dieser Entwicklungsbuild unterstützt keine In-App-Updates. Verwenden Sie ein veröffentlichtes UMA Studio-Installationspaket.",
+		cliCommandMenu: "uma-Befehl verwalten…",
+		macPermissionsMenu: "macOS-Berechtigungen",
+		operationsMenu: "UMA-Betrieb",
+		macMicrophonePermission: "Mikrofon",
+		macAccessibilityPermission: "Bedienungshilfen",
+		macScreenRecordingPermission: "Bildschirm- und Systemaudioaufnahme",
+		macPermissionSettingsUnavailable: "Öffne die Systemeinstellungen und dann Datenschutz & Sicherheit, um diese Berechtigung zu verwalten.",
+		cliCommandTitle: "uma-Befehl verwalten",
+		cliCommandLocation: "UMA Studio-Befehl: {path}",
+		cliCommandSelected: "Aktueller uma-Befehl: {path}",
+		cliCommandTarget: "Aktuelles Launcher-Ziel: {path}",
+		cliCommandShadowed: "Ein anderer uma hat Vorrang. Entfernen Sie diese Installation oder ordnen Sie sie neu an, um standardmäßig den UMA Studio-Befehl zu verwenden. Sie können den UMA Studio-Befehl auch über seinen vollständigen Pfad ausführen.",
+		cliCommandSelectionUnknown: "Ihr Shell-Befehl konnte nicht überprüft werden. Ein Alias oder eine andere uma-Installation kann Vorrang haben.",
+		cliCommandInstalled: "Der UMA Studio-Befehl ist installiert.",
+		cliCommandNotInstalled: "Fügen Sie den UMA Studio-Befehl zu Ihrem Terminal hinzu.",
+		cliCommandBroken: "Der UMA Studio-Befehl muss repariert werden.",
+		cliCommandInstall: "Installieren",
+		cliCommandRepair: "Reparieren",
+		cliCommandRemove: "Entfernen",
+		cliCommandClose: "Schließen",
+		cliCommandSwitch: "Mit dem UMA Studio-Befehl fortfahren?",
+		cliCommandPreserve: "Ein vorhandener Befehl bleibt erhalten. Andere Installationen und Shell-Startdateien werden nicht geändert.",
+		cliCommandContinue: "Weiter",
+		cliCommandInstallApp: "Installieren Sie UMA Studio in Ihrem Anwendungsordner, bevor Sie den Befehl uma verwalten.",
+		cliCommandUpdating: "Ein Update wird installiert. Verwalten Sie den Befehl nach Abschluss der Installation.",
+		cliCommandNewTerminal: "Öffnen Sie ein neues Terminal und führen Sie uma --version aus.",
+		cliCommandRemoved: "UMA Studio-Befehlsregistrierung entfernt.",
+		cliCommandPreviousRestored: "Der vorherige Launcher wurde wiederhergestellt.",
+		cliCommandOtherKept: "Andere Befehlsinstallationen wurden beibehalten.",
+		cliCommandBackupKept: "Ein früherer Launcher ist unter folgender Adresse erhalten: {path}",
+		cliCommandChanged: "Der Befehl oder PATH hat sich geändert, während dieses Dialogfeld geöffnet war. Öffnen Sie den Befehl „uma verwalten“ erneut, um den aktuellen Status zu überprüfen.",
+		cliCommandOwnershipError: "Die Befehlsregistrierung oder Sicherung wurde geändert. Es wurde kein nicht verwandter Befehl entfernt.",
+		cliCommandFailed: "Der Befehl konnte nicht aktualisiert werden. Überprüfen Sie, ob die Anwendung installiert ist und das Ziel beschreibbar ist, und versuchen Sie es dann erneut.",
+		application: "Anwendung",
+		fileMenu: "Datei",
+		closePage: "Seite oder Fenster schließen",
+		aboutMenu: "Über UMA Studio",
+		aboutProduct: "UMA Studio",
+		aboutDescription: "Ein KI-Programmierarbeitsplatz von UMA Studio.",
+		aboutUpstream: "Basiert auf dem Open-Source-Kern DeepSeek Harness (DSH).",
+		aboutSource: "Kernel-Quellcode",
+		aboutVersion: "Produktversion {version}",
+		aboutKernel: "Kernel-Version",
+		aboutChannel: "Update-Kanal",
+		aboutPlatform: "Plattform",
+		aboutDevelopment: "Entwicklungsvorschau",
+		aboutStable: "Stabil",
+		aboutPreview: "Vorschau",
+		aboutUnavailable: "Nicht verfügbar",
+		aboutBuild: "Produkt-Build",
+		aboutModified: "Enthält lokale Änderungen",
+		aboutCopy: "Versionsinformationen kopieren",
+		aboutCopied: "Kopiert",
+		aboutWebsite: "UMA-Website",
+		aboutLicense: "Open-Source-Lizenzen",
+		aboutFullLicense: "Vollständige Lizenz ansehen",
+		hideApplication: "UMA Studio ausblenden",
+		hideOtherApplications: "Andere ausblenden",
+		showAllApplications: "Alle einblenden",
+		substitutionsMenu: "Ersetzungen",
+		speechMenu: "Sprachausgabe",
+		quitApplication: "UMA Studio beenden",
+		openApplication: "UMA Studio öffnen",
+		trayRunning: "Läuft",
+		trayRecent: "Letzte Unterhaltungen",
+		trayMore: "Mehr",
+		trayTeamWorking: "Das UMA-Entwicklungsteam arbeitet",
+		trayRoleWorking: "{roles} in Arbeit",
+		trayRoles: {
+			pm: "Produktmanagement",
+			architect: "Architektur",
+			designer: "UI-Design",
+			frontend: "Frontend-Entwicklung",
+			backend: "Backend-Entwicklung",
+			qa: "Qualitätssicherung",
+			reviewer: "Codeprüfung",
+			security: "Sicherheit",
+			devops: "DevOps",
+			wiki: "Wiki-Pflege"
+		},
+		trayUntitled: "Unbenannte Unterhaltung",
+		quit: "Beenden",
+		cancel: "Abbrechen",
+		quitTitle: "UMA Studio beenden?",
+		quitActiveTasks: "Laufende Aufgaben werden unterbrochen.",
+		quitScheduledTasks: "Geplante Aufgaben werden nicht ausgeführt, während die App geschlossen ist.",
+		quitActiveAndScheduledTasks: "Laufende Aufgaben werden unterbrochen und geplante Aufgaben werden nicht ausgeführt, während die App geschlossen ist.",
+		backgroundNoticeBody: "Laufende Aufgaben werden fortgesetzt. Sie können das Fenster über die Taskleiste erneut öffnen.",
+		backgroundNoticeConfirm: "Bestätigen",
+		edit: "Bearbeiten",
+		menuBar: "Anwendungsmenü",
+		delete: "Löschen",
+		undo: "Rückgängig machen",
+		redo: "Wiederholen",
+		cut: "Ausschneiden",
+		copy: "Kopieren",
+		paste: "Einfügen",
+		selectAll: "Alles auswählen",
+		startupFailed: "UMA Studio ist nicht verfügbar",
+		fatalSummary: "Die Anwendung konnte nicht gestartet werden oder wurde unerwartet gestoppt.",
+		startupAddressInUse: "Der Anwendungsport wird bereits verwendet. Beenden Sie den zugehörigen Prozess und versuchen Sie es erneut.",
+		diagnosticTruncated: "… Fehlerdetails gekürzt.",
+		reportWrittenTo: "Diagnosebericht: {path}",
+		getDiagnosticReport: "Diagnosebericht abrufen",
+		reportPending: "Der Diagnosebericht wird noch gespeichert. Wählen Sie „Diagnosebericht abrufen“, um ihn erneut zu prüfen.",
+		reportUnavailable: "Der Diagnosebericht konnte nicht gespeichert werden. Sie können bei einer Supportanfrage einen Screenshot dieses Dialogs bereitstellen.",
+		reportShareHint: "Der Speicherort des Berichts wurde geöffnet. Fügen Sie die ausgewählte Datei Ihrer Supportanfrage bei.",
+		reportRevealFailed: "Der Speicherort des Berichts konnte nicht geöffnet werden. Verwenden Sie den folgenden Pfad, um die Datei zu finden.",
+		startupReinstallAdvice: "Wenn Anwendungsdateien fehlen oder beschädigt sind, schließen Sie die Anwendung und installieren Sie sie erneut. Ihre Aufgaben werden separat gespeichert.",
+		exitApplication: "Beenden",
+		restartApplication: "Neustart",
+		recoveryOperationFailed: "Der Wiederherstellungsvorgang ist fehlgeschlagen",
+		disableThirdPartyPlugins: "Deaktivieren Sie Plugins von Drittanbietern, sichern Sie den Profil-Patch und starten Sie neu",
+		welcomeTitle: "UMA Studio",
+		welcomeBrand: "UMA Studio",
+		welcomeIntroTitle: "Gute Software schneller entwickeln",
+		welcomeIntroDescription: "Öffne einen lokalen Arbeitsbereich und beschreibe dein Ziel. Uma nutzt die passenden Werkzeuge im selben Gespräch.",
+		welcomeIntroDesign: "Design erkunden",
+		welcomeIntroCode: "Im Projekt entwickeln",
+		welcomeIntroDeliver: "Prüfen und ausliefern",
+		welcomeModelsTitle: "So kannst du Modelle nutzen",
+		welcomeHostedModels: "Von UMA gehostete Modelle",
+		welcomeHostedDescription: "Melde dich an und bezahle die veröffentlichten Preise aus deinem Guthaben.",
+		welcomeCustomModels: "Eigene Modelle",
+		welcomeCustomDescription: "Verbinde Anbieter und Schlüssel in den Einstellungen. Dein Anbieter rechnet die Nutzung ab.",
+		welcomeLoginTitle: "Bei UMA Studio anmelden",
+		welcomeLoginDescription: "Nutze dein UMA-Konto für gehostete Modelle und zur Verwaltung deines Guthabens.",
+		welcomeNext: "Weiter",
+		welcomePrevious: "Zurück",
+		welcomeSkipSignIn: "Später anmelden",
+		welcomeAuthStarting: "Anmeldung wird geöffnet…",
+		welcomeAuthWaiting: "Browser wurde nicht automatisch geöffnet?",
+		welcomeAuthWaitingDescription: "Kopieren Sie den Anmeldelink und öffnen Sie ihn in Ihrem Browser, um sich anzumelden.",
+		welcomeAuthExchanging: "Anmeldung wird abgeschlossen…",
+		welcomeAuthExpired: "Zeitüberschreitung bei der Anmeldung",
+		welcomeAuthExpiredDescription: "Melden Sie sich erneut an, um fortzufahren",
+		welcomeAuthFailed: "Die Anmeldung konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.",
+		welcomeAuthCopyLink: "Anmeldelink kopieren",
+		welcomeAuthCopied: "Kopiert",
+		welcomeAuthCopyFailed: "Konnte nicht kopiert werden. Versuchen Sie es erneut.",
+		welcomeAuthCancel: "Abbrechen",
+		welcomeAuthRetry: "Erneut anmelden",
+		welcomeSignIn: "Anmelden",
+		welcomeApiKey: "API-Schlüssel hinzufügen",
+		welcomeKeyTitle: "Fügen Sie einen API-Schlüssel hinzu, um loszulegen",
+		welcomeKeyDescription: "Konfigurieren Sie offizielle DeepSeek-Modelle für die Verwendung von UMA Studio",
+		welcomeKeyPlaceholder: "API-Schlüssel eingeben",
+		welcomeKeySave: "Speichern und fortfahren",
+		welcomeKeyLater: "Später einrichten",
+		welcomeKeyBack: "Zurück zur Anmeldung",
+		welcomeSessionExpired: "Sie haben sich von Ihrem Konto abgemeldet. Bitte melden Sie sich erneut an.",
+		welcomeKeyBlank: "Geben Sie einen API-Schlüssel ein.",
+		welcomeKeyInvalid: "Geben Sie den API-Schlüssel selbst ein, ohne Anführungszeichen, Leerzeichen oder eine Umgebungsvariablenzuweisung.",
+		welcomeKeyFailed: "Der API-Schlüssel konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+		welcomeContinueFailed: "Der Arbeitsbereich konnte nicht geöffnet werden. Bitte versuchen Sie es erneut.",
+		checkUpdatesMenu: "Nach Updates suchen…",
+		reloadPageMenu: "Seite neu laden",
+		toggleDevToolsMenu: "Entwicklertools",
+		restartAppHostMenu: "Anwendung und Host neu starten",
+		updateConfigurationFailed: "Die Update-Einstellungen konnten nicht angewendet werden. Korrigiere die Datei und starte neu, oder wähle in den Einstellungen einen Update-Kanal.",
+		updateConfigurationRead: "Fehler in der Einstellungsdatei; Updates pausiert",
+		updateConfigurationFormat: "Fehler in der Einstellungsdatei; Updates pausiert",
+		updateConfigurationChannel: "Fehler in der Einstellungsdatei; Updates pausiert",
+		updateConfigurationCleanup: "Updates pausiert: vorheriges Update nicht verwerfbar; App neu starten",
+		updateReloadSettings: "Einstellungen neu laden",
+		updateConfigurationDetails: "Einstellungen prüfen",
+		updateShowSettingsFile: "Einstellungsdatei anzeigen",
+		updateCheckFailedTitle: "Update-Überprüfung fehlgeschlagen",
+		updateCheckFailed: "Es konnte nicht nach Updates gesucht werden. Bitte versuchen Sie es später noch einmal.",
+		updateDownloadFailed: "Das Update konnte nicht heruntergeladen werden. Bitte versuchen Sie es erneut.",
+		updateDownloadSpaceFailed: "Nicht genügend Speicherplatz für das Update. Geben Sie Speicherplatz frei und versuchen Sie es erneut.",
+		updateDownloadPermissionFailed: "Update-Dateien können nicht geschrieben werden. Prüfen Sie die Ordnerberechtigungen und versuchen Sie es erneut.",
+		updateDownloadBusyFailed: "Eine Update-Datei wird verwendet. Schließen Sie das verwendende Programm und versuchen Sie es erneut.",
+		updateInstallFailed: "Das Update konnte nicht installiert werden. Bitte versuchen Sie es später noch einmal.",
+		updateCheckNetworkFailed: "Es konnte nicht nach Updates gesucht werden. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+		updateDownloadNetworkFailed: "Das Update konnte nicht heruntergeladen werden. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+		updateInstallNetworkFailed: "Das Update konnte nicht installiert werden. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+		unknownError: "Unbekannter Fehler",
+		updateCheckTitle: "Nach Updates suchen",
+		updateCurrentDetail: "Aktuelle Version: {version}",
+		updateCurrent: "Sie verwenden die neueste Version.",
+		updateChecking: "Suche nach Updates…",
+		updateDownload: "Update herunterladen",
+		updateDownloadedTitle: "Die Version {version} ist zur Installation bereit",
+		updateDownloadedDetail: "Die App wird während des Updates geschlossen und nach Abschluss automatisch wieder geöffnet.",
+		updateDownloadedDetailWindows: "Die App wird während des Updates vorübergehend geschlossen und nach Abschluss automatisch wieder geöffnet.\n\nDas Update kann einige Zeit dauern. Bitte warten Sie und starten Sie die App während der Installation nicht erneut.",
+		updateClose: "Schließen",
+		updateAcknowledge: "OK",
+		updateLater: "Später aktualisieren",
+		updateDownloadInProgress: "Update wird heruntergeladen",
+		updateDownloadDetail: "Das Update wird im Hintergrund heruntergeladen. Sie können die App weiter verwenden.",
+		updateDownloading: "{percent}% wird heruntergeladen…",
+		updateVerifying: "Aktualisierungsdateien werden überprüft…",
+		updateInstalling: "Neustart wird vorbereitet…",
+		updateRetry: "Update erneut versuchen",
+		updateActiveTasks: "Aufgaben sind noch in Bearbeitung",
+		updateActiveTasksDetail: "Durch die Aktualisierung werden die laufenden Aufgaben gestoppt und die App neu gestartet. Weitermachen?",
+		updateStopTasks: "Aufgaben beenden und Update installieren",
+		updateTasksChanged: "Neue Aufgaben haben begonnen. Bestätigen Sie erneut, um die Aufgaben zu stoppen und zu aktualisieren.",
+		updateTasksUnavailable: "Der Aufgabenstatus ist nicht verfügbar. Versuchen Sie erneut, die Aktualisierung durchzuführen, wenn der Arbeitsbereich bereit ist.",
+		updateInstallLocation: "Verschieben Sie UMA Studio in den Ordner „Programme“, öffnen Sie es erneut und versuchen Sie es noch einmal.",
+		updateFullscreenTimeout: "Der Vollbildmodus konnte nicht beendet werden. Beenden Sie den Vollbildmodus und versuchen Sie dann erneut, das Update durchzuführen.",
+		updateStopFailed: "Die Aufgaben konnten nicht sicher gestoppt werden. Das Update wurde nicht installiert. Bitte versuchen Sie es später noch einmal.",
+		updateTechnicalDetails: "Technische Details anzeigen",
+		updateTitle: "UMA Studio-Update",
+		updateAvailable: "Neue Version verfügbar: {version}",
+		updateDetail: "Sobald der Download abgeschlossen ist, können Sie das Update installieren und die App neu starten.",
+		installAndRestart: "Installieren und neu starten",
+		later: "Später",
+		updateFailedTitle: "Aktualisierung fehlgeschlagen",
+		mandatoryTitle: "Aktualisieren, um fortzufahren",
+		mandatoryDetail: "Diese Version wird nicht mehr unterstützt. Aktualisieren, um fortzufahren. Laufende Aufgaben werden so lange ausgeführt, bis Sie die Installation bestätigen und neu starten.",
+		mandatoryUnavailable: "Update-Anforderungen konnten nicht überprüft werden. Bitte versuchen Sie es später noch einmal.",
+		policyLoginTitle: "Melden Sie sich bei der Testumgebung an",
+		policyLoginRequired: "Melden Sie sich bei Feishu an, um die Update-Anforderungen für diesen Test-Build zu prüfen. Durch die Anmeldung wird kein Update heruntergeladen oder installiert.",
+		policyLogin: "Melden Sie sich mit Feishu an",
+		policyLoginFailed: "Die Feishu-Anmeldung wurde nicht abgeschlossen. Bitte versuchen Sie es erneut.",
+		policyLoginLoading: "Anmeldeseite wird geladen…",
+		mandatoryNoRelease: "Es wurde kein kompatibles Update gefunden. Überprüfen Sie es erneut oder wenden Sie sich an den Support.",
+		mandatoryRefresh: "Erneut prüfen",
+		mandatoryPage: "Von der offiziellen Website herunterladen",
+		mandatoryCopy: "Download-Link kopieren",
+		mandatoryPageFailed: "Die offizielle Download-Seite konnte nicht geöffnet werden. Kopieren Sie den Link und öffnen Sie ihn in Ihrem Browser.",
+		mandatoryViewDownload: "Download-Seite öffnen",
+		mandatoryViewPageFailed: "Die Download-Seite konnte nicht geöffnet werden. Bitte versuchen Sie es erneut.",
+		mandatoryActionFailed: "Die Aktion ist fehlgeschlagen. Bitte versuchen Sie es erneut. Nach Abschluss des Updates können Sie die App wieder verwenden.",
+		mandatoryReady: "Update bereit",
+		mandatoryVersion: "Neue Version: {version}",
+		mandatoryReadyDetail: "Die App wird während des Updates geschlossen und nach Abschluss automatisch wieder geöffnet.",
+		mandatoryDeferred: "Laufende Aufgaben werden weiterhin ausgeführt. Schließen Sie das Update ab, bevor Sie die App erneut verwenden.",
+		mandatoryContinue: "Update fortsetzen",
+		mandatoryInspecting: "Aufgaben prüfen…",
+		mandatoryStopping: "Aufgaben stoppen…",
+		mandatoryRestarting: "Die App wird in Kürze neu gestartet. Bitte warten.",
+		mandatoryDownloadFailed: "Die Update-Dateien konnten nicht heruntergeladen oder vorbereitet werden. Bitte versuchen Sie es erneut.",
+		mandatoryInstallFailed: "Das Update wurde nicht installiert. Überprüfen Sie die Aufgaben erneut und versuchen Sie es erneut.",
+		mandatoryOpenHelp: "Seite wurde nicht geöffnet?",
+		mandatoryReopen: "Offizielle Downloadseite erneut öffnen",
+		mandatoryCopied: "Link kopiert",
+		mandatoryCopyFailed: "Der Link konnte nicht kopiert werden. Wählen Sie es aus und kopieren Sie es unten.",
+		mandatoryAddress: "Download-Link",
+		mandatoryNotification: "Kehren Sie zur Anwendung zurück, um die Installation zu bestätigen und neu zu starten."
+	},
+	ru: {
+		updateDevelopmentUnavailable: "Эта сборка для разработки не поддерживает обновления в приложении. Используйте опубликованный установщик UMA Studio.",
+		cliCommandMenu: "Управление командой uma…",
+		macPermissionsMenu: "Разрешения macOS",
+		operationsMenu: "Управление UMA",
+		macMicrophonePermission: "Микрофон",
+		macAccessibilityPermission: "Универсальный доступ",
+		macScreenRecordingPermission: "Запись экрана и системного аудио",
+		macPermissionSettingsUnavailable: "Откройте «Системные настройки», затем «Конфиденциальность и безопасность», чтобы изменить разрешение.",
+		cliCommandTitle: "Управление командой uma",
+		cliCommandLocation: "Команда UMA Studio: {path}",
+		cliCommandSelected: "Текущая команда uma: {path}.",
+		cliCommandTarget: "Текущая цель лаунчера: {path}",
+		cliCommandShadowed: "Другой uma имеет приоритет. Удалите или измените порядок установки, чтобы использовать команду «UMA Studio» по умолчанию. Вы также можете запустить команду «UMA Studio» по ее полному пути.",
+		cliCommandSelectionUnknown: "Не удалось проверить вашу команду оболочки. Псевдоним или другая установка uma может иметь приоритет.",
+		cliCommandInstalled: "Команда «UMA Studio» установлена.",
+		cliCommandNotInstalled: "Добавьте команду «UMA Studio» в свой терминал.",
+		cliCommandBroken: "Команда UMA Studio требует ремонта.",
+		cliCommandInstall: "Установить",
+		cliCommandRepair: "Исправить",
+		cliCommandRemove: "Удалить",
+		cliCommandClose: "Закрыть",
+		cliCommandSwitch: "Продолжить команду «UMA Studio»?",
+		cliCommandPreserve: "Существующая команда будет сохранена. Другие установки и файлы запуска оболочки не будут изменены.",
+		cliCommandContinue: "Продолжить",
+		cliCommandInstallApp: "Установите UMA Studio в папку «Приложения», прежде чем управлять командой uma.",
+		cliCommandUpdating: "Идет установка обновления. Управляйте командой после завершения установки.",
+		cliCommandNewTerminal: "Откройте новый терминал и запустите uma --version.",
+		cliCommandRemoved: "Регистрация команд UMA Studio удалена.",
+		cliCommandPreviousRestored: "Предыдущий лаунчер восстановлен.",
+		cliCommandOtherKept: "Остальные командные установки остались на месте.",
+		cliCommandBackupKept: "Предыдущий лаунчер сохранился по адресу: {path}.",
+		cliCommandChanged: "Команда или PATH изменилась, пока это диалоговое окно было открыто. Откройте команду «Управление uma» еще раз, чтобы просмотреть текущее состояние.",
+		cliCommandOwnershipError: "Регистрация команд или резервное копирование изменены. Ни одна несвязанная команда не была удалена.",
+		cliCommandFailed: "Не удалось обновить команду. Убедитесь, что приложение установлено и место назначения доступно для записи, затем повторите попытку.",
+		application: "Приложение",
+		fileMenu: "Файл",
+		closePage: "Закрыть страницу или окно",
+		aboutMenu: "О UMA Studio",
+		aboutProduct: "UMA Studio",
+		aboutDescription: "Рабочая среда для программирования с ИИ от UMA Studio.",
+		aboutUpstream: "На основе открытого ядра DeepSeek Harness (DSH).",
+		aboutSource: "Исходный код ядра",
+		aboutVersion: "Версия продукта {version}",
+		aboutKernel: "Версия ядра",
+		aboutChannel: "Канал обновлений",
+		aboutPlatform: "Платформа",
+		aboutDevelopment: "Версия для разработки",
+		aboutStable: "Стабильный",
+		aboutPreview: "Предварительный",
+		aboutUnavailable: "Недоступно",
+		aboutBuild: "Сборка продукта",
+		aboutModified: "Содержит локальные изменения",
+		aboutCopy: "Копировать сведения о версии",
+		aboutCopied: "Скопировано",
+		aboutWebsite: "Сайт UMA",
+		aboutLicense: "Лицензии открытого ПО",
+		aboutFullLicense: "Посмотреть полный текст лицензии",
+		hideApplication: "Скрыть UMA Studio",
+		hideOtherApplications: "Скрыть других",
+		showAllApplications: "Показать все",
+		substitutionsMenu: "Замены",
+		speechMenu: "Речь",
+		quitApplication: "Выйти из UMA Studio",
+		openApplication: "Открыть UMA Studio",
+		trayRunning: "Выполняется",
+		trayRecent: "Недавние беседы",
+		trayMore: "Ещё",
+		trayTeamWorking: "Команда UMA работает",
+		trayRoleWorking: "{roles} в работе",
+		trayRoles: {
+			pm: "Менеджер продукта",
+			architect: "Архитектор",
+			designer: "Дизайнер интерфейсов",
+			frontend: "Фронтенд-инженер",
+			backend: "Бэкенд-инженер",
+			qa: "Тестировщик",
+			reviewer: "Ревьюер кода",
+			security: "Инженер безопасности",
+			devops: "DevOps",
+			wiki: "Редактор Wiki"
+		},
+		trayUntitled: "Беседа без названия",
+		quit: "Выйти",
+		cancel: "Отмена",
+		quitTitle: "Выйти из UMA Studio?",
+		quitActiveTasks: "Выполнение задач будет прервано.",
+		quitScheduledTasks: "Запланированные задачи не будут выполняться, пока приложение закрыто.",
+		quitActiveAndScheduledTasks: "Выполнение задач будет прервано, а запланированные задачи не будут выполняться, пока приложение закрыто.",
+		backgroundNoticeBody: "Выполнение задач продолжится. Вы можете снова открыть окно из системного трея.",
+		backgroundNoticeConfirm: "Подтвердить",
+		edit: "Редактировать",
+		menuBar: "Меню приложения",
+		delete: "Удалить",
+		undo: "Отменить",
+		redo: "Повторить",
+		cut: "Вырезать",
+		copy: "Копировать",
+		paste: "Вставить",
+		selectAll: "Выбрать все",
+		startupFailed: "UMA Studio недоступен.",
+		fatalSummary: "Приложение не могло запуститься или неожиданно остановилось.",
+		startupAddressInUse: "Порт приложения занят. Закройте использующий его процесс и повторите попытку.",
+		diagnosticTruncated: "… Подробности об ошибках сокращены.",
+		reportWrittenTo: "Диагностический отчет: {path}",
+		getDiagnosticReport: "Получить диагностический отчет",
+		reportPending: "Диагностический отчет еще сохраняется. Выберите «Получить диагностический отчет», чтобы проверить еще раз.",
+		reportUnavailable: "Не удалось сохранить диагностический отчет. При обращении в службу поддержки можно приложить снимок экрана этого диалогового окна.",
+		reportShareHint: "Открыта папка с отчетом. Прикрепите выбранный файл к обращению в службу поддержки.",
+		reportRevealFailed: "Не удалось открыть папку с отчетом. Найдите файл по указанному ниже пути.",
+		startupReinstallAdvice: "Если файлы приложения отсутствуют или повреждены, закройте приложение и переустановите его. Ваши задачи хранятся отдельно.",
+		exitApplication: "Выход",
+		restartApplication: "Перезапустить",
+		recoveryOperationFailed: "Операция восстановления не удалась",
+		disableThirdPartyPlugins: "Отключите сторонние плагины, создайте резервную копию патча профиля и перезапустите.",
+		welcomeTitle: "UMA Studio",
+		welcomeBrand: "UMA Studio",
+		welcomeIntroTitle: "Создавайте качественное ПО быстрее",
+		welcomeIntroDescription: "Откройте локальную рабочую область и опишите результат. Uma подключит нужные инструменты в одном чате.",
+		welcomeIntroDesign: "Изучить дизайн",
+		welcomeIntroCode: "Разработать в проекте",
+		welcomeIntroDeliver: "Проверить и передать",
+		welcomeModelsTitle: "Как использовать модели",
+		welcomeHostedModels: "Модели UMA",
+		welcomeHostedDescription: "Войдите в аккаунт. Оплата списывается с баланса по опубликованному тарифу.",
+		welcomeCustomModels: "Пользовательские модели",
+		welcomeCustomDescription: "Подключите провайдера и ключ в настройках. Использование оплачивается провайдеру.",
+		welcomeLoginTitle: "Вход в UMA Studio",
+		welcomeLoginDescription: "Войдите в UMA для доступа к моделям и управления балансом.",
+		welcomeNext: "Далее",
+		welcomePrevious: "Назад",
+		welcomeSkipSignIn: "Войти позже",
+		welcomeAuthStarting: "Открытие входа в систему…",
+		welcomeAuthWaiting: "Браузер не открылся автоматически?",
+		welcomeAuthWaitingDescription: "Скопируйте ссылку для входа и откройте ее в браузере, чтобы войти.",
+		welcomeAuthExchanging: "Завершение входа…",
+		welcomeAuthExpired: "Время входа в систему истекло",
+		welcomeAuthExpiredDescription: "Войдите еще раз, чтобы продолжить",
+		welcomeAuthFailed: "Не удалось завершить вход. Повторите попытку.",
+		welcomeAuthCopyLink: "Скопировать ссылку для входа",
+		welcomeAuthCopied: "Скопировано",
+		welcomeAuthCopyFailed: "Не удалось скопировать. Попробуйте еще раз.",
+		welcomeAuthCancel: "Отмена",
+		welcomeAuthRetry: "Войдите снова",
+		welcomeSignIn: "Войти",
+		welcomeApiKey: "Добавить ключ API",
+		welcomeKeyTitle: "Добавьте ключ API, чтобы начать работу.",
+		welcomeKeyDescription: "Настройте официальные модели DeepSeek, чтобы начать использовать UMA Studio.",
+		welcomeKeyPlaceholder: "Введите ключ API",
+		welcomeKeySave: "Сохранить и продолжить",
+		welcomeKeyLater: "Настроить позже",
+		welcomeKeyBack: "Вернуться для входа в систему",
+		welcomeSessionExpired: "Вы вышли из своей учетной записи, пожалуйста, войдите снова.",
+		welcomeKeyBlank: "Введите ключ API.",
+		welcomeKeyInvalid: "Введите сам ключ API без кавычек, пробелов и присвоения переменной среды.",
+		welcomeKeyFailed: "Не удалось сохранить ключ API. Пожалуйста, попробуйте еще раз.",
+		welcomeContinueFailed: "Не удалось открыть рабочую область. Пожалуйста, попробуйте еще раз.",
+		checkUpdatesMenu: "Проверить наличие обновлений…",
+		reloadPageMenu: "Обновить страницу",
+		toggleDevToolsMenu: "Инструменты разработчика",
+		restartAppHostMenu: "Перезапустите приложение и хост.",
+		updateConfigurationFailed: "Не удалось применить настройки обновления. Исправьте файл и перезапустите приложение или выберите канал в настройках.",
+		updateConfigurationRead: "Ошибка файла настроек; обновления приостановлены",
+		updateConfigurationFormat: "Ошибка файла настроек; обновления приостановлены",
+		updateConfigurationChannel: "Ошибка файла настроек; обновления приостановлены",
+		updateConfigurationCleanup: "Обновления приостановлены: не удалось удалить предыдущее обновление; перезапустите приложение",
+		updateReloadSettings: "Перечитать настройки",
+		updateConfigurationDetails: "Проверить настройки",
+		updateShowSettingsFile: "Показать файл настроек",
+		updateCheckFailedTitle: "Проверка обновления не удалась",
+		updateCheckFailed: "Не удалось проверить наличие обновлений. Пожалуйста, повторите попытку позже.",
+		updateDownloadFailed: "Не удалось загрузить обновление. Пожалуйста, попробуйте еще раз.",
+		updateDownloadSpaceFailed: "Недостаточно места для загрузки обновления. Освободите место и повторите попытку.",
+		updateDownloadPermissionFailed: "Не удалось записать файлы обновления. Проверьте права доступа к папке и повторите попытку.",
+		updateDownloadBusyFailed: "Файл обновления занят. Закройте использующую его программу и повторите попытку.",
+		updateInstallFailed: "Не удалось установить обновление. Пожалуйста, повторите попытку позже.",
+		updateCheckNetworkFailed: "Не удалось проверить наличие обновлений. Проверьте подключение и повторите попытку.",
+		updateDownloadNetworkFailed: "Не удалось загрузить обновление. Проверьте подключение и повторите попытку.",
+		updateInstallNetworkFailed: "Не удалось установить обновление. Проверьте подключение и повторите попытку.",
+		unknownError: "Неизвестная ошибка",
+		updateCheckTitle: "Проверьте наличие обновлений",
+		updateCurrentDetail: "Текущая версия: {version}.",
+		updateCurrent: "У вас последняя версия.",
+		updateChecking: "Проверка обновлений…",
+		updateDownload: "Скачать обновление",
+		updateDownloadedTitle: "Версия {version} готова к установке.",
+		updateDownloadedDetail: "Приложение закроется во время обновления и автоматически откроется после его завершения.",
+		updateDownloadedDetailWindows: "Приложение временно закроется во время обновления и автоматически откроется после его завершения.\n\nОбновление может занять некоторое время. Пожалуйста, подождите и не запускайте приложение снова во время установки.",
+		updateClose: "Закрыть",
+		updateAcknowledge: "OK",
+		updateLater: "Обновить позже",
+		updateDownloadInProgress: "Загрузка обновления",
+		updateDownloadDetail: "Обновление загружается в фоновом режиме. Вы можете продолжать пользоваться приложением.",
+		updateDownloading: "Загрузка {percent}%…",
+		updateVerifying: "Проверка файлов обновлений…",
+		updateInstalling: "Подготовка к перезапуску…",
+		updateRetry: "Повторить обновление",
+		updateActiveTasks: "Задачи еще выполняются",
+		updateActiveTasksDetail: "Обновление остановит выполняемые задачи и перезапустит приложение. Продолжать?",
+		updateStopTasks: "Остановить задачи и обновить",
+		updateTasksChanged: "Начались новые задачи. Подтвердите еще раз, чтобы остановить выполнение задач и выполнить обновление.",
+		updateTasksUnavailable: "Статус задачи недоступен. Попробуйте обновить еще раз, когда рабочая область будет готова.",
+		updateInstallLocation: "Переместите UMA Studio в папку «Программы», откройте его снова и повторите попытку.",
+		updateFullscreenTimeout: "Не удалось выйти из полноэкранного режима. Выйдите из полноэкранного режима и повторите попытку обновления.",
+		updateStopFailed: "Не удалось безопасно остановить задачи. Обновление не установлено. Пожалуйста, повторите попытку позже.",
+		updateTechnicalDetails: "Посмотреть технические подробности",
+		updateTitle: "UMA Studio Обновление",
+		updateAvailable: "Доступна новая версия: {version}.",
+		updateDetail: "После завершения загрузки вы можете установить обновление и перезапустить приложение.",
+		installAndRestart: "Установить и перезапустить",
+		later: "Позже",
+		updateFailedTitle: "Обновление не выполнено",
+		mandatoryTitle: "Обновите, чтобы продолжить",
+		mandatoryDetail: "Эта версия больше не поддерживается. Обновите, чтобы продолжить. Выполняемые задачи будут продолжать выполняться до тех пор, пока вы не подтвердите установку и не перезапустите.",
+		mandatoryUnavailable: "Не удалось проверить требования к обновлению. Пожалуйста, повторите попытку позже.",
+		policyLoginTitle: "Войдите в тестовую среду",
+		policyLoginRequired: "Войдите в систему с помощью Feishu, чтобы проверить требования к обновлению для этой тестовой сборки. При входе в систему обновление не загружается и не устанавливается.",
+		policyLogin: "Войти через Feishu",
+		policyLoginFailed: "Вход в Feishu не завершен. Пожалуйста, попробуйте еще раз.",
+		policyLoginLoading: "Загрузка страницы входа…",
+		mandatoryNoRelease: "Совместимое обновление не найдено. Проверьте еще раз или обратитесь в службу поддержки.",
+		mandatoryRefresh: "Проверьте еще раз",
+		mandatoryPage: "Скачать с официального сайта",
+		mandatoryCopy: "Скопировать ссылку для скачивания",
+		mandatoryPageFailed: "Не удалось открыть официальную страницу загрузки. Скопируйте ссылку и откройте ее в браузере.",
+		mandatoryViewDownload: "Открыть страницу загрузки",
+		mandatoryViewPageFailed: "Не удалось открыть страницу загрузки. Пожалуйста, попробуйте еще раз.",
+		mandatoryActionFailed: "Не удалось выполнить действие. Повторите попытку. Вы сможете снова использовать приложение после завершения обновления.",
+		mandatoryReady: "Обновление готово",
+		mandatoryVersion: "Новая версия: {version}",
+		mandatoryReadyDetail: "Приложение закроется во время обновления и автоматически откроется после его завершения.",
+		mandatoryDeferred: "Выполняемые задачи будут продолжать выполняться. Завершите обновление, прежде чем снова использовать приложение.",
+		mandatoryContinue: "Продолжить обновление",
+		mandatoryInspecting: "Проверка задач…",
+		mandatoryStopping: "Остановка задач…",
+		mandatoryRestarting: "Приложение вскоре перезапустится. Пожалуйста, подождите.",
+		mandatoryDownloadFailed: "Файлы обновления не удалось загрузить или подготовить. Пожалуйста, повторите попытку.",
+		mandatoryInstallFailed: "Обновление не установлено. Проверьте задачи еще раз и повторите попытку.",
+		mandatoryOpenHelp: "Страница не открылась?",
+		mandatoryReopen: "Откройте официальную страницу загрузки еще раз.",
+		mandatoryCopied: "Ссылка скопирована",
+		mandatoryCopyFailed: "Не удалось скопировать ссылку. Выделите и скопируйте его ниже.",
+		mandatoryAddress: "Ссылка для скачивания",
+		mandatoryNotification: "Вернитесь в приложение, чтобы подтвердить установку и перезапустить."
+	},
+	pt: {
+		updateDevelopmentUnavailable: "Esta versão de desenvolvimento não oferece atualizações no aplicativo. Use um instalador publicado do UMA Studio.",
+		cliCommandMenu: "Gerenciar comando uma…",
+		macPermissionsMenu: "Permissões do macOS",
+		operationsMenu: "Operações UMA",
+		macMicrophonePermission: "Microfone",
+		macAccessibilityPermission: "Acessibilidade",
+		macScreenRecordingPermission: "Gravação da tela e do áudio do sistema",
+		macPermissionSettingsUnavailable: "Abra Ajustes do Sistema e depois Privacidade e Segurança para gerenciar esta permissão.",
+		cliCommandTitle: "Gerenciar comando uma",
+		cliCommandLocation: "Comando da área de trabalho: {path}",
+		cliCommandSelected: "Comando uma atual: {path}",
+		cliCommandTarget: "Alvo atual do iniciador: {path}",
+		cliCommandShadowed: "Outro uma tem precedência. Remova ou reordene essa instalação para usar o comando UMA Studio por padrão. Você também pode executar o comando UMA Studio pelo caminho completo.",
+		cliCommandSelectionUnknown: "Seu comando shell não pôde ser verificado. Um alias ou outra instalação do uma pode ter precedência.",
+		cliCommandInstalled: "O comando UMA Studio está instalado.",
+		cliCommandNotInstalled: "Adicione o comando UMA Studio ao seu terminal.",
+		cliCommandBroken: "O comando UMA Studio precisa de reparo.",
+		cliCommandInstall: "Instalar",
+		cliCommandRepair: "Reparar",
+		cliCommandRemove: "Remover",
+		cliCommandClose: "Fechar",
+		cliCommandSwitch: "Continuar com o comando UMA Studio?",
+		cliCommandPreserve: "Um comando existente será preservado. Outras instalações e arquivos de inicialização do shell não serão alterados.",
+		cliCommandContinue: "Continuar",
+		cliCommandInstallApp: "Instale o UMA Studio na pasta Aplicativos antes de gerenciar o comando uma.",
+		cliCommandUpdating: "Uma atualização está sendo instalada. Gerencie o comando após a conclusão da instalação.",
+		cliCommandNewTerminal: "Abra um novo terminal e execute uma --version.",
+		cliCommandRemoved: "Registro de comando da área de trabalho removido.",
+		cliCommandPreviousRestored: "O inicializador anterior foi restaurado.",
+		cliCommandOtherKept: "Outras instalações de comando foram mantidas.",
+		cliCommandBackupKept: "Um inicializador anterior é preservado em: {path}",
+		cliCommandChanged: "O comando ou PATH foi alterado enquanto esta caixa de diálogo estava aberta. Abra o comando Gerenciar uma novamente para revisar o estado atual.",
+		cliCommandOwnershipError: "O registro ou backup do comando foi alterado. Nenhum comando não relacionado foi removido.",
+		cliCommandFailed: "O comando não pôde ser atualizado. Verifique se o aplicativo está instalado e se o destino é gravável e tente novamente.",
+		application: "Aplicativo",
+		fileMenu: "Arquivo",
+		closePage: "Fechar página ou janela",
+		aboutMenu: "Sobre UMA Studio",
+		aboutProduct: "UMA Studio",
+		aboutDescription: "Um espaço de programação com IA da UMA Studio.",
+		aboutUpstream: "Baseado no núcleo de código aberto DeepSeek Harness (DSH).",
+		aboutSource: "Código do núcleo",
+		aboutVersion: "Versão do produto {version}",
+		aboutKernel: "Versão do núcleo",
+		aboutChannel: "Canal de atualização",
+		aboutPlatform: "Plataforma",
+		aboutDevelopment: "Prévia de desenvolvimento",
+		aboutStable: "Estável",
+		aboutPreview: "Prévia",
+		aboutUnavailable: "Indisponível",
+		aboutBuild: "Compilação do produto",
+		aboutModified: "Inclui alterações locais",
+		aboutCopy: "Copiar informações da versão",
+		aboutCopied: "Copiado",
+		aboutWebsite: "Site UMA",
+		aboutLicense: "Licenças de código aberto",
+		aboutFullLicense: "Ver licença completa",
+		hideApplication: "Ocultar UMA Studio",
+		hideOtherApplications: "Ocultar outros",
+		showAllApplications: "Mostrar tudo",
+		substitutionsMenu: "Substituições",
+		speechMenu: "Fala",
+		quitApplication: "Sair de UMA Studio",
+		openApplication: "Abra UMA Studio",
+		trayRunning: "Em execução",
+		trayRecent: "Conversas recentes",
+		trayMore: "Mais",
+		trayTeamWorking: "A equipe UMA está trabalhando",
+		trayRoleWorking: "{roles} em atividade",
+		trayRoles: {
+			pm: "Gerente de produto",
+			architect: "Arquitetura",
+			designer: "Design de interface",
+			frontend: "Engenharia frontend",
+			backend: "Engenharia backend",
+			qa: "Controle de qualidade",
+			reviewer: "Revisão de código",
+			security: "Segurança",
+			devops: "DevOps",
+			wiki: "Manutenção da Wiki"
+		},
+		trayUntitled: "Conversa sem título",
+		quit: "Sair",
+		cancel: "Cancelar",
+		quitTitle: "Sair de UMA Studio?",
+		quitActiveTasks: "As tarefas em execução serão interrompidas.",
+		quitScheduledTasks: "As tarefas agendadas não serão executadas enquanto o aplicativo estiver fechado.",
+		quitActiveAndScheduledTasks: "As tarefas em execução serão interrompidas e as tarefas agendadas não serão executadas enquanto o aplicativo estiver fechado.",
+		backgroundNoticeBody: "As tarefas em execução continuarão. Você pode reabrir a janela na bandeja do sistema.",
+		backgroundNoticeConfirm: "Confirmar",
+		edit: "Editar",
+		menuBar: "Menu de aplicativos",
+		delete: "Excluir",
+		undo: "Desfazer",
+		redo: "Refazer",
+		cut: "Cortar",
+		copy: "Copiar",
+		paste: "Colar",
+		selectAll: "Selecionar tudo",
+		startupFailed: "UMA Studio não está disponível",
+		fatalSummary: "O aplicativo não pôde ser iniciado ou parou inesperadamente.",
+		startupAddressInUse: "A porta do aplicativo está em uso. Feche o processo que a utiliza e tente novamente.",
+		diagnosticTruncated: "… Detalhes do erro reduzidos.",
+		reportWrittenTo: "Relatório de diagnóstico: {path}",
+		getDiagnosticReport: "Obter relatório de diagnóstico",
+		reportPending: "O relatório de diagnóstico ainda está sendo salvo. Selecione Obter relatório de diagnóstico para verificar novamente.",
+		reportUnavailable: "Não foi possível salvar o relatório de diagnóstico. Você pode fornecer uma captura de tela desta caixa de diálogo ao solicitar suporte.",
+		reportShareHint: "O local do relatório foi aberto. Anexe o arquivo selecionado à sua solicitação de suporte.",
+		reportRevealFailed: "Não foi possível abrir o local do relatório. Use o caminho abaixo para encontrar o arquivo.",
+		startupReinstallAdvice: "Se os arquivos do aplicativo estiverem ausentes ou danificados, feche o aplicativo e reinstale-o. Suas tarefas são armazenadas separadamente.",
+		exitApplication: "Sair",
+		restartApplication: "Reiniciar",
+		recoveryOperationFailed: "A operação de recuperação falhou",
+		disableThirdPartyPlugins: "Desative plug-ins de terceiros, faça backup do patch do perfil e reinicie",
+		welcomeTitle: "UMA Studio",
+		welcomeBrand: "UMA Studio",
+		welcomeIntroTitle: "Crie bons softwares mais rápido",
+		welcomeIntroDescription: "Abra um espaço de trabalho local e descreva o resultado. Uma usa as ferramentas necessárias na mesma conversa.",
+		welcomeIntroDesign: "Explorar um design",
+		welcomeIntroCode: "Desenvolver no projeto",
+		welcomeIntroDeliver: "Verificar e entregar",
+		welcomeModelsTitle: "Escolha como usar modelos",
+		welcomeHostedModels: "Modelos hospedados pela UMA",
+		welcomeHostedDescription: "Entre na conta e pague as tarifas publicadas usando seu saldo.",
+		welcomeCustomModels: "Modelos personalizados",
+		welcomeCustomDescription: "Conecte seu provedor e sua chave nos ajustes. A cobrança é feita pelo provedor.",
+		welcomeLoginTitle: "Entre no UMA Studio",
+		welcomeLoginDescription: "Use sua conta UMA para acessar os modelos e gerenciar seu saldo.",
+		welcomeNext: "Avançar",
+		welcomePrevious: "Voltar",
+		welcomeSkipSignIn: "Entrar mais tarde",
+		welcomeAuthStarting: "Abrindo login…",
+		welcomeAuthWaiting: "O navegador não abriu automaticamente?",
+		welcomeAuthWaitingDescription: "Copie o link de login e abra-o em seu navegador para fazer login.",
+		welcomeAuthExchanging: "Concluindo login…",
+		welcomeAuthExpired: "O tempo limite de login expirou",
+		welcomeAuthExpiredDescription: "Faça login novamente para continuar",
+		welcomeAuthFailed: "Não foi possível concluir o login. Tente novamente.",
+		welcomeAuthCopyLink: "Copiar link de login",
+		welcomeAuthCopied: "Copiado",
+		welcomeAuthCopyFailed: "Não foi possível copiar. Tente novamente.",
+		welcomeAuthCancel: "Cancelar",
+		welcomeAuthRetry: "Faça login novamente",
+		welcomeSignIn: "Faça login",
+		welcomeApiKey: "Adicionar chave API",
+		welcomeKeyTitle: "Adicione uma chave API para começar",
+		welcomeKeyDescription: "Configure modelos DeepSeek oficiais para começar a usar o UMA Studio",
+		welcomeKeyPlaceholder: "Insira a chave de API",
+		welcomeKeySave: "Salvar e continuar",
+		welcomeKeyLater: "Configurar mais tarde",
+		welcomeKeyBack: "Voltar para fazer login",
+		welcomeSessionExpired: "Você saiu da sua conta, faça login novamente.",
+		welcomeKeyBlank: "Insira uma chave API.",
+		welcomeKeyInvalid: "Insira a própria chave API, sem aspas, espaços ou atribuição de variável de ambiente.",
+		welcomeKeyFailed: "Não foi possível salvar a chave API. Por favor, tente novamente.",
+		welcomeContinueFailed: "Não foi possível abrir o espaço de trabalho. Por favor, tente novamente.",
+		checkUpdatesMenu: "Verifique se há atualizações…",
+		reloadPageMenu: "Recarregar página",
+		toggleDevToolsMenu: "Ferramentas do desenvolvedor",
+		restartAppHostMenu: "Reinicie o aplicativo e o host",
+		updateConfigurationFailed: "Não foi possível aplicar as configurações de atualização. Corrija o arquivo e reinicie, ou selecione um canal nas configurações.",
+		updateConfigurationRead: "Erro no arquivo de configurações; atualizações pausadas",
+		updateConfigurationFormat: "Erro no arquivo de configurações; atualizações pausadas",
+		updateConfigurationChannel: "Erro no arquivo de configurações; atualizações pausadas",
+		updateConfigurationCleanup: "Atualizações pausadas: não foi possível descartar a atualização anterior; reinicie o aplicativo",
+		updateReloadSettings: "Recarregar configurações",
+		updateConfigurationDetails: "Verificar configurações",
+		updateShowSettingsFile: "Mostrar arquivo de configurações",
+		updateCheckFailedTitle: "Falha na verificação de atualização",
+		updateCheckFailed: "Não foi possível verificar se há atualizações. Por favor, tente novamente mais tarde.",
+		updateDownloadFailed: "Não foi possível baixar a atualização. Por favor, tente novamente.",
+		updateDownloadSpaceFailed: "Não há espaço suficiente para baixar a atualização. Libere espaço e tente novamente.",
+		updateDownloadPermissionFailed: "Não foi possível gravar os arquivos de atualização. Verifique as permissões da pasta e tente novamente.",
+		updateDownloadBusyFailed: "Um arquivo de atualização está em uso. Feche o programa que o utiliza e tente novamente.",
+		updateInstallFailed: "Não foi possível instalar a atualização. Por favor, tente novamente mais tarde.",
+		updateCheckNetworkFailed: "Não foi possível verificar se há atualizações. Verifique sua conexão e tente novamente.",
+		updateDownloadNetworkFailed: "Não foi possível baixar a atualização. Verifique sua conexão e tente novamente.",
+		updateInstallNetworkFailed: "Não foi possível instalar a atualização. Verifique sua conexão e tente novamente.",
+		unknownError: "Erro desconhecido",
+		updateCheckTitle: "Verifique se há atualizações",
+		updateCurrentDetail: "Versão atual: {version}",
+		updateCurrent: "Você está atualizado!",
+		updateChecking: "Verificando atualizações…",
+		updateDownload: "Baixar atualização",
+		updateDownloadedTitle: "A versão {version} está pronta para instalação",
+		updateDownloadedDetail: "O aplicativo será fechado durante a atualização e reaberto automaticamente quando for concluída.",
+		updateDownloadedDetailWindows: "O aplicativo será fechado temporariamente durante a atualização e reaberto automaticamente quando for concluída.\n\nA atualização pode levar algum tempo. Aguarde e não inicie o aplicativo novamente durante a instalação.",
+		updateClose: "Fechar",
+		updateAcknowledge: "OK",
+		updateLater: "Atualizar mais tarde",
+		updateDownloadInProgress: "Baixando atualização",
+		updateDownloadDetail: "A atualização está sendo baixada em segundo plano. Você pode continuar usando o aplicativo.",
+		updateDownloading: "Baixando {percent}%…",
+		updateVerifying: "Verificando arquivos de atualização…",
+		updateInstalling: "Preparando para reiniciar…",
+		updateRetry: "Tentar atualizar novamente",
+		updateActiveTasks: "As tarefas ainda estão em andamento",
+		updateActiveTasksDetail: "A atualização interromperá as tarefas em andamento e reiniciará o aplicativo. Continuar?",
+		updateStopTasks: "Pare tarefas e atualize",
+		updateTasksChanged: "Novas tarefas foram iniciadas. Confirme novamente para interromper as tarefas e atualizar.",
+		updateTasksUnavailable: "O status da tarefa não está disponível. Tente atualizar novamente quando o espaço de trabalho estiver pronto.",
+		updateInstallLocation: "Mova o UMA Studio para a pasta Aplicativos, abra-o novamente e tente atualizar.",
+		updateFullscreenTimeout: "Não foi possível sair da tela cheia. Saia da tela inteira e tente atualizar novamente.",
+		updateStopFailed: "Não foi possível interromper as tarefas com segurança. A atualização não foi instalada. Por favor, tente novamente mais tarde.",
+		updateTechnicalDetails: "Ver detalhes técnicos",
+		updateTitle: "UMA Studio Atualização",
+		updateAvailable: "Nova versão disponível: {version}",
+		updateDetail: "Assim que o download for concluído, você pode instalar a atualização e reiniciar o aplicativo.",
+		installAndRestart: "Instalar e reiniciar",
+		later: "Mais tarde",
+		updateFailedTitle: "Falha na atualização",
+		mandatoryTitle: "Atualizar para continuar",
+		mandatoryDetail: "Esta versão não é mais suportada. Atualize para continuar. As tarefas em andamento continuarão em execução até você confirmar a instalação e reiniciar.",
+		mandatoryUnavailable: "Não foi possível verificar os requisitos de atualização. Por favor, tente novamente mais tarde.",
+		policyLoginTitle: "Faça login no ambiente de teste",
+		policyLoginRequired: "Faça login com Feishu para verificar os requisitos de atualização para esta versão de teste. O login não baixará nem instalará uma atualização.",
+		policyLogin: "Faça login com Feishu",
+		policyLoginFailed: "O login do Feishu não foi concluído. Por favor, tente novamente.",
+		policyLoginLoading: "Carregando página de login…",
+		mandatoryNoRelease: "Nenhuma atualização compatível foi encontrada. Verifique novamente ou entre em contato com o suporte.",
+		mandatoryRefresh: "Verifique novamente",
+		mandatoryPage: "Baixe do site oficial",
+		mandatoryCopy: "Copiar link de download",
+		mandatoryPageFailed: "Não foi possível abrir a página oficial de download. Copie o link e abra-o no seu navegador.",
+		mandatoryViewDownload: "Abrir página de download",
+		mandatoryViewPageFailed: "Não foi possível abrir a página de download. Por favor, tente novamente.",
+		mandatoryActionFailed: "A ação falhou. Por favor, tente novamente. Você poderá usar o aplicativo novamente após a conclusão da atualização.",
+		mandatoryReady: "Atualização pronta",
+		mandatoryVersion: "Nova versão: {version}",
+		mandatoryReadyDetail: "O aplicativo será fechado durante a atualização e reaberto automaticamente quando for concluída.",
+		mandatoryDeferred: "As tarefas em andamento continuarão em execução. Conclua a atualização antes de usar o aplicativo novamente.",
+		mandatoryContinue: "Continuar atualização",
+		mandatoryInspecting: "Verificando tarefas…",
+		mandatoryStopping: "Parando tarefas…",
+		mandatoryRestarting: "O aplicativo será reiniciado em breve. Por favor, aguarde.",
+		mandatoryDownloadFailed: "Os arquivos de atualização não puderam ser baixados ou preparados. Por favor, tente novamente.",
+		mandatoryInstallFailed: "A atualização não foi instalada. Verifique as tarefas novamente e tente novamente.",
+		mandatoryOpenHelp: "A página não abriu?",
+		mandatoryReopen: "Abra a página oficial de download novamente",
+		mandatoryCopied: "Link copiado",
+		mandatoryCopyFailed: "Não foi possível copiar o link. Selecione e copie abaixo.",
+		mandatoryAddress: "Link de download",
+		mandatoryNotification: "Retorne ao aplicativo para confirmar a instalação e reinicie."
+	}
+};
+/** Resolve Electron's locale to one shipped Desktop dictionary. */
+function resolveDesktopLocale(locale) {
+	const primary = locale.toLowerCase().split("-")[0];
+	if (primary !== void 0 && Object.hasOwn(dictionaries, primary)) {
+		const id = primary;
+		return {
+			id: id === "zh" ? "zh-CN" : id,
+			messages: dictionaries[id]
+		};
+	}
+	return {
+		id: "en",
+		messages: en
+	};
+}
+//#endregion
+//#region lib/types/preload-menu.js
+/** Windows caption menu labels and native popup anchors, isolated from the Web client. */
+/**
+* Mount the Windows caption menubar without moving focus out of the active editor.
+* @returns Language refresh and document teardown operations.
+*/
+function installWindowsMenu() {
+	const host = document.createElement("div");
+	host.dataset.windowsMenu = "";
+	const shadow = host.attachShadow({ mode: "open" });
+	const style = document.createElement("style");
+	style.textContent = `
+    :host { position: fixed; top: 0; left: var(--dsh-windows-menu-start, 48px); z-index: 1100;
+      height: var(--dsh-windows-titlebar-height); display: flex; align-items: center;
+      font-family: var(--dsw-font-family); -webkit-app-region: no-drag; }
+    [role=menubar] { display: flex; gap: 2px; }
+    button { height: 28px; padding: 0 10px; border: 0; border-radius: 6px;
+      background: transparent; color: var(--dsw-alias-label-secondary);
+      font: inherit; font-size: 14px; cursor: default; }
+    button:hover, button[aria-expanded=true] { background: var(--dsw-alias-interactive-bg-hover);
+      color: var(--dsw-alias-label-primary); }
+    button:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: -2px; }
+    :host-context(html[data-input-modality='pointer']) button:focus-visible { outline-color: transparent; }
+  `;
+	const bar = document.createElement("div");
+	bar.setAttribute("role", "menubar");
+	let restoreEditor = () => {};
+	const rememberEditor = (event) => {
+		const target = event.composedPath()[0];
+		if (!(target instanceof HTMLElement) || target === host || shadow.contains(target)) return;
+		if (!(target instanceof HTMLInputElement) && !(target instanceof HTMLTextAreaElement) && !target.matches("[contenteditable=\"true\"]")) return;
+		const selection = document.getSelection();
+		const ranges = selection === null ? [] : Array.from({ length: selection.rangeCount }, (_, i) => selection.getRangeAt(i).cloneRange());
+		const input = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement ? target : void 0;
+		const start = input?.selectionStart;
+		const end = input?.selectionEnd;
+		const direction = input?.selectionDirection;
+		restoreEditor = () => {
+			if (!target.isConnected) return;
+			target.focus({ preventScroll: true });
+			if (input !== void 0 && start != null && end != null) input.setSelectionRange(start, end, direction ?? void 0);
+			else if (selection !== null && ranges.length > 0) {
+				selection.removeAllRanges();
+				for (const range of ranges) selection.addRange(range);
+			}
+		};
+	};
+	document.addEventListener("focusout", rememberEditor, true);
+	const createButton = (name, index) => {
+		const button = document.createElement("button");
+		button.type = "button";
+		button.setAttribute("role", "menuitem");
+		button.setAttribute("aria-haspopup", "menu");
+		button.setAttribute("aria-expanded", "false");
+		button.tabIndex = index === 0 ? 0 : -1;
+		button.addEventListener("pointerdown", (event) => {
+			event.preventDefault();
+		});
+		button.addEventListener("mousedown", (event) => {
+			event.preventDefault();
+		});
+		const open = async () => {
+			if (button.getAttribute("aria-expanded") === "true") return;
+			const rect = button.getBoundingClientRect();
+			button.setAttribute("aria-expanded", "true");
+			if (document.activeElement === host) restoreEditor();
+			try {
+				await electron.ipcRenderer.invoke(DESKTOP_IPC.windowsMenu, name, rect.left, rect.bottom);
+			} catch (error) {
+				console.error("Desktop caption menu failed", error);
+			} finally {
+				button.setAttribute("aria-expanded", "false");
+			}
+		};
+		button.addEventListener("click", () => {
+			open();
+		});
+		button.addEventListener("keydown", (event) => {
+			if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+				event.preventDefault();
+				const next = buttons[index === 0 ? 1 : 0];
+				button.tabIndex = -1;
+				next.tabIndex = 0;
+				next.focus();
+			} else if (event.key === "ArrowDown") {
+				event.preventDefault();
+				open();
+			}
+		});
+		bar.append(button);
+		return button;
+	};
+	const buttons = [createButton("application", 0), createButton("edit", 1)];
+	shadow.append(style, bar);
+	const mount = () => {
+		if (document.querySelector("[data-shell-overlay]") === null) return;
+		document.body.append(host);
+		observer.disconnect();
+	};
+	const observer = new MutationObserver(mount);
+	observer.observe(document.body, {
+		childList: true,
+		subtree: true
+	});
+	mount();
+	const update = () => {
+		const { messages } = resolveDesktopLocale(document.documentElement.lang);
+		bar.setAttribute("aria-label", messages.menuBar);
+		buttons[0].textContent = messages.application;
+		buttons[1].textContent = messages.edit;
+	};
+	update();
+	return {
+		update,
+		dispose: () => {
+			observer.disconnect();
+			document.removeEventListener("focusout", rememberEditor, true);
+			host.remove();
+		}
+	};
+}
+//#endregion
+//#region lib/types/preload-windows.js
+/** Synchronizes Windows context menus and caption colors with the application document. */
+/** Install the Windows-only titlebar marker and observe application language and palette changes. */
+function syncWindowsAppearance() {
+	if (process.platform !== "win32") return;
+	const mark = () => {
+		const root = document.documentElement;
+		root.dataset.windowsTitlebar = "";
+		root.style.setProperty("--dsh-windows-titlebar-height", `40px`);
+	};
+	if (document.documentElement !== null) mark();
+	const install = () => {
+		mark();
+		const root = document.documentElement;
+		const menu = installWindowsMenu();
+		const probe = document.createElement("span");
+		probe.style.cssText = "position:fixed;visibility:hidden;pointer-events:none;background-color:var(--dsw-specific-sidebar-fill);color:var(--dsw-alias-label-primary)";
+		document.body.append(probe);
+		const canvas = document.createElement("canvas");
+		canvas.width = canvas.height = 1;
+		const context = canvas.getContext("2d", { willReadFrequently: true });
+		if (context === null) throw new Error("Desktop caption requires a 2D canvas context");
+		const nativeColor = (color) => {
+			context.clearRect(0, 0, 1, 1);
+			context.fillStyle = color;
+			context.fillRect(0, 0, 1, 1);
+			const [red, green, blue, alpha] = context.getImageData(0, 0, 1, 1).data;
+			return `rgba(${red}, ${green}, ${blue}, ${Number(alpha) / 255})`;
+		};
+		let previous = "";
+		const send = () => {
+			const style = getComputedStyle(probe);
+			const color = nativeColor(style.backgroundColor);
+			const symbolColor = nativeColor(style.color);
+			const values = [
+				root.lang,
+				color,
+				symbolColor
+			];
+			const current = JSON.stringify(values);
+			if (current === previous) return;
+			previous = current;
+			menu.update();
+			electron.ipcRenderer.send(DESKTOP_IPC.windowsAppearance, ...values);
+		};
+		const observer = new MutationObserver(send);
+		observer.observe(root, {
+			attributes: true,
+			attributeFilter: ["lang"]
+		});
+		observer.observe(document.body, {
+			attributes: true,
+			attributeFilter: ["data-ds-dark-theme", "style"]
+		});
+		observer.observe(document.head, {
+			childList: true,
+			subtree: true,
+			characterData: true
+		});
+		document.head.addEventListener("load", send, true);
+		window.addEventListener("pagehide", () => {
+			observer.disconnect();
+			menu.dispose();
+			probe.remove();
+			document.head.removeEventListener("load", send, true);
+		}, { once: true });
+		send();
+	};
+	if (document.readyState === "loading") window.addEventListener("DOMContentLoaded", install, { once: true });
+	else install();
+}
+//#endregion
+//#region lib/types/mandatory-update-ipc.js
+/** Dependency-free IPC names shared with the sandboxed mandatory-update preload. */
+const MANDATORY_IPC = {
+	status: "dsh-desktop:mandatory-status",
+	state: "dsh-desktop:mandatory-state",
+	action: "dsh-desktop:mandatory-action"
+};
+//#endregion
+//#region lib/types/preload-mandatory-overlay.js
+/** Mounts the shell-owned Windows update document inside the main window's content area. */
+/** Keep update actions on a private channel to the shell frame; the shared product DOM is not a tamper-proof display. */
+function installMandatoryUpdateOverlay() {
+	let disposed = false;
+	let state;
+	let host;
+	let frame;
+	let port;
+	let closing;
+	const publish = () => {
+		port?.postMessage({
+			type: "dsh-mandatory-state",
+			state
+		});
+	};
+	const remove = () => {
+		port?.close();
+		port = void 0;
+		host?.remove();
+		host = void 0;
+		frame = void 0;
+	};
+	const render = () => {
+		if (state === void 0 || document.readyState === "loading") return;
+		if (!state.policy.blocking) {
+			if (frame === void 0 || closing !== void 0) return;
+			publish();
+			closing = setTimeout(remove, 150);
+			return;
+		}
+		clearTimeout(closing);
+		closing = void 0;
+		if (frame === void 0) {
+			host = document.createElement("div");
+			host.style.cssText = `position:fixed;top:40px;left:0;right:0;bottom:0;z-index:2147483647`;
+			const shadow = host.attachShadow({ mode: "closed" });
+			frame = document.createElement("iframe");
+			frame.title = state.locale.messages.mandatoryTitle;
+			frame.style.cssText = "display:block;width:100%;height:100%;border:0;background:transparent";
+			frame.src = "uma-app://shell/mandatory-update.html";
+			shadow.append(frame);
+			document.documentElement.append(host);
+			frame.addEventListener("load", () => {
+				port?.close();
+				const channel = new MessageChannel();
+				port = channel.port1;
+				port.onmessage = message;
+				frame?.contentWindow?.postMessage({ type: "dsh-mandatory-connect" }, "uma-app://shell", [channel.port2]);
+				publish();
+				frame?.focus();
+			});
+		}
+		publish();
+	};
+	const receive = (_event, next) => {
+		state = next;
+		render();
+	};
+	const message = (event) => {
+		const value = event.data;
+		if (typeof value !== "object" || value === null || !("type" in value)) return;
+		if (value.type !== "dsh-mandatory-action" || !("id" in value) || !Number.isSafeInteger(value.id) || !("action" in value) || !("version" in value) || !("revision" in value)) return;
+		const target = port;
+		if (target === void 0) return;
+		electron.ipcRenderer.invoke(MANDATORY_IPC.action, value.action, value.version, value.revision).then(() => {
+			target.postMessage({
+				type: "dsh-mandatory-result",
+				id: value.id,
+				ok: true
+			});
+		}, () => {
+			target.postMessage({
+				type: "dsh-mandatory-result",
+				id: value.id,
+				ok: false
+			});
+		});
+	};
+	const blockBackgroundKey = (event) => {
+		if (frame === void 0 || state?.policy.blocking !== true || event.composedPath().some((target) => target instanceof HTMLElement && target.hasAttribute("data-windows-menu"))) return;
+		event.preventDefault();
+		event.stopImmediatePropagation();
+		frame.focus();
+	};
+	electron.ipcRenderer.on(MANDATORY_IPC.state, receive);
+	electron.ipcRenderer.invoke(MANDATORY_IPC.status).then((initial) => {
+		if (!disposed && state === void 0) {
+			state = initial;
+			render();
+		}
+	}, () => {});
+	window.addEventListener("keydown", blockBackgroundKey, true);
+	window.addEventListener("DOMContentLoaded", render, { once: true });
+	window.addEventListener("pagehide", () => {
+		disposed = true;
+		clearTimeout(closing);
+		remove();
+		electron.ipcRenderer.off(MANDATORY_IPC.state, receive);
+		window.removeEventListener("keydown", blockBackgroundKey, true);
+		window.removeEventListener("DOMContentLoaded", render);
+	}, { once: true });
+}
+//#endregion
+//#region lib/types/preload-browser.js
+/** Lease-scoped browser operations and one main-process event subscription per window. */
+/** @returns browser operations that expose neither IPC nor Electron objects. */
+function createDesktopBrowserBridge() {
+	const listeners = /* @__PURE__ */ new Map();
+	electron.ipcRenderer.on(DESKTOP_IPC.browserOpenRequested, (_event, request) => {
+		if (typeof request !== "object" || request === null || !("lease" in request) || !("url" in request) || typeof request.lease !== "string" || typeof request.url !== "string") return;
+		const callbacks = listeners.get(request.lease);
+		if (callbacks === void 0) return;
+		for (const callback of [...callbacks]) try {
+			callback(request.url);
+		} catch (error) {
+			console.error("Desktop browser link handler failed", error);
+		}
+	});
+	return {
+		acquire: (workspace) => electron.ipcRenderer.invoke(DESKTOP_IPC.browserAcquire, workspace),
+		release: (lease) => electron.ipcRenderer.invoke(DESKTOP_IPC.browserRelease, lease),
+		onOpenRequested(lease, listener) {
+			let callbacks = listeners.get(lease);
+			if (callbacks === void 0) {
+				callbacks = /* @__PURE__ */ new Set();
+				listeners.set(lease, callbacks);
+			}
+			callbacks.add(listener);
+			return () => {
+				callbacks.delete(listener);
+				if (callbacks.size === 0 && listeners.get(lease) === callbacks) listeners.delete(lease);
+			};
+		}
+	};
+}
+//#endregion
+//#region lib/types/preload-app.js
+function createProductApi() {
+	return {
+		protocolVersion: 1,
+		fileActions: {
+			save: (request) => electron.ipcRenderer.invoke(DESKTOP_IPC.fileSave, request),
+			readClipboardImage: (url) => electron.ipcRenderer.invoke(DESKTOP_IPC.clipboardImageRead, url)
+		},
+		browser: createDesktopBrowserBridge(),
+		fileDrag: {
+			prepare: (source, requestId) => electron.ipcRenderer.invoke(DESKTOP_IPC.fileDragPrepare, source, requestId),
+			cancel: (requestId) => {
+				electron.ipcRenderer.invoke(DESKTOP_IPC.fileDragCancel, requestId).catch((_error) => {});
+			},
+			start: (handle) => electron.ipcRenderer.invoke(DESKTOP_IPC.fileDragStart, handle),
+			release: (handle) => {
+				electron.ipcRenderer.invoke(DESKTOP_IPC.fileDragRelease, handle).catch((_error) => {});
+			}
+		},
+		deviceInfo: () => electron.ipcRenderer.invoke(DESKTOP_IPC.deviceInfo),
+		keyboard: {
+			closeWindow: (revision) => electron.ipcRenderer.invoke(DESKTOP_IPC.shortcutsCloseWindow, revision),
+			subscribe: (listener) => {
+				const handle = (_event, input) => {
+					if (input.kind === "iframe") {
+						const element = document.activeElement;
+						if (!(element instanceof HTMLIFrameElement) || !element.isConnected || !element.matches("iframe[data-sidebar-browser-frame], iframe[data-html-preview]")) return;
+						if (input.frameName === "" || element.name !== input.frameName) return;
+					}
+					if (input.kind === "webview") {
+						const element = document.activeElement;
+						if (element?.matches("webview[data-sidebar-browser-frame]") !== true || !element.isConnected || input.frameName === "" || element.getAttribute("name") !== input.frameName) return;
+					}
+					listener(input);
+				};
+				electron.ipcRenderer.on(DESKTOP_IPC.shortcutsInput, handle);
+				return () => {
+					electron.ipcRenderer.off(DESKTOP_IPC.shortcutsInput, handle);
+				};
+			}
+		},
+		shortcuts: {
+			get: (definitions) => electron.ipcRenderer.invoke(DESKTOP_IPC.shortcutsGet, definitions),
+			edit: (edit, revision) => electron.ipcRenderer.invoke(DESKTOP_IPC.shortcutsEdit, edit, revision),
+			recording: (active) => electron.ipcRenderer.invoke(DESKTOP_IPC.shortcutsRecording, active),
+			subscribe(listener) {
+				const handle = (_event, snapshot) => {
+					listener(snapshot);
+				};
+				electron.ipcRenderer.on(DESKTOP_IPC.shortcutsChanged, handle);
+				return () => {
+					electron.ipcRenderer.off(DESKTOP_IPC.shortcutsChanged, handle);
+				};
+			}
+		},
+		...process.platform === "darwin" ? { tray: {
+			publish: (items) => electron.ipcRenderer.invoke(DESKTOP_IPC.trayPublish, items),
+			subscribe(listener) {
+				const handle = (_event, id) => {
+					listener(id);
+				};
+				electron.ipcRenderer.on(DESKTOP_IPC.trayNavigate, handle);
+				return () => {
+					electron.ipcRenderer.off(DESKTOP_IPC.trayNavigate, handle);
+				};
+			}
+		} } : {},
+		updates: {
+			currentVersion: () => electron.ipcRenderer.invoke(DESKTOP_IPC.productVersion),
+			channels: {
+				get: () => electron.ipcRenderer.invoke(DESKTOP_IPC.updatesChannelGet),
+				set: (channel) => electron.ipcRenderer.invoke(DESKTOP_IPC.updatesChannelSet, channel),
+				subscribe(listener) {
+					const handle = (_event, state) => {
+						listener(state);
+					};
+					electron.ipcRenderer.on(DESKTOP_IPC.updatesChannelChanged, handle);
+					return () => {
+						electron.ipcRenderer.off(DESKTOP_IPC.updatesChannelChanged, handle);
+					};
+				}
+			},
+			status: () => electron.ipcRenderer.invoke(DESKTOP_IPC.updatesStatus),
+			open: () => electron.ipcRenderer.invoke(DESKTOP_IPC.updatesOpen),
+			subscribe(listener) {
+				const handle = (_event, state) => {
+					listener(state);
+				};
+				electron.ipcRenderer.on(DESKTOP_IPC.updatesPresentation, handle);
+				return () => {
+					electron.ipcRenderer.off(DESKTOP_IPC.updatesPresentation, handle);
+				};
+			}
+		}
+	};
+}
+if (location.protocol === `uma-app:` && location.hostname === "app") {
+	if (process.isMainFrame) electron.contextBridge.exposeInMainWorld("umaOperations", {
+		vault: {
+			list: () => electron.ipcRenderer.invoke(DESKTOP_IPC.operationsList),
+			save: (profile) => electron.ipcRenderer.invoke(DESKTOP_IPC.operationsSave, profile),
+			remove: (id) => electron.ipcRenderer.invoke(DESKTOP_IPC.operationsRemove, id),
+			connect: (id) => electron.ipcRenderer.invoke(DESKTOP_IPC.operationsConnect, id),
+			trust: (id, fingerprint) => electron.ipcRenderer.invoke(DESKTOP_IPC.operationsTrust, id, fingerprint)
+		},
+		subscribeOpen: (listener) => {
+			const handle = () => {
+				listener();
+			};
+			electron.ipcRenderer.on(DESKTOP_IPC.openOperations, handle);
+			return () => {
+				electron.ipcRenderer.off(DESKTOP_IPC.openOperations, handle);
+			};
+		}
+	});
+	electron.contextBridge.exposeInMainWorld("dshOnboarding", {
+		introHandled: true,
+		hasApiKey: () => electron.ipcRenderer.invoke(DESKTOP_IPC.onboardingApiKey),
+		setActive: (active) => {
+			electron.ipcRenderer.send(DESKTOP_IPC.onboardingActive, active);
+		}
+	});
+	electron.ipcRenderer.on(DESKTOP_IPC.enterWorkspace, () => {
+		const body = document.body;
+		const previous = body.getAttribute("tabindex");
+		body.tabIndex = -1;
+		body.focus({ preventScroll: true });
+		if (previous === null) body.removeAttribute("tabindex");
+		else body.setAttribute("tabindex", previous);
+	});
+	syncWindowsAppearance();
+	if (process.platform === "win32") installMandatoryUpdateOverlay();
+	electron.contextBridge.exposeInMainWorld("__DSH_DIRECTORY_PICKER__", { pick: () => electron.ipcRenderer.invoke(DESKTOP_IPC.directoryPick) });
+	electron.contextBridge.exposeInMainWorld("__DSH_HOST_PATHS__", { pathFor: (file) => electron.webUtils.getPathForFile(file) });
+	electron.contextBridge.exposeInMainWorld("dshDesktopBoot", {
+		ready: () => electron.ipcRenderer.invoke(DESKTOP_IPC.boot),
+		mounted: () => {
+			electron.ipcRenderer.send(DESKTOP_IPC.bootMounted);
+		},
+		failed: (message) => electron.ipcRenderer.invoke(DESKTOP_IPC.bootFailed, message)
+	});
+	electron.contextBridge.exposeInMainWorld("dshPlatform", {
+		open: (page, bounds) => electron.ipcRenderer.invoke(PLATFORM_IPC.open, page, bounds),
+		setBounds: (bounds) => electron.ipcRenderer.invoke(PLATFORM_IPC.bounds, bounds),
+		close: () => electron.ipcRenderer.invoke(PLATFORM_IPC.close)
+	});
+}
+markDocumentPlatform();
+syncWindowFullscreen();
+syncNativeTheme();
+electron.contextBridge.exposeInMainWorld("dshDesktop", location.protocol === `uma-app:` && location.hostname === "app" && process.isMainFrame ? createProductApi() : { protocolVersion: 1 });
+if (location.protocol === `uma-app:` && location.hostname === "app") electron.contextBridge.exposeInMainWorld("__DSH_LOCALE__", {
+	read: () => electron.ipcRenderer.invoke(DESKTOP_IPC.localeBootstrap),
+	onChange: (locale) => {
+		electron.ipcRenderer.send(DESKTOP_IPC.localeChanged, locale);
+	}
+});
+//#endregion

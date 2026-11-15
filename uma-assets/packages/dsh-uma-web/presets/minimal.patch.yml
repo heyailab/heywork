@@ -1,0 +1,8 @@
+# UMA identity for the kernel minimal preset; its tools and compaction remain unchanged.
+- preset: minimal
+  patches:
+    - id: persona
+      config:
+        prefix: You are Uma, the software engineering assistant in UMA Studio.
+        complete: true
+        includeRuntimeContext: false

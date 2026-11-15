@@ -1,0 +1,43 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/bundle/uma-base/README.md
+/:
+  en: 49c9cdb197c035c0
+  zh: 604a28363ec846a9
+/deepseek-ai-dsh-uma-base:
+  en: 235924aa6fea08e8
+  zh: 96d3d820016f0f2b
+/deepseek-ai-dsh-uma-base/summary:
+  en: 45c8310af6670723
+  zh: 21c44eae08e79a3d
+/deepseek-ai-dsh-uma-base/table-of-contents:
+  en: 76368b6b1da79c80
+  zh: 434cf3c1f5db33cd
+/deepseek-ai-dsh-uma-base/use-this-package:
+  en: f4d174909138195a
+  zh: 126bdc3bad9cdb7a
+/deepseek-ai-dsh-uma-base/understand-the-implementation:
+  en: d7d7d2c2d28ec870
+  zh: d16b717c4fb1aed9
+/deepseek-ai-dsh-uma-base/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-uma-base/model-experience/composed-capabilities:
+  en: a7a5f7530fafb13e
+  zh: b780589341b35a58
+/deepseek-ai-dsh-uma-base/model-experience/composed-capabilities/what-the-model-sees:
+  en: ecda08e0ca667d09
+  zh: a74f16dcd5d50354
+/deepseek-ai-dsh-uma-base/model-experience/composed-capabilities/token-effect:
+  en: c5f9fa41ee3e2619
+  zh: 3c0ba212233f5627
+/deepseek-ai-dsh-uma-base/model-experience/composed-capabilities/kv-cache-effect:
+  en: ab76fdfa153aa1f3
+  zh: d9ee22f54d492035
+/deepseek-ai-dsh-uma-base/known-limitations-and-deferred-work:
+  en: c2f0c47200223182
+  zh: 476396776f6a0324
+/deepseek-ai-dsh-uma-base/known-limitations-and-deferred-work/dev-note:
+  en: 1509957609b7edc3
+  zh: fdea7ad8451f251c

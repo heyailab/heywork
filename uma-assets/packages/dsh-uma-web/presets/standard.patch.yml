@@ -1,0 +1,60 @@
+# UMA additions to the kernel standard preset.
+- preset: standard
+  patches:
+    - insert:
+
+        - id: repo-wiki-context
+          name: '@deepseek-ai/dsh-tool-repo-wiki/context'
+          config:
+            automaticContext: false
+        - id: coding-tools
+          name: '@deepseek-ai/dsh-coding-workbench/tools'
+        - id: coding-edit-policy
+          name: '@deepseek-ai/dsh-coding-workbench/policy'
+          config:
+            mode: advise
+        - id: coding-completion-protocol
+          name: '@deepseek-ai/dsh-coding-workbench/protocol'
+        - id: instruction-drift-reminder
+          name: '@deepseek-ai/dsh-agent-instructions/drift-reminder'
+          config:
+            everyTurns: 10
+        - id: skill-uma
+          name: '@deepseek-ai/dsh-skill-uma'
+        - id: tool-uma-design
+          name: '@deepseek-ai/dsh-tool-uma-design'
+        - id: automatic-design
+          name: '@deepseek-ai/dsh-tool-uma-design/automatic'
+          config:
+            autoDetect: false
+            teamDesign: false
+            requestedDesigner: true
+        - id: tool-uma-workflow
+          name: '@deepseek-ai/dsh-tool-uma-workflow'
+    - id: persona
+      config:
+        prefix: You are a coding agent powered by the {{model}} model.
+        suffix: !!js >-
+          ctx.get('profileContext')?.name === 'desktop' ?
+          'Choose tools from the current request and workspace. Complete mixed tasks within this conversation. For Word, Excel, PowerPoint, or PDF work, load the office skill and the relevant format or operation skill, then use the installed workspace dependencies as instructed. For software changes, follow the active UMA team policy. If team mode is off, implement and verify the change in this conversation. Retrieve relevant project evidence on demand. Follow the current permissions and ask for required approvals at the action that needs them.' :
+          ''
+    - id: tool-todo
+      config:
+        allowParallelInProgress: true
+        everyTurns: 6
+    - id: tool-subagent
+      config:
+        provider: spawn
+        toolName: subagent
+        modelSelection: true
+        modelDiscovery: true
+        allowedAgentPresets:
+          - standard
+          - uma-role-author
+          - uma-role-reviewer
+          - repo-wiki
+          - uma-design
+    - id: todo-state-scope
+      insert:
+        - id: compaction-state-refresh
+          name: '@deepseek-ai/dsh-coding-workbench/compaction-refresh'

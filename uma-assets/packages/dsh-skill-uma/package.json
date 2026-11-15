@@ -1,0 +1,42 @@
+{
+  "name": "@deepseek-ai/dsh-skill-uma",
+  "description": "Bundled Uma design taste, UI/UX intelligence, OpenDesign systems, and product-delivery team skills",
+  "version": "0.2.2-rc.3",
+  "private": true,
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./locale/*.json": "./locale/*.json",
+    "./package.json": "./package.json",
+    "./resources": {
+      "types": "./lib/types/resources.d.ts",
+      "default": "./lib/types/resources.js"
+    }
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "resources.umadb",
+    "THIRD_PARTY_NOTICES.md",
+    "lib/types/**/*.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@deepseek-ai/dsh-skill": "0.2.2-rc.3",
+    "@deepseek-ai/cordis": "~4.1.0"
+  },
+  "devDependencies": {
+    "@deepseek-ai/dsh-skill": "0.2.2-rc.3",
+    "@deepseek-ai/cordis": "~4.1.0"
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "~3.19.0",
+    "yaml": "^2.4.2"
+  }
+}

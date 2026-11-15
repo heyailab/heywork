@@ -1,0 +1,43 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/knowledge/uma-guidance/README.md
+/:
+  en: 760495a5531b8f2b
+  zh: 70103d1bd56d0de8
+/deepseek-ai-dsh-uma-guidance:
+  en: 7e58d46cb71f5c84
+  zh: b7e7d750687caa4d
+/deepseek-ai-dsh-uma-guidance/summary:
+  en: 7395462577840fbb
+  zh: 9d03849b3c28babf
+/deepseek-ai-dsh-uma-guidance/table-of-contents:
+  en: 7b9f2de1423b54f2
+  zh: 49a43c7b36c7916b
+/deepseek-ai-dsh-uma-guidance/use-this-package:
+  en: 72ccfae6198ecf08
+  zh: 33491c56a03c8faf
+/deepseek-ai-dsh-uma-guidance/transport-and-lifecycle:
+  en: 9d70173c87f93407
+  zh: eef9bc783dae652e
+/deepseek-ai-dsh-uma-guidance/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-uma-guidance/model-experience/task-specific-guidance:
+  en: 818e58fc4e4053f9
+  zh: 941c8f619618e7cf
+/deepseek-ai-dsh-uma-guidance/model-experience/task-specific-guidance/what-the-model-sees:
+  en: 29c2a6a8dcc1e0ab
+  zh: 25db61816ec55866
+/deepseek-ai-dsh-uma-guidance/model-experience/task-specific-guidance/token-effect:
+  en: 4d715c050be02520
+  zh: 3035e165d7dc999b
+/deepseek-ai-dsh-uma-guidance/model-experience/task-specific-guidance/kv-cache-effect:
+  en: d9f1a1734b57de6a
+  zh: be4f339cb662bc26
+/deepseek-ai-dsh-uma-guidance/known-limitations-and-deferred-work:
+  en: 4705439e57812ba6
+  zh: bea1c0527e25b238
+/deepseek-ai-dsh-uma-guidance/known-limitations-and-deferred-work/dev-note:
+  en: 0a1253c6f7b5e8b9
+  zh: 9f56528562c7c914

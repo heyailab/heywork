@@ -1,0 +1,46 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/credentials/uma-task-budget/README.md
+/:
+  en: 8e4629dfcdc69558
+  zh: b560cf81fa0731bd
+/deepseek-ai-dsh-uma-task-budget:
+  en: 790236d18785a42e
+  zh: b870d9d2dbcb45cb
+/deepseek-ai-dsh-uma-task-budget/summary:
+  en: a1338b5f0891b116
+  zh: abfbdce87e373a8e
+/deepseek-ai-dsh-uma-task-budget/table-of-contents:
+  en: 23386452a66b2fbd
+  zh: 827f31198d3cbc04
+/deepseek-ai-dsh-uma-task-budget/use-this-package:
+  en: 61dd4f8d9a2f73d2
+  zh: c36336bd6f12866f
+/deepseek-ai-dsh-uma-task-budget/understand-the-implementation:
+  en: ef11dd1249b4c96c
+  zh: 4c6eb6d0bac65959
+/deepseek-ai-dsh-uma-task-budget/further-exploration:
+  en: a217b56e5d66fc9c
+  zh: f885506300d0c788
+/deepseek-ai-dsh-uma-task-budget/model-experience:
+  en: 215e7ba838619b7b
+  zh: 215e7ba838619b7b
+/deepseek-ai-dsh-uma-task-budget/model-experience/financial-admission-metadata:
+  en: b58a704d59bdd3e4
+  zh: b58a704d59bdd3e4
+/deepseek-ai-dsh-uma-task-budget/model-experience/financial-admission-metadata/what-the-model-sees:
+  en: f87a2511412ca58f
+  zh: 56d4b4837d251d8b
+/deepseek-ai-dsh-uma-task-budget/model-experience/financial-admission-metadata/token-effect:
+  en: 8ffa7275fdb8ff47
+  zh: 184280855d7f32ec
+/deepseek-ai-dsh-uma-task-budget/model-experience/financial-admission-metadata/kv-cache-effect:
+  en: 29fc740b65d9db12
+  zh: 85e2c19881728ad2
+/deepseek-ai-dsh-uma-task-budget/known-limitations-and-deferred-work:
+  en: f1de9387d4bb7466
+  zh: 96eb0eace4a27caf
+/deepseek-ai-dsh-uma-task-budget/known-limitations-and-deferred-work/dev-note:
+  en: 611f4f8e3f21c665
+  zh: bf60d84c271dd0f1

@@ -1,0 +1,117 @@
+# UMA browser modules over the shared Host services and kernel Web application.
+
+- id: workspace-controller
+  config:
+    defaultDirectory: !!js dshHomePath('workspaces', 'default-workspace')
+
+- id: deepseek-account
+  config:
+    product: uma
+    platformOrigin: !!js "ctx.get('launchEnvironment')?.get('UMA_STUDIO_API_ORIGIN')?.value ?? 'https://studio.umayun.com'"
+    inferenceOrigin: !!js "ctx.get('launchEnvironment')?.get('UMA_STUDIO_API_ORIGIN')?.value ?? 'https://studio.umayun.com'"
+    desktopPlatform: !!js "ctx.get('profileContext')?.name === 'desktop' && ['darwin', 'win32'].includes(process.platform) ? process.platform : null"
+    allowLoopbackHttp: !!js "ctx.get('launchEnvironment')?.get('UMA_STUDIO_ALLOW_LOOPBACK_HTTP')?.value === '1'"
+    credentialIdPrefix: uma-studio
+    modelProviders: [uma-messages, uma-chat-completions, uma-responses, uma-gemini, deepseek-account]
+
+- id: llm-deepseek-account
+  config:
+    displayName: UMA Studio
+    baseURL: https://studio.umayun.com
+    baseURLEnv: UMA_STUDIO_API_ORIGIN
+    requirePublishedModels: true
+    requireTaskBudgets: true
+    retryPolicy: {mode: normal, maxRetries: 0}
+
+- id: llm-pi-ai
+  config:
+    managedAccountTaskBudgets: true
+    managedAccountOrigin: !!js "ctx.get('launchEnvironment')?.get('UMA_STUDIO_API_ORIGIN')?.value ?? 'https://studio.umayun.com'"
+    providers: {}
+
+- id: agent-default-model
+  config:
+    provider: deepseek-account
+    model: ''
+
+- id: session-controller
+  config:
+    accountModelProviders: [uma-messages, uma-chat-completions, uma-responses, uma-gemini, deepseek-account]
+
+- id: web
+  config:
+    fetchProvider: http
+
+- id: llm-deepseek
+  disabled: true
+- id: web-search-deepseek
+  disabled: true
+- id: web-deepseek-api
+  disabled: true
+- id: session-title-llm
+  disabled: true
+- id: session-log-deepseek
+  disabled: true
+- id: plugin-package-inventory-deepseek
+  disabled: true
+- id: desktop-product-telemetry
+  disabled: true
+- id: session-telemetry-otel
+  disabled: true
+- id: product-analytics
+  disabled: true
+- id: ui-message-feedback
+  disabled: true
+- id: ui-settings-models
+  disabled: false
+  config:
+    credentialOnboarding: false
+    previewNotice: false
+- id: ui-settings-web-search
+  disabled: true
+- id: ui-settings-session-log
+  disabled: true
+- id: ui-brand-official
+  disabled: true
+
+- id: ui-agent-team
+  config:
+    conversationCard: true
+
+- insert:
+    - id: ui-uma-task-budget
+      name: '@deepseek-ai/dsh-client-ui-uma-task-budget'
+
+    - id: uma-remotes
+      name: '@deepseek-ai/dsh-client-uma-remotes'
+
+    - id: ui-knowledge
+      name: '@deepseek-ai/dsh-client-ui-knowledge'
+      config:
+        showBuiltinStandards: true
+
+    - id: ui-design-studio
+      name: '@deepseek-ai/dsh-client-ui-design-studio'
+
+    - id: ui-repo-wiki
+      name: '@deepseek-ai/dsh-client-ui-repo-wiki'
+
+    - id: ui-uma-design
+      name: '@deepseek-ai/dsh-client-ui-uma-design'
+
+    - id: ui-uma-brand
+      name: '@deepseek-ai/dsh-client-ui-uma-brand'
+      config:
+        name: UMA Studio
+
+- id: command-feedback
+  disabled: true
+
+- defaults:
+    - id: uma-feedback
+      name: '@deepseek-ai/dsh-uma-base/feedback'
+      config:
+        origin: !!js "ctx.get('launchEnvironment')?.get('UMA_STUDIO_API_ORIGIN')?.value ?? 'https://studio.umayun.com'"
+        allowLoopbackHttp: !!js "ctx.get('launchEnvironment')?.get('UMA_STUDIO_ALLOW_LOOPBACK_HTTP')?.value === '1'"
+    - id: uma-operations-ssh
+      name: '@deepseek-ai/dsh-uma-base/operations-ssh'

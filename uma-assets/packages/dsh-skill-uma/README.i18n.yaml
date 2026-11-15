@@ -1,0 +1,43 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/skill/skill-uma/README.md
+/:
+  en: 0467ae20c1946880
+  zh: 156d63cf97aee80d
+/deepseek-ai-dsh-skill-uma:
+  en: c24f9e4d28c9c155
+  zh: be8f61c0975c6216
+/deepseek-ai-dsh-skill-uma/summary:
+  en: 2c39d7c37767a0cf
+  zh: 2cb03d7fce025642
+/deepseek-ai-dsh-skill-uma/table-of-contents:
+  en: d5dc717d89cc48e7
+  zh: ca602547f58d4a38
+/deepseek-ai-dsh-skill-uma/use-this-package:
+  en: 37a9682e18f6843e
+  zh: 8f01e17d383a4c3c
+/deepseek-ai-dsh-skill-uma/skills:
+  en: 0a2c8770d80a09ad
+  zh: fb6aed0265cea554
+/deepseek-ai-dsh-skill-uma/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-skill-uma/model-experience/skill-catalog:
+  en: 8b567c1237c67579
+  zh: e3766870303c555f
+/deepseek-ai-dsh-skill-uma/model-experience/skill-catalog/what-the-model-sees:
+  en: 46b2e17474990084
+  zh: 9da9cfd5eec18cbb
+/deepseek-ai-dsh-skill-uma/model-experience/skill-catalog/token-effect:
+  en: 044d78e5bfb55ab7
+  zh: 3a5739b47795b575
+/deepseek-ai-dsh-skill-uma/model-experience/skill-catalog/kv-cache-effect:
+  en: deffd173991b0270
+  zh: 6ac692ab67b43ead
+/deepseek-ai-dsh-skill-uma/known-limitations-and-deferred-work:
+  en: a611e612161e8ace
+  zh: e51ab67913e0a063
+/deepseek-ai-dsh-skill-uma/known-limitations-and-deferred-work/dev-note:
+  en: 5ebc54396bdbbf9b
+  zh: 29cc95c65db735be

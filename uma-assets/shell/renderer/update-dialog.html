@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'none'; img-src 'self'">
+    <title></title>
+    <link rel="stylesheet" href="design-platform.css">
+    <link rel="stylesheet" href="update-dialog.css">
+  </head>
+  <body class="update-dialog">
+    <script src="shell-theme.js"></script>
+    <main id="dialog" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="title" aria-describedby="detail" hidden>
+      <header>
+        <div id="about-mark" hidden><img src="assets/uma-studio-mark.svg" alt="" width="38" height="29"></div>
+        <h1 id="title"></h1>
+        <p id="about-version" hidden></p>
+        <button id="close" class="close" type="button"></button>
+      </header>
+      <div id="dialog-detail" class="dialog-detail" role="region" aria-labelledby="title" tabindex="0">
+        <p id="detail"></p>
+        <dl id="about-facts" hidden></dl>
+      </div>
+      <nav id="about-links" hidden></nav>
+      <div id="about-credits" hidden>
+        <p id="about-upstream"></p>
+        <p id="about-copyright"></p>
+      </div>
+      <details id="technical-details" hidden>
+        <summary id="technical-details-label"></summary>
+        <pre id="technical-details-content" tabindex="0"></pre>
+      </details>
+      <div id="actions"></div>
+    </main>
+    <script src="update-dialog.js"></script>
+  </body>
+</html>

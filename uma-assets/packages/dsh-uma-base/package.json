@@ -1,0 +1,155 @@
+{
+  "name": "@deepseek-ai/dsh-uma-base",
+  "description": "UMA shared Host services and product profile metadata",
+  "version": "0.2.2-rc.3",
+  "private": true,
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./presets/*.patch.yml": "./presets/*.patch.yml",
+    "./package.json": "./package.json",
+    "./profiles": {
+      "types": "./lib/types/profiles.d.ts",
+      "default": "./lib/profiles.js"
+    },
+    "./locale/*.json": "./locale/*.json",
+    "./experience-capture": {
+      "types": "./lib/types/experience-capture.d.ts",
+      "default": "./lib/experience-capture.js"
+    },
+    "./project-memory": {
+      "types": "./lib/types/project-memory.d.ts",
+      "default": "./lib/project-memory.js"
+    },
+    "./weknora": {
+      "types": "./lib/types/weknora.d.ts",
+      "default": "./lib/weknora.js"
+    },
+    "./operations-ssh": {
+      "types": "./lib/types/operations-ssh.d.ts",
+      "default": "./lib/operations-ssh.js"
+    },
+    "./feedback": {
+      "types": "./lib/types/feedback.d.ts",
+      "default": "./lib/feedback.js"
+    }
+  },
+  "files": [
+    "NOTICE.md",
+    "locale/*.json",
+    "lib/index.js",
+    "lib/profiles.js",
+    "cordis.patch.yml",
+    "presets/repo-wiki.patch.yml",
+    "presets/uma-design.patch.yml",
+    "presets/uma-office.patch.yml",
+    "presets/uma-role-author.patch.yml",
+    "presets/uma-role-reviewer.patch.yml",
+    "presets/uma-team.patch.yml",
+    "lib/experience-capture.js",
+    "lib/project-memory.js",
+    "lib/weknora.js",
+    "lib/operations-ssh.js",
+    "lib/feedback.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "dsh": {
+    "bundle": {
+      "patch": [
+        "./cordis.patch.yml",
+        "./presets/repo-wiki.patch.yml",
+        "./presets/uma-design.patch.yml",
+        "./presets/uma-office.patch.yml",
+        "./presets/uma-role-author.patch.yml",
+        "./presets/uma-role-reviewer.patch.yml",
+        "./presets/uma-team.patch.yml"
+      ]
+    }
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh-agent": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-agent-instructions": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-agent-preset": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-agent-preset-registry": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-agent-team": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-client-connection": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-coding-workbench": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-command-compact": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-command-feedback": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-command-goal": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-commands": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-compaction-basic": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-compaction-tool-result-pruner": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-credentials": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-deepseek-account": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-host-webserver": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-knowledge": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-office-kit": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-persona": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-plan-mode": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-plugin-manager": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-plugin-market": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-skill-filesystem": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-skill-uma": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-task-query": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-time-context": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tool-ask-user": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tool-bash": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tool-fs": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tool-fs-search": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tool-goal": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tool-jobs": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tool-present": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tool-pwsh": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tool-repo-wiki": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tool-schedule": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tool-skill": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tool-subagent": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tool-subagent-control": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tool-todo": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tool-uma-design": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tool-uma-workflow": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tool-web": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tool-workflow": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tools": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-uma-guidance": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-uma-task-budget": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-util-uma-delivery": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-workflow-ptc": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-workspace": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-workspace-changes": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-worktree": "0.2.2-rc.3",
+    "@deepseek-ai/schemastery": "~3.19.0",
+    "ssh2": "1.17.0",
+    "ws": "8.21.3"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.1.0"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "~4.1.0",
+    "@deepseek-ai/cordis-plugin-include": "~1.1.0",
+    "@deepseek-ai/cordis-plugin-loader": "~1.1.0",
+    "@deepseek-ai/dsh-agent-loop-testkit": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-app-boot": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-cmdline": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-llm": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-official-bundles": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-package-manifest": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-session": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-session-persistence": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-session-projection": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-storage": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-storage-domain": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-user-approval": "0.2.2-rc.3",
+    "@types/ssh2": "1.15.6",
+    "@types/ws": "8.18.1"
+  }
+}

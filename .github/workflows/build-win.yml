@@ -1,0 +1,74 @@
+name: build-windows
+
+# UMA Windows 移植 CI（Phase 0 基线版）
+# 当前：从官方源码构建未签名 Windows NSIS 安装包，验证基线可跑
+# TODO(Phase 1)：加入 UMA 资产注入步骤（uma-assets/packages → dsh node_modules，
+#                uma-platform.patch.yml（desktopPlatform=win32）、resources.umadb、品牌资源）
+# TODO(Phase 2)：替换 electron-builder 配置为 UMA 产品参数（appId studio.uma.desktop 等）
+# TODO(Phase 3)：接入签名（secrets.WINDOWS_SIGNING_*）与 feeds/win-x64 发布
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  # 官方源码基线：与 Mac 包 1.0.0-beta3.20261116.1 内核同版本
+  DSH_REF: 39163dd30f703a79079e2d2446545cff3c453738
+  DSH_REPO: https://github.com/deepseek-ai/deepseek-harness
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout (port workspace)
+        uses: actions/checkout@v4
+
+      - name: Checkout upstream dsh @ pinned ref
+        uses: actions/checkout@v4
+        with:
+          repository: deepseek-ai/deepseek-harness
+          ref: ${{ env.DSH_REF }}
+          path: deepseek-harness
+          fetch-depth: 1
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.9.0
+
+      - name: Setup pnpm 11.28.5
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.28.5
+
+      - name: Install dependencies
+        working-directory: deepseek-harness
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        working-directory: deepseek-harness
+        run: pnpm build
+
+      - name: Package Windows installer
+        working-directory: deepseek-harness/apps/desktop
+        run: npx electron-builder --win nsis --config electron-builder.config.mjs
+        env:
+          # 未签名基线；签名接入后在此注入 secrets
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: Collect artifacts
+        shell: pwsh
+        run: |
+          Get-ChildItem -Path deepseek-harness/apps/desktop/dist -Recurse -Include *.exe,*.yml,*.blockmap |
+            Copy-Item -Destination deepseek-harness/dist -Force
+          Get-ChildItem deepseek-harness/dist
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: uma-window-baseline
+          path: deepseek-harness/dist/
+          if-no-files-found: error
+          retention-days: 14

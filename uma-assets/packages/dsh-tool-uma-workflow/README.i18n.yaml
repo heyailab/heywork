@@ -1,0 +1,43 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/skill/tool-uma-workflow/README.md
+/:
+  en: 409ed7605a07fafc
+  zh: bec2e93a641ed8c3
+/deepseek-ai-dsh-tool-uma-workflow:
+  en: 1a4cc09f2f49a64c
+  zh: 3300e24512568b98
+/deepseek-ai-dsh-tool-uma-workflow/summary:
+  en: 3d5a1261b80ad331
+  zh: f86a6c262ba23fc1
+/deepseek-ai-dsh-tool-uma-workflow/table-of-contents:
+  en: 4e53164159b5ce41
+  zh: bd61ce1bef78579b
+/deepseek-ai-dsh-tool-uma-workflow/use-this-package:
+  en: 19e6c74bad431a24
+  zh: 2176a2d04cdb6757
+/deepseek-ai-dsh-tool-uma-workflow/use-this-package/tools:
+  en: 25e9ead6e8dc76bc
+  zh: a4b32d84c9a014a9
+/deepseek-ai-dsh-tool-uma-workflow/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-tool-uma-workflow/model-experience/delivery-artifact-tools:
+  en: 6db377e6dff906d7
+  zh: cd9a8e02d7bf514b
+/deepseek-ai-dsh-tool-uma-workflow/model-experience/delivery-artifact-tools/what-the-model-sees:
+  en: 3523fbf68858f398
+  zh: 4048a53d536c334b
+/deepseek-ai-dsh-tool-uma-workflow/model-experience/delivery-artifact-tools/token-effect:
+  en: 41665261845859bc
+  zh: 62f720b09193466b
+/deepseek-ai-dsh-tool-uma-workflow/model-experience/delivery-artifact-tools/kv-cache-effect:
+  en: 16cbd90c8d788e75
+  zh: 342e081b8ac0091a
+/deepseek-ai-dsh-tool-uma-workflow/known-limitations-and-deferred-work:
+  en: 516b0f4c6a7258a3
+  zh: a0d511efb04e5676
+/deepseek-ai-dsh-tool-uma-workflow/known-limitations-and-deferred-work/dev-note:
+  en: a24db8088e1c8bb0
+  zh: 8cd46defbd609be7

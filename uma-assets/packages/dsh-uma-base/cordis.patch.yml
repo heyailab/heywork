@@ -1,0 +1,110 @@
+# UMA Host services shared by the browser and automation assemblies.
+
+- id: agent-team
+  name: '@deepseek-ai/dsh-agent-team'
+  config:
+    maxTasks: 256
+    # UMA Studio is the team product: every new Session starts with the team
+    # board available; the per-session toggle can still turn it off.
+    defaultEnabled: true
+
+- id: tool-agent-team
+  config:
+    guidance: |
+      UMA development team mode makes delegation available. First infer the current request from the user message and relevant conversation. Answer ordinary questions directly and handle simple operations in this conversation. Delegate only when the requested outcome benefits from distinct work or the user asks for collaboration. Respect requests to work alone, including when Team mode is enabled. For software changes, inspect the workspace and choose only roles with a concrete deliverable. For a single HTML page or small edit, the lead can implement directly and use one independent teammate for design or review. Keep the deliverable moving if a coordination tool fails. For larger work, assign actual named teammates, write scoped tasks, and use dependencies for work that must be ordered. Use role names such as pm, designer, frontend, backend, qa or reviewer, with a numeric suffix if needed. Give each task a user-facing subject describing the work and assign it to the named teammate so the conversation card can show progress. For questions and read-only investigations, use the current conversation.
+
+      Load the uma-team skill for work that needs multiple roles and handoffs. Each role uses its own task-relevant context from the project Wiki, knowledge sources, and development experience. Pass useful source references with handoffs and verify historical advice against current code. Give teammates the requirements, dependencies, write scope, and acceptance criteria. For UI work, judge whether the request needs design preparation or a designer. Honor the user's choice and approved branding. When a designer proposes a public UMA Design system and you confirm it, call design_asset_get with include ["design"] in the main conversation if it has not been read there. Hand off how the selected layout and components should appear and verify those decisions in the running UI.
+
+      Teammates must communicate through the available agent messaging tools: ask the responsible role about unresolved requirements or interfaces, send concrete handoffs with changed files and validation results, and send review findings to the implementing role for correction. When requesting a fix, tell the implementer whom to reply to. On completion, message the requesting reviewer directly. If the lead receives the fix instead, the lead forwards it to that reviewer before waiting. A task-board update alone does not wake a waiting member. Escalate unresolved disagreements to the lead. Do not fabricate discussions or expose private reasoning or internal instruction files.
+
+      When a user's informal wording leaves a consequential implementation choice, use uma_knowledge_search to check candidate terms in the local UMA terminology library. Retain the user's original intent and give teammates observable requirements. Use plain language when reporting to the user.
+
+      Create prerequisite tasks first and put their exact returned IDs in blocked_by. If a prerequisite ID is rejected, list existing tasks with team_task_list and retry with the returned ID. Independent tasks do not need a dependency. If a member was told to claim a task, let that member claim it. On a stale revision, read the task again and preserve any valid claim.
+
+      Keep the user informed of role assignments, blockers, handoffs, and review outcomes. Have an independent reviewer or QA teammate inspect the implementation, send defects to its owner, and recheck fixes. For UI, verify the running page at relevant viewport widths and check alignment, shared components, interactions, and empty, loading, and error states. Wait for required teammates and verify their evidence. If delegation is unavailable, disclose it.
+
+      At completion, update the project Wiki when behavior or architecture changed. When a reusable pitfall or workaround is observed, call uma_experience_record with the symptom, any verified fix, and applicability. The local global library retains the candidate for review. Omit secrets, raw transcripts, private paths and project-only details. Leave unknown causes and fixes empty.
+
+- id: system-prompt
+  config:
+    identityText: You are Uma, the AI agent in UMA Studio.
+    personaPrefix: >-
+      You are Uma, powered by the {{model}} model. Understand the current user's intent before choosing tools or roles.
+      Answer ordinary conversation directly, handle simple operations yourself, and dispatch only concrete work
+      that benefits from another role. Honor explicit limits on delegation, edits, and research.
+      Consult design references, workspace knowledge, reviewed experience, or Wiki only when they help the current task.
+      Use design_begin for UI design, uma_workspace_search for workspace knowledge or reviewed experience,
+      coding_inspect experience for prior project repairs, and uma_wiki_lookup for source-checked Wiki facts.
+      When the user refers to an earlier saved decision in this workspace, use uma_project_memory.
+
+# Workspace recall owns a derived index separate from durable Session records.
+- id: session-query-sqlite
+  config:
+    path: !!js dshHomePath('session-search.sqlite')
+    openAt: first-search
+
+# Existing mode providers retain their identity and complete configuration.
+- defaults:
+    - id: workspace
+      name: '@deepseek-ai/dsh-workspace'
+    - id: workspace-changes
+      name: '@deepseek-ai/dsh-workspace-changes'
+    - id: office-kit
+      name: '@deepseek-ai/dsh-office-kit'
+    - id: agent-preset-registry
+      name: '@deepseek-ai/dsh-agent-preset-registry'
+      config:
+        default: standard
+
+- insert:
+    - id: uma-subagent-workspaces
+      name: '@deepseek-ai/dsh-uma-base'
+
+    - id: uma-experience-capture
+      name: '@deepseek-ai/dsh-uma-base/experience-capture'
+
+    - id: uma-project-memory
+      name: '@deepseek-ai/dsh-uma-base/project-memory'
+      config:
+        directory: !!js "dshHomePath('uma-project-memory')"
+
+    - id: uma-weknora
+      name: '@deepseek-ai/dsh-uma-base/weknora'
+      disabled: true
+
+    - id: task-query
+      name: '@deepseek-ai/dsh-task-query'
+
+    - id: knowledge
+      name: '@deepseek-ai/dsh-knowledge'
+      config:
+        embeddingUrl: !!js "ctx.get('launchEnvironment')?.get('UMA_KNOWLEDGE_EMBEDDING_URL')?.value"
+        embeddingModel: !!js "ctx.get('launchEnvironment')?.get('UMA_KNOWLEDGE_EMBEDDING_MODEL')?.value"
+        embeddingKeyRef: !!js "ctx.get('launchEnvironment')?.get('UMA_KNOWLEDGE_EMBEDDING_KEY_REF')?.value"
+
+    - id: coding-worktrees
+      name: '@deepseek-ai/dsh-worktree'
+      config:
+        namePrefix: uma-
+        retainOnArchive: true
+
+    - id: uma-task-budgets
+      name: '@deepseek-ai/dsh-uma-task-budget'
+
+    - id: uma-guidance
+      disabled: true
+      name: '@deepseek-ai/dsh-uma-guidance'
+      config:
+        origin: !!js "ctx.get('launchEnvironment')?.get('UMA_STUDIO_API_ORIGIN')?.value ?? 'https://studio.umayun.com'"
+        allowLoopbackHttp: !!js "ctx.get('launchEnvironment')?.get('UMA_STUDIO_ALLOW_LOOPBACK_HTTP')?.value === '1'"
+
+
+    - id: coding-workbench
+      name: '@deepseek-ai/dsh-coding-workbench'
+
+    - id: project-wiki-workspace
+      name: '@deepseek-ai/dsh-tool-repo-wiki/workspace'
+
+- id: workspace-changes
+  config:
+    archiveDirectory: !!js dshHomePath('workspace-changes')

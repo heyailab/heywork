@@ -1,0 +1,43 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/client/ui-uma-brand/README.md
+/:
+  en: 790bab37056b915a
+  zh: a36fb64dc7acdca0
+/deepseek-ai-dsh-client-ui-uma-brand:
+  en: aea9bf8f61179c51
+  zh: 3be6e820d10ecdee
+/deepseek-ai-dsh-client-ui-uma-brand/summary:
+  en: 78231606e02b5878
+  zh: 81a0d1de6c7bdd36
+/deepseek-ai-dsh-client-ui-uma-brand/table-of-contents:
+  en: 76368b6b1da79c80
+  zh: 5cbf1a117f4259af
+/deepseek-ai-dsh-client-ui-uma-brand/use-this-package:
+  en: dc9713fadc754670
+  zh: 5205284b71a1ceb1
+/deepseek-ai-dsh-client-ui-uma-brand/understand-the-implementation:
+  en: 57ecbde0b5b64dde
+  zh: 3cf679d9c1474061
+/deepseek-ai-dsh-client-ui-uma-brand/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-client-ui-uma-brand/model-experience/presentation-only:
+  en: db68982a2c324d5a
+  zh: c86dfe942d94329c
+/deepseek-ai-dsh-client-ui-uma-brand/model-experience/presentation-only/what-the-model-sees:
+  en: d3104a463e8bda3f
+  zh: 6c85d40c095118f7
+/deepseek-ai-dsh-client-ui-uma-brand/model-experience/presentation-only/token-effect:
+  en: 49b74b32c4cd2d2c
+  zh: f92d0154d6d9025e
+/deepseek-ai-dsh-client-ui-uma-brand/model-experience/presentation-only/kv-cache-effect:
+  en: dc50ebf94183efa2
+  zh: 617803c558367430
+/deepseek-ai-dsh-client-ui-uma-brand/known-limitations-and-deferred-work:
+  en: d9a00aabace72fc3
+  zh: f0b7776ae2087570
+/deepseek-ai-dsh-client-ui-uma-brand/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 8ec3e73528ddb1a6

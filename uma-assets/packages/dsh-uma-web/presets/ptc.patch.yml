@@ -1,0 +1,41 @@
+# UMA additions to the kernel ptc preset.
+- preset: ptc
+  patches:
+    - insert:
+
+        - id: repo-wiki-context
+          name: '@deepseek-ai/dsh-tool-repo-wiki/context'
+          config:
+            automaticContext: false
+        - id: coding-tools
+          name: '@deepseek-ai/dsh-coding-workbench/tools'
+        - id: coding-edit-policy
+          name: '@deepseek-ai/dsh-coding-workbench/policy'
+          config:
+            mode: advise
+        - id: coding-completion-protocol
+          name: '@deepseek-ai/dsh-coding-workbench/protocol'
+        - id: instruction-drift-reminder
+          name: '@deepseek-ai/dsh-agent-instructions/drift-reminder'
+          config:
+            everyTurns: 10
+        - id: skill-uma
+          name: '@deepseek-ai/dsh-skill-uma'
+        - id: tool-uma-design
+          name: '@deepseek-ai/dsh-tool-uma-design'
+        - id: automatic-design
+          name: '@deepseek-ai/dsh-tool-uma-design/automatic'
+          config:
+            autoDetect: false
+            teamDesign: false
+            requestedDesigner: true
+        - id: tool-uma-workflow
+          name: '@deepseek-ai/dsh-tool-uma-workflow'
+    - id: tool-todo
+      config:
+        allowParallelInProgress: true
+        everyTurns: 6
+    - id: todo-state-scope
+      insert:
+        - id: compaction-state-refresh
+          name: '@deepseek-ai/dsh-coding-workbench/compaction-refresh'

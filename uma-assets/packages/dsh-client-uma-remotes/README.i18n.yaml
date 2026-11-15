@@ -1,0 +1,43 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/client/uma-remotes/README.md
+/:
+  en: 0d1fa9118912f954
+  zh: 93c410aef0ddc76e
+/deepseek-ai-dsh-client-uma-remotes:
+  en: 5d1c08ae30004d05
+  zh: f9da434a680d6b2b
+/deepseek-ai-dsh-client-uma-remotes/summary:
+  en: 33c04cc1bb0cae75
+  zh: 3c36d64263a40503
+/deepseek-ai-dsh-client-uma-remotes/table-of-contents:
+  en: 145d4e6b99cd9444
+  zh: d0d3665584e3668d
+/deepseek-ai-dsh-client-uma-remotes/use-this-package:
+  en: 850f1979ea2a7aed
+  zh: 75da66f247c9ae08
+/deepseek-ai-dsh-client-uma-remotes/lifecycle:
+  en: 8b8b8e35b22f6b29
+  zh: ce2c7671fad9ad9a
+/deepseek-ai-dsh-client-uma-remotes/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-client-uma-remotes/model-experience/browser-requests:
+  en: 9a92e80fc2348b30
+  zh: beec6bdb736d4e7f
+/deepseek-ai-dsh-client-uma-remotes/model-experience/browser-requests/what-the-model-sees:
+  en: c2b123524ce3105b
+  zh: 4f4c2a56d00ff980
+/deepseek-ai-dsh-client-uma-remotes/model-experience/browser-requests/token-effect:
+  en: 85d8ace3fd8bf323
+  zh: a5d4ce77ce8c945f
+/deepseek-ai-dsh-client-uma-remotes/model-experience/browser-requests/kv-cache-effect:
+  en: 017abf0edc941363
+  zh: cf0f04eb520d3cb7
+/deepseek-ai-dsh-client-uma-remotes/known-limitations-and-deferred-work:
+  en: ca83c9cabff5f5b6
+  zh: 11f2d2b523a38c2a
+/deepseek-ai-dsh-client-uma-remotes/known-limitations-and-deferred-work/dev-note:
+  en: 0a1253c6f7b5e8b9
+  zh: 9f56528562c7c914

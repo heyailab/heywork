@@ -1,0 +1,82 @@
+# Agent preset uma-role-author: spawn-only role composition for authoring
+# teammates (product, architecture, design). Documents flow through the
+# artifact workflow; there is no code-execution or file-mutation surface.
+# Spawn-only: referenced by the uma-team director recipes, not meant as a
+# session mode.
+- insert:
+    - id: preset-uma-role-author
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: uma-role-author
+        name: UMA role — author
+        description: Authoring teammate for the delivery team — product, architecture, or design artifacts through the artifact workflow, with read-only code access.
+        order: 90
+        plugins:
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              prefix: You are a UMA delivery-team teammate. Your role brief comes from your spawn description; the uma-team workflow defines how you deliver. You write documents through the artifact workflow, never through file-mutation tools — you have none.
+          - id: agent-instructions
+            name: '@deepseek-ai/dsh-agent-instructions'
+            config:
+              maxBytes: 65536
+          - id: time-context
+            name: '@deepseek-ai/dsh-time-context'
+          - id: tool-fs
+            name: '@deepseek-ai/dsh-tool-fs'
+            config:
+              read: true
+              readImage: true
+              write: false
+              edit: false
+              applyPatch: false
+          - id: tool-fs-search
+            name: '@deepseek-ai/dsh-tool-fs-search'
+            config:
+              sampleOverCapGlobResults: false
+          - id: tool-subagent-control
+            name: '@deepseek-ai/dsh-tool-subagent-control'
+            config:
+              interrupt: false
+          - id: skill-filesystem
+            name: '@deepseek-ai/dsh-skill-filesystem'
+          - id: tool-skill
+            name: '@deepseek-ai/dsh-tool-skill'
+          - id: repo-wiki-context
+            name: '@deepseek-ai/dsh-tool-repo-wiki/context'
+            config:
+              automaticContext: false
+          - id: coding-tools
+            name: '@deepseek-ai/dsh-coding-workbench/tools'
+            config:
+              mode: read-only
+          - id: skill-uma
+            name: '@deepseek-ai/dsh-skill-uma'
+          - id: tool-uma-workflow
+            name: '@deepseek-ai/dsh-tool-uma-workflow'
+          - id: tool-uma-design
+            name: '@deepseek-ai/dsh-tool-uma-design'
+            config:
+              projectWrite: false
+          - id: compaction
+            name: cordis:group
+            group: true
+            isolate:
+              compaction: true
+              toolResultPruner: true
+            config:
+              - id: compaction-basic
+                name: '@deepseek-ai/dsh-compaction-basic'
+              - id: command-compact
+                name: '@deepseek-ai/dsh-command-compact'
+              - id: tool-result-pruner
+                name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+                config:
+                  thresholdChars: 8192
+                  headChars: 4096
+                  tailChars: 1024
+          - id: tool-web
+            name: '@deepseek-ai/dsh-tool-web'
+            config:
+              fetch: true
+              searchTimeoutMs: 60000

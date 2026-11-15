@@ -1,0 +1,46 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/skill/tool-uma-design/README.md
+/:
+  en: ef158d234266ab9b
+  zh: 4b9d3c52a812ee34
+/deepseek-ai-dsh-tool-uma-design:
+  en: e16f39a9db7b7ac6
+  zh: 38b7ff4f4e0c5c80
+/deepseek-ai-dsh-tool-uma-design/summary:
+  en: be282c95c14174df
+  zh: 154055e59789346c
+/deepseek-ai-dsh-tool-uma-design/table-of-contents:
+  en: 4e53164159b5ce41
+  zh: bd61ce1bef78579b
+/deepseek-ai-dsh-tool-uma-design/use-this-package:
+  en: c70d468d5c044180
+  zh: eea5fc9a7225e89d
+/deepseek-ai-dsh-tool-uma-design/use-this-package/tools:
+  en: f54d76f9288ba219
+  zh: 25c9b6a5cfc2760a
+/deepseek-ai-dsh-tool-uma-design/use-this-package/automatic-preparation:
+  en: ded8abee0b7b3427
+  zh: c1960f4d00fe6bc3
+/deepseek-ai-dsh-tool-uma-design/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-tool-uma-design/model-experience/design-asset-tools:
+  en: 90dd8bd1698b6027
+  zh: 73ea4d1ac4187fe8
+/deepseek-ai-dsh-tool-uma-design/model-experience/design-asset-tools/what-the-model-sees:
+  en: 8c6e91165f0e117f
+  zh: 7abcd7b59bab3a48
+/deepseek-ai-dsh-tool-uma-design/model-experience/design-asset-tools/token-effect:
+  en: 68c06f1225e01f8b
+  zh: 77ba9e6addb1f10b
+/deepseek-ai-dsh-tool-uma-design/model-experience/design-asset-tools/kv-cache-effect:
+  en: 7e423db8673bcb5d
+  zh: ec8c705786088e38
+/deepseek-ai-dsh-tool-uma-design/known-limitations-and-deferred-work:
+  en: d73b5baccd7bbd9d
+  zh: f20d8638cc827825
+/deepseek-ai-dsh-tool-uma-design/known-limitations-and-deferred-work/dev-note:
+  en: 2c4ba9b4ff054807
+  zh: 83e763a51598e8f3

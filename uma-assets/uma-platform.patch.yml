@@ -1,0 +1,139 @@
+[
+  {
+    "id": "ui-skill",
+    "config": {
+      "hiddenNamePrefixes": [
+        "uma-"
+      ]
+    }
+  },
+  {
+    "id": "session-log-download",
+    "config": {
+      "conversationOnly": true
+    }
+  },
+  {
+    "id": "uma-feedback",
+    "config": {
+      "origin": "https://studio.umayun.com",
+      "allowLoopbackHttp": false,
+      "requestTimeoutMs": 15000
+    }
+  },
+  {
+    "id": "uma-guidance",
+    "disabled": true,
+    "config": {
+      "origin": "https://studio.umayun.com",
+      "allowLoopbackHttp": false
+    }
+  },
+  {
+    "id": "deepseek-account",
+    "config": {
+      "product": "uma",
+      "platformOrigin": "https://studio.umayun.com",
+      "inferenceOrigin": "https://studio.umayun.com",
+      "desktopPlatform": "darwin",
+      "credentialIdPrefix": "uma-studio",
+      "modelProviders": [
+        "uma-messages",
+        "uma-chat-completions",
+        "uma-responses",
+        "uma-gemini",
+        "deepseek-account"
+      ]
+    }
+  },
+  {
+    "id": "llm-deepseek-account",
+    "config": {
+      "displayName": "UMA Studio",
+      "baseURL": "https://studio.umayun.com",
+      "requirePublishedModels": true,
+      "retryPolicy": {
+        "mode": "normal",
+        "maxRetries": 0
+      }
+    }
+  },
+  {
+    "id": "ui-settings-models",
+    "disabled": false,
+    "config": {
+      "credentialOnboarding": false,
+      "previewNotice": false
+    }
+  },
+  {
+    "id": "session-controller",
+    "config": {
+      "accountModelProviders": [
+        "uma-messages",
+        "uma-chat-completions",
+        "uma-responses",
+        "uma-gemini",
+        "deepseek-account"
+      ]
+    }
+  },
+  {
+    "id": "web",
+    "config": {
+      "fetchProvider": "http"
+    }
+  },
+  {
+    "id": "llm-deepseek",
+    "disabled": true
+  },
+  {
+    "id": "web-search-deepseek",
+    "disabled": true
+  },
+  {
+    "id": "web-deepseek-api",
+    "disabled": true
+  },
+  {
+    "id": "session-title-llm",
+    "disabled": true
+  },
+  {
+    "id": "session-log-deepseek",
+    "disabled": true
+  },
+  {
+    "id": "plugin-package-inventory-deepseek",
+    "disabled": true
+  },
+  {
+    "id": "desktop-product-telemetry",
+    "disabled": true
+  },
+  {
+    "id": "session-telemetry-otel",
+    "disabled": true
+  },
+  {
+    "id": "product-analytics",
+    "disabled": true
+  },
+  {
+    "id": "ui-message-feedback",
+    "disabled": true
+  },
+  {
+    "id": "ui-settings-web-search",
+    "disabled": true
+  },
+  {
+    "id": "ui-settings-session-log",
+    "disabled": true
+  },
+  {
+    "id": "ui-brand-official",
+    "disabled": true
+  }
+]
