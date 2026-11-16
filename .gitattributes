@@ -1,0 +1,22 @@
+# 本仓库会被 Windows runner（core.autocrlf=true）和 macOS 同时 checkout。
+# 补丁必须逐字节稳定：CRLF 会让 git apply 的上下文行匹配全部失败。
+* text=auto eol=lf
+
+# 统一 diff 补丁：永远 LF，不做任何换行/空白转换
+*.patch -text
+*.diff  -text
+
+# 二进制资产：禁止文本转换与 diff
+*.umadb binary
+*.node  binary
+*.zip   binary
+*.png   binary
+*.ico   binary
+*.icns  binary
+
+# 脚本按平台语义保留 LF（node/pwsh/bash 均可接受 LF）
+*.sh   text eol=lf
+*.mjs  text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
