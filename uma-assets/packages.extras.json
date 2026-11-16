@@ -143,6 +143,24 @@
       "sha256": "ceabe89171f1d09a3de081cde2c5fd29db696c7d728993f654dab15dd9c05d33",
       "natives": [],
       "pool": "deps"
+    },
+    {
+      "name": "papaparse",
+      "version": "5.5.3",
+      "files": 22,
+      "bytes": 262973,
+      "sha256": "bc2e352f06bb33aea99247d1bd307f909dbb2e4c06b89083a4373530cca83c63",
+      "natives": [],
+      "pool": "deps"
+    },
+    {
+      "name": "yaml",
+      "version": "2.9.1",
+      "files": 155,
+      "bytes": 590266,
+      "sha256": "617624e89e5add121a0512ef6ee006b39f1a685551a2ef73b8f39a96e64f49d8",
+      "natives": [],
+      "pool": "deps"
     }
   ]
 }

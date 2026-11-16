@@ -59,9 +59,11 @@ const SEEDS = [
  * materialized tree is missing them, so a tree that already hoists them (zod via
  * the CUA packages, js-yaml via the dsh CLI) pays nothing while a tree that does
  * not still resolves every import. Sizes: zod 5.2 MB, pdfjs-dist 15.4 MB,
- * picomatch 91 KB, typescript 19.0 MB, js-yaml 395 KB.
+ * picomatch 91 KB, typescript 19.0 MB, js-yaml 395 KB, papaparse 216 KB,
+ * yaml 774 KB (dsh-skill-uma parses skill front matter with it, so its absence
+ * would break every uma_resource_read).
  */
-const POOL_DEPS = ['zod', 'pdfjs-dist', 'picomatch', 'typescript', 'js-yaml']
+const POOL_DEPS = ['zod', 'pdfjs-dist', 'picomatch', 'typescript', 'js-yaml', 'papaparse', 'yaml']
 
 // ------------------------------------------------------------------ asar reader
 
