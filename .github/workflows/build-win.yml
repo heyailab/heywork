@@ -1,11 +1,11 @@
 name: build-windows
 
-# UMA Windows 移植 CI（Phase 0 基线版 · 官方打包入口）
-# 关键修正：不直接调 npx electron-builder（会被 desktop-release-environment 校验拦下），
-# 改用官方 package-target.ts 全流程：prepare runtime/dsh/electron → build → 打包 → 校验
-# TODO(Phase 1)：加入 UMA 资产注入（uma-assets/packages → dsh node_modules、
-#                uma-platform.patch.yml（desktopPlatform=win32）、resources.umadb、品牌资源）
-# TODO(Phase 2)：MANDATORY_UPDATE_* 目前是占位 origin，接真实 UMA 策略服务后替换
+# UMA Windows 移植 CI（Phase 1 · UMA 插件层注入）
+# 官方 package-target.ts 全流程 + patches/uma-phase1.patch（6 处上游源码改动）
+# 注入链路：patch 提供注入 hook（DSH_DESKTOP_UMA_INJECT）→ prepare:dsh 后运行
+# scripts/inject-uma.mjs：12 个 uma 插件包 + ssh2 闭包 + 重算 desktop-runtime.json
+# 产品激活：uma-platform.patch.yml（win32 版）随包附带；Host 经 DSH_DESKTOP_PRODUCT_PATCH 应用
+# TODO(Phase 2)：品牌（productName/icon/uma://）、locale、菜单、updater discard、DSH_HOME=~/.uma
 # TODO(Phase 3)：签名接入（secrets → DSH_DESKTOP_WINDOWS_*，用 package:desktop:win:x64 签名版）
 
 on:
@@ -60,13 +60,22 @@ jobs:
           Set-Content -Path .env.windows -Value $lines -Encoding utf8
           Get-Content .env.windows
 
+      - name: Apply UMA patches to upstream source
+        working-directory: deepseek-harness
+        run: git apply --whitespace=nowarn --verbose ../patches/uma-phase1.patch
+
       - name: Install dependencies
         working-directory: deepseek-harness
         run: pnpm install --frozen-lockfile
 
-      - name: Package Windows installer (unsigned, official pipeline)
+      - name: Package Windows installer (unsigned, official pipeline + UMA injection)
         working-directory: deepseek-harness
         run: pnpm run package:desktop:win:x64:unsigned
+        env:
+          # prepare:dsh 之后、electron-builder 之前执行 UMA 注入（patch 提供的 hook）
+          DSH_DESKTOP_UMA_INJECT: ${{ github.workspace }}/scripts/inject-uma.mjs
+          UMA_PORT_ROOT: ${{ github.workspace }}
+          UMA_ASSETS_DIR: ${{ github.workspace }}/uma-assets
 
       - name: Collect artifacts
         shell: pwsh

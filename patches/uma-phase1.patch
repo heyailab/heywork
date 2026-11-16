@@ -1,0 +1,268 @@
+diff --git a/apps/desktop-host/src/index.ts b/apps/desktop-host/src/index.ts
+index 7664fb11..2e406d44 100644
+--- a/apps/desktop-host/src/index.ts
++++ b/apps/desktop-host/src/index.ts
+@@ -45,11 +45,13 @@ async function main(): Promise<void> {
+   const installAnchor = join(runtimeDir, 'node_modules', '@deepseek-ai', 'dsh', 'package.json')
+   const profile = loadProfileDirectory('dsh', projectDir, installAnchor)
+   reportSkippedBundles('dsh', profile)
++  // UMA product patch: shell supplies the packaged uma-platform.patch.yml; applied as a launcher layer.
++  const productPatch = process.env.DSH_DESKTOP_PRODUCT_PATCH
+   const application = runProfile({
+     environment: loadLayeredEnv('dsh'),
+     profile: 'desktop',
+     resolvedProfile: { profile, installAnchor },
+-    patchFiles: [],
++    patchFiles: productPatch === undefined ? [] : [productPatch],
+     args: ['--no-open', '--host', '127.0.0.1', '--port', '0'],
+     ...(process.argv[5] === undefined ? {} : {
+       packageManager: {
+diff --git a/apps/desktop/resources/uma-platform.patch.yml b/apps/desktop/resources/uma-platform.patch.yml
+new file mode 100644
+index 00000000..e6611d66
+--- /dev/null
++++ b/apps/desktop/resources/uma-platform.patch.yml
+@@ -0,0 +1,139 @@
++[
++  {
++    "id": "ui-skill",
++    "config": {
++      "hiddenNamePrefixes": [
++        "uma-"
++      ]
++    }
++  },
++  {
++    "id": "session-log-download",
++    "config": {
++      "conversationOnly": true
++    }
++  },
++  {
++    "id": "uma-feedback",
++    "config": {
++      "origin": "https://studio.umayun.com",
++      "allowLoopbackHttp": false,
++      "requestTimeoutMs": 15000
++    }
++  },
++  {
++    "id": "uma-guidance",
++    "disabled": true,
++    "config": {
++      "origin": "https://studio.umayun.com",
++      "allowLoopbackHttp": false
++    }
++  },
++  {
++    "id": "deepseek-account",
++    "config": {
++      "product": "uma",
++      "platformOrigin": "https://studio.umayun.com",
++      "inferenceOrigin": "https://studio.umayun.com",
++      "desktopPlatform": "win32",
++      "credentialIdPrefix": "uma-studio",
++      "modelProviders": [
++        "uma-messages",
++        "uma-chat-completions",
++        "uma-responses",
++        "uma-gemini",
++        "deepseek-account"
++      ]
++    }
++  },
++  {
++    "id": "llm-deepseek-account",
++    "config": {
++      "displayName": "UMA Studio",
++      "baseURL": "https://studio.umayun.com",
++      "requirePublishedModels": true,
++      "retryPolicy": {
++        "mode": "normal",
++        "maxRetries": 0
++      }
++    }
++  },
++  {
++    "id": "ui-settings-models",
++    "disabled": false,
++    "config": {
++      "credentialOnboarding": false,
++      "previewNotice": false
++    }
++  },
++  {
++    "id": "session-controller",
++    "config": {
++      "accountModelProviders": [
++        "uma-messages",
++        "uma-chat-completions",
++        "uma-responses",
++        "uma-gemini",
++        "deepseek-account"
++      ]
++    }
++  },
++  {
++    "id": "web",
++    "config": {
++      "fetchProvider": "http"
++    }
++  },
++  {
++    "id": "llm-deepseek",
++    "disabled": true
++  },
++  {
++    "id": "web-search-deepseek",
++    "disabled": true
++  },
++  {
++    "id": "web-deepseek-api",
++    "disabled": true
++  },
++  {
++    "id": "session-title-llm",
++    "disabled": true
++  },
++  {
++    "id": "session-log-deepseek",
++    "disabled": true
++  },
++  {
++    "id": "plugin-package-inventory-deepseek",
++    "disabled": true
++  },
++  {
++    "id": "desktop-product-telemetry",
++    "disabled": true
++  },
++  {
++    "id": "session-telemetry-otel",
++    "disabled": true
++  },
++  {
++    "id": "product-analytics",
++    "disabled": true
++  },
++  {
++    "id": "ui-message-feedback",
++    "disabled": true
++  },
++  {
++    "id": "ui-settings-web-search",
++    "disabled": true
++  },
++  {
++    "id": "ui-settings-session-log",
++    "disabled": true
++  },
++  {
++    "id": "ui-brand-official",
++    "disabled": true
++  }
++]
+diff --git a/apps/desktop/scripts/electron-builder-config.mjs b/apps/desktop/scripts/electron-builder-config.mjs
+index a777a058..980aa638 100644
+--- a/apps/desktop/scripts/electron-builder-config.mjs
++++ b/apps/desktop/scripts/electron-builder-config.mjs
+@@ -79,7 +79,9 @@ export function createElectronBuilderConfig(
+     `**/node_modules/@deepseek-ai/libreoffice-kit-${resolvedPlatform}-${resolvedArch}/**/*`,
+     // LaunchServices opens the Computer Use helper as an application, so every file of its bundles stays on disk.
+     // Both architectures ship: they form one notarized payload whose manifest staging verifies as a whole.
+-    '**/node_modules/@deepseek-ai/dsh-cua-macos/native/bin/**/*']
++    '**/node_modules/@deepseek-ai/dsh-cua-macos/native/bin/**/*',
++    // UMA skill container: node:sqlite needs a real file path, so it stays outside the asar.
++    '**/node_modules/@deepseek-ai/dsh-skill-uma/resources.umadb']
+   const windowsSigner = packagesWindows && !unsigned
+     ? createWindowsTokenSigner({
+         certificateFile: env.DSH_DESKTOP_WINDOWS_CER_FILE,
+@@ -160,6 +162,8 @@ export function createElectronBuilderConfig(
+     extraResources: [
+       { from: buildPaths.runtime, to: 'runtime' },
+       { from: fileURLToPath(new URL('../resources/icon-windows.png', import.meta.url)), to: 'icon.png' },
++      // UMA product patch consumed by the Host via DSH_DESKTOP_PRODUCT_PATCH.
++      { from: fileURLToPath(new URL('../resources/uma-platform.patch.yml', import.meta.url)), to: 'uma-platform.patch.yml' },
+       // Windows tray bitmaps; macOS keeps the Dock and ships no menu bar icon.
+       ...(packagesWindows ? [{ from: fileURLToPath(new URL('../resources/tray-windows.ico', import.meta.url)), to: 'tray.ico' }] : []),
+     ],
+diff --git a/apps/desktop/scripts/package-target.ts b/apps/desktop/scripts/package-target.ts
+index ea244526..22fd548d 100644
+--- a/apps/desktop/scripts/package-target.ts
++++ b/apps/desktop/scripts/package-target.ts
+@@ -524,6 +524,10 @@ export async function packageTarget(
+   await execute(['run', 'prepare:packages'], targetEnv)
+   await execute(['run', 'prepare:dsh', ...(signPrimaryRuntime ? ['--defer-runtime-smoke'] : [])], downloadEnv)
+   if (signPrimaryRuntime) await execute(['run', 'sign:primary-runtime', '--dsh'], electronBuilderEnv)
++  // UMA injection hook: runs after the dsh tree is materialized and verified, before packaging.
++  if (process.env.DSH_DESKTOP_UMA_INJECT !== undefined) {
++    await executePreparation([process.execPath, process.env.DSH_DESKTOP_UMA_INJECT], electronBuilderEnv)
++  }
+   if (invocation.prepareOnly) return
+   const buildMacArtifact = (artifact: DesktopPrepackagedArtifact) => execute(
+     desktopElectronBuilderArguments(target, false, artifact), artifact.format === 'zip'
+diff --git a/apps/desktop/src/main.ts b/apps/desktop/src/main.ts
+index 92327109..6aa6cd2c 100644
+--- a/apps/desktop/src/main.ts
++++ b/apps/desktop/src/main.ts
+@@ -8,6 +8,7 @@ import { isDesktopUpdateChannel } from './settings-file.ts'
+ import type { ProductEventMap, ProductEvent } from '@deepseek-ai/dsh-client-product-analytics/types'
+ import { WINDOWS_TITLEBAR_HEIGHT } from './windows-layout.ts'
+ import { access, readFile, writeFile } from 'node:fs/promises'
++import { existsSync } from 'node:fs'
+ import { join } from 'node:path'
+ import { fileURLToPath } from 'node:url'
+ import {
+@@ -533,8 +534,16 @@ async function main(): Promise<void> {
+     owner => isMandatory() || updateOverlays.input(owner).blocked)
+   const backend = new DesktopBackendController((onFailure) => {
+     const hostInspectPort = developmentHostInspectPort(development)
++    // UMA product patch: shipped beside the runtime resources; the Host applies it
++    // as a launcher patch layer after the profile bundles (mirrors the UMA shell).
++    const umaProductPatch = development ? undefined
++      : join(process.resourcesPath, 'uma-platform.patch.yml')
++    const hostEnvironmentOverrides: NodeJS.ProcessEnv = {
++      ...(umaProductPatch !== undefined && existsSync(umaProductPatch)
++        ? { DSH_DESKTOP_PRODUCT_PATCH: umaProductPatch } : {}),
++    }
+     const host = new DesktopHostProcess(resources.node, resources.dsh, activeProject,
+-      hostInspectPort, { ...hostEnvironment, DSH_CLIENT_VERSION: desktopClientVersion() }, onFailure,
++      hostInspectPort, { ...hostEnvironment, ...hostEnvironmentOverrides, DSH_CLIENT_VERSION: desktopClientVersion() }, onFailure,
+       primaryRuntime,
+       resources, (next) => { platformView.setSession(next) }, (record) => {
+         operationJournal ??= new OperationJournal(join(app.getPath('userData'), 'plugin-operations'), {
+diff --git a/apps/desktop/src/project-manager.ts b/apps/desktop/src/project-manager.ts
+index 9e96b912..bfcf5ecd 100644
+--- a/apps/desktop/src/project-manager.ts
++++ b/apps/desktop/src/project-manager.ts
+@@ -29,6 +29,14 @@ const PROJECT_NAME = '@deepseek-ai/dsh-desktop-runtime'
+ const DSH_PACKAGE = '@deepseek-ai/dsh'
+ const CORE_BUILD_PACKAGE = '@deepseek-ai/dsh-subprocess-local'
+ const WEB_PROFILE = PROFILE_TEMPLATES.web as ProfileTemplate
++// UMA desktop composition: kernel web layers plus the UMA bundle pair
++// (mirrors UMA_PROFILE_BUNDLES.desktop in the UMA shell; build-time metadata
++// keeps the upstream list so prepare-stage runtime smoke runs pre-injection).
++const UMA_DESKTOP_BUNDLES: readonly string[] = [
++  ...WEB_PROFILE.bundles,
++  '@deepseek-ai/dsh-uma-base',
++  '@deepseek-ai/dsh-uma-web',
++]
+ const WORKSPACE_SETTINGS = 'nodeLinker: hoisted\nautoInstallPeers: false\n'
+ function writeJson(path: string, value: unknown): void {
+   writeFileSync(path, `${JSON.stringify(value, undefined, 2)}\n`, { mode: 0o600 })
+@@ -73,7 +81,7 @@ export class DesktopProjectManager {
+    * @returns Backup path after the locked profile write, or undefined if the patch was absent.
+    */
+   async disableAllPlugins(): Promise<string | undefined> {
+-    return this.withLock(() => sanitizeProfile('dsh', this.paths.profile, WEB_PROFILE.bundles))
++    return this.withLock(() => sanitizeProfile('dsh', this.paths.profile, UMA_DESKTOP_BUNDLES))
+   }
+ 
+   /**
+@@ -171,5 +179,5 @@ export function createDevelopmentProjectMetadata(projectDir: string, release: De
+ 
+ /** Create the first external plugin profile without running a package manager. */
+ export function createPluginProfile(projectDir: string): void {
+-  initProfile(projectDir, WEB_PROFILE.bundles)
++  initProfile(projectDir, UMA_DESKTOP_BUNDLES)
+ }
