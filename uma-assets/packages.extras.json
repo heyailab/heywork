@@ -161,6 +161,15 @@
       "sha256": "617624e89e5add121a0512ef6ee006b39f1a685551a2ef73b8f39a96e64f49d8",
       "natives": [],
       "pool": "deps"
+    },
+    {
+      "name": "ws",
+      "version": "8.23.0",
+      "files": 19,
+      "bytes": 153510,
+      "sha256": "ea36aa0611aefec720a3abb8cb9c69706cb4fd0ad784b5b7ee89907cd9174ff2",
+      "natives": [],
+      "pool": "deps"
     }
   ]
 }

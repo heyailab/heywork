@@ -61,9 +61,9 @@ const SEEDS = [
  * not still resolves every import. Sizes: zod 5.2 MB, pdfjs-dist 15.4 MB,
  * picomatch 91 KB, typescript 19.0 MB, js-yaml 395 KB, papaparse 216 KB,
  * yaml 774 KB (dsh-skill-uma parses skill front matter with it, so its absence
- * would break every uma_resource_read).
+ * would break every uma_resource_read), ws 150 KB (dsh-uma-base).
  */
-const POOL_DEPS = ['zod', 'pdfjs-dist', 'picomatch', 'typescript', 'js-yaml', 'papaparse', 'yaml']
+const POOL_DEPS = ['zod', 'pdfjs-dist', 'picomatch', 'typescript', 'js-yaml', 'papaparse', 'yaml', 'ws']
 
 // ------------------------------------------------------------------ asar reader
 
