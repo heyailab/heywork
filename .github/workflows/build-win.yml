@@ -13,6 +13,11 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# 一次 Windows 全量打包约 60-120 分钟：新提交到达时取消仍在跑的旧任务，避免叠加占用 runner。
+concurrency:
+  group: build-windows-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   # 官方源码基线：与 Mac 包 1.0.0-beta3.20261116.1 内核同版本
   DSH_REF: 39163dd30f703a79079e2d2446545cff3c453738
