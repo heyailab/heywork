@@ -55,11 +55,18 @@
 
 ## Phase 2 — 产品壳定制
 
-- [ ] `apps/desktop` electron-builder 配置：`appId: studio.uma.desktop`、`productName: UMA Studio`、icon.ico、NSIS 目标
-- [ ] 签名：`apps/desktop/config/windows-packaging/windows-signing.env.example` 按样例配置 Authenticode（建议 EV 证书防 SmartScreen 误报）
+> 已完成（`patches/uma-phase2.patch`）：产品身份全部改为环境变量驱动，未设置时上游行为不变。
+> - electron-builder：`DSH_DESKTOP_PRODUCT_NAME`（productName + NSIS 显示名）、`DSH_DESKTOP_PROTOCOL_SCHEME`（protocols + 打包清单）、`DSH_DESKTOP_ARTIFACT_BASE`（产物名）、`DSH_DESKTOP_MANAGED_ACCOUNT=1`（写入 `dshDesktopManagedAccount`）、`DSH_DESKTOP_BRAND_DIR`（icon.ico/tray.ico/icon.png，缺文件直接报错）
+> - 数据根：`paths.ts` 新增 `resolveUmaDesktopHome()`（`$UMA_HOME` → `~/.uma`，不读 DSH_HOME、不做迁移）；`main.ts` 模块级 `productHome` 供 recovery 复用，并把 `DSH_HOME` 传给 Host 进程
+> - 协议：`uma://`（`dshDesktopProtocolScheme`）+ `open-url` 比较同步；受 `managedAccount` 与 `DSH_DESKTOP_ISOLATED_INSTANCE` 双重门控
+> - 图标：`uma-assets/brand/` 由 Mac 包 `icon.icns` 提取（`scripts/build-ico.mjs` 组装 PNG 条目 ICO：16/24/32/48/64/128/256 + 托盘 16/24/32）
+
+- [x] `apps/desktop` electron-builder 配置：`appId: studio.uma.desktop`、`productName: UMA Studio`、icon.ico、NSIS 目标
 - [ ] 欢迎页/品牌：搬运 `shell/renderer/welcome.html + welcome.css`（注意 macOS vibrancy 样式已有降级注释，Windows 上视觉验收）
-- [ ] URL scheme：Mac 版注册了 `uma://`，Windows 安装器对应注册协议
-- [ ] **验收**：启动页为 UMA 品牌；`uma://` 链接可唤起应用
+- [ ] 8 语种 locale 字典（`main.js` 1735-3747 区段）+ 菜单定制（`main` 区段 speechMenu 等）
+- [ ] about 模块（UMA 品牌"关于"页）
+- [ ] 签名：`apps/desktop/config/windows-packaging/windows-signing.env.example` 按样例配置 Authenticode（建议 EV 证书防 SmartScreen 误报）
+- [ ] **验收**：启动页为 UMA 品牌；`uma://` 链接可唤起应用；数据写入 `~/.uma`
 
 ## Phase 3 — 更新通道 + 缓存清理修复
 

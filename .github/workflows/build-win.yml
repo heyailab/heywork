@@ -50,14 +50,20 @@ jobs:
           version: 11.28.5
 
       - name: Write desktop release environment (.env.windows)
-        # 官方 .env.windows.example 要求的最小未签名集合：
-        # - APP_ID：reverse-DNS，先与 Mac 版 bundle id 对齐（studio.uma.desktop）
+        # 官方 .env.windows.example 要求的最小未签名集合 + UMA 产品身份（Phase 2 起生效）：
+        # - APP_ID：reverse-DNS，与 Mac 版 bundle id 对齐（studio.uma.desktop）
+        # - PRODUCT_NAME / PROTOCOL_SCHEME / ARTIFACT_BASE：品牌与 uma:// 协议
+        # - MANAGED_ACCOUNT=1：开启 .uma 数据根 + uma:// 注册（等价 UMA 壳的 managedAccount）
         # - MANDATORY_UPDATE_*：win32 即使 unsigned 也必须提供策略 origin（打包时嵌入）
         working-directory: deepseek-harness/apps/desktop
         shell: pwsh
         run: |
           $lines = @(
             'DSH_DESKTOP_APP_ID=studio.uma.desktop'
+            'DSH_DESKTOP_PRODUCT_NAME=UMA Studio'
+            'DSH_DESKTOP_PROTOCOL_SCHEME=uma'
+            'DSH_DESKTOP_ARTIFACT_BASE=uma-studio'
+            'DSH_DESKTOP_MANAGED_ACCOUNT=1'
             'DSH_DESKTOP_AUTO_UPDATE_ENV=test'
             'DSH_DESKTOP_MANDATORY_UPDATE_TEST_ORIGIN=https://studio.umayun.com'
             'DSH_DESKTOP_MANDATORY_UPDATE_CONFIG={"allowedAuthOrigins":["https://studio.umayun.com"]}'
@@ -68,18 +74,22 @@ jobs:
       - name: Apply UMA patches to upstream source
         # 从 git blob 取补丁，绕过 Windows runner 的 core.autocrlf 工作树换行转换：
         # 补丁一旦变成 CRLF，git apply 的上下文行尾部多出 \r，全部 hunk 匹配失败。
+        # 顺序敏感：phase1（注入链路）→ phase2（产品身份/协议/数据根）。
         working-directory: deepseek-harness
         shell: bash
         run: |
           set -euo pipefail
-          patch_file="$RUNNER_TEMP/uma-phase1.patch"
-          git -C .. cat-file blob HEAD:patches/uma-phase1.patch > "$patch_file"
-          if grep -q $'\r' "$patch_file"; then
-            echo "::error::uma-phase1.patch contains CRLF; patch would fail to apply"
-            exit 1
-          fi
-          git apply --check --whitespace=nowarn --verbose "$patch_file"
-          git apply --whitespace=nowarn --verbose "$patch_file"
+          for name in uma-phase1.patch uma-phase2.patch; do
+            patch_file="$RUNNER_TEMP/$name"
+            git -C .. cat-file blob "HEAD:patches/$name" > "$patch_file"
+            if grep -q $'\r' "$patch_file"; then
+              echo "::error::$name contains CRLF; patch would fail to apply"
+              exit 1
+            fi
+            echo "--- applying $name"
+            git apply --check --whitespace=nowarn --verbose "$patch_file"
+            git apply --whitespace=nowarn --verbose "$patch_file"
+          done
           git --no-pager diff --stat
 
       - name: Install dependencies
@@ -94,6 +104,8 @@ jobs:
           DSH_DESKTOP_UMA_INJECT: ${{ github.workspace }}/scripts/inject-uma.mjs
           UMA_PORT_ROOT: ${{ github.workspace }}
           UMA_ASSETS_DIR: ${{ github.workspace }}/uma-assets
+          # UMA 品牌资产（icon.ico / tray.ico / icon.png），由 electron-builder 配置读取
+          DSH_DESKTOP_BRAND_DIR: ${{ github.workspace }}/uma-assets/brand
 
       - name: Collect artifacts
         shell: pwsh

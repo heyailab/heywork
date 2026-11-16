@@ -1,0 +1,189 @@
+diff --git a/apps/desktop/scripts/electron-builder-config.mjs b/apps/desktop/scripts/electron-builder-config.mjs
+index 980aa638..c9c159ce 100644
+--- a/apps/desktop/scripts/electron-builder-config.mjs
++++ b/apps/desktop/scripts/electron-builder-config.mjs
+@@ -1,7 +1,7 @@
+ import { readInstallerLocales, renderInstallerStrings } from './installer-locales.mjs'
+ import { officePackageDirectories } from '../../../scripts/libreoffice-packages.mjs'
+ import { X509Certificate } from 'node:crypto'
+-import { readFileSync } from 'node:fs'
++import { existsSync, readFileSync } from 'node:fs'
+ import { readFile, writeFile } from 'node:fs/promises'
+ import { join, relative, sep } from 'node:path'
+ import { fileURLToPath } from 'node:url'
+@@ -108,21 +108,39 @@ export function createElectronBuilderConfig(
+   const productVersion = JSON.parse(readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf8')).version
+   const buildVersion = resolveDesktopBuildVersion(env, productVersion)
+   const packaged = resolveDesktopBuildCommit(env)
++  // UMA distribution branding: every product identity knob is environment-owned so the
++  // upstream build stays byte-identical when the variables are unset.
++  const productName = env.DSH_DESKTOP_PRODUCT_NAME?.trim() || 'DeepSeek Harness'
++  const protocolScheme = env.DSH_DESKTOP_PROTOCOL_SCHEME?.trim() || 'dsh'
++  const artifactBase = env.DSH_DESKTOP_ARTIFACT_BASE?.trim() || 'deepseek-harness'
++  const managedAccount = env.DSH_DESKTOP_MANAGED_ACCOUNT === '1'
++  const brandDir = env.DSH_DESKTOP_BRAND_DIR?.trim() || undefined
++  if (brandDir !== undefined) {
++    const required = ['icon.png', ...(resolvedPlatform === 'win32' ? ['icon-windows.ico', 'tray-windows.ico'] : [])]
++    for (const name of required) {
++      if (!existsSync(join(brandDir, name))) throw new Error(`desktop package: DSH_DESKTOP_BRAND_DIR is missing ${name}`)
++    }
++  }
++  const brandAsset = (name) => brandDir === undefined ? undefined : join(brandDir, name)
++  const defaultIconPng = fileURLToPath(new URL('../resources/icon-windows.png', import.meta.url))
++  const defaultTrayIco = fileURLToPath(new URL('../resources/tray-windows.ico', import.meta.url))
+   return {
+     appId,
+-    protocols: [{ name: 'DeepSeek Harness', schemes: ['dsh'] }],
++    protocols: [{ name: productName, schemes: [protocolScheme] }],
+     extraMetadata: {
+       dshDesktopAppId: appId,
+       dshDesktopUpdateChannel: update?.channel ?? 'nightly',
++      ...(protocolScheme === 'dsh' ? {} : { dshDesktopProtocolScheme: protocolScheme }),
++      ...(managedAccount ? { dshDesktopManagedAccount: true } : {}),
+       ...(policy === undefined ? {} : { dshMandatoryUpdatePolicy: policy }),
+       ...buildVersion === productVersion ? {} : { version: buildVersion },
+       ...packaged === undefined ? {} : { dshBuildCommit: packaged.commit, dshBuildDirty: packaged.dirty },
+     },
+-    productName: 'DeepSeek Harness',
++    productName,
+     // The default copyright uses author.name; this line names the product instead.
+     copyright: `Copyright © ${new Date().getFullYear()} \${productName}`,
+     // Unsigned builds carry their own suffix so a shared file can never pass for a release artifact.
+-    artifactName: `deepseek-harness-\${version}-\${os}-\${arch}${output.suffix}.\${ext}`,
++    artifactName: `${artifactBase}-\${version}-\${os}-\${arch}${output.suffix}.\${ext}`,
+     directories: { output: output.directory },
+     asar: true,
+     electronDist: buildPaths.electron,
+@@ -161,11 +179,11 @@ export function createElectronBuilderConfig(
+     asarUnpack: unpack,
+     extraResources: [
+       { from: buildPaths.runtime, to: 'runtime' },
+-      { from: fileURLToPath(new URL('../resources/icon-windows.png', import.meta.url)), to: 'icon.png' },
++      { from: brandAsset('icon.png') ?? defaultIconPng, to: 'icon.png' },
+       // UMA product patch consumed by the Host via DSH_DESKTOP_PRODUCT_PATCH.
+       { from: fileURLToPath(new URL('../resources/uma-platform.patch.yml', import.meta.url)), to: 'uma-platform.patch.yml' },
+       // Windows tray bitmaps; macOS keeps the Dock and ships no menu bar icon.
+-      ...(packagesWindows ? [{ from: fileURLToPath(new URL('../resources/tray-windows.ico', import.meta.url)), to: 'tray.ico' }] : []),
++      ...(packagesWindows ? [{ from: brandAsset('tray-windows.ico') ?? defaultTrayIco, to: 'tray.ico' }] : []),
+     ],
+     mac: {
+       icon: fileURLToPath(new URL('../resources/icon-macos.png', import.meta.url)),
+@@ -249,7 +267,7 @@ export function createElectronBuilderConfig(
+       )
+     },
+     win: {
+-      icon: fileURLToPath(new URL('../resources/icon-windows.png', import.meta.url)),
++      icon: brandAsset('icon-windows.ico') ?? defaultIconPng,
+       forceCodeSigning: !unsigned,
+       signtoolOptions: {
+         sign: windowsSigner,
+diff --git a/apps/desktop/src/main.ts b/apps/desktop/src/main.ts
+index 6aa6cd2c..ea270f56 100644
+--- a/apps/desktop/src/main.ts
++++ b/apps/desktop/src/main.ts
+@@ -27,7 +27,7 @@ import {
+   type IpcMainInvokeEvent,
+   type MenuItemConstructorOptions,
+ } from 'electron'
+-import { resolveDesktopPaths } from './paths.ts'
++import { resolveDesktopPaths, resolveUmaDesktopHome } from './paths.ts'
+ import { DesktopProjectManager } from './project-manager.ts'
+ import { DesktopHostFatalError, DesktopHostProcess, DesktopHostUncleanExitError } from './host-process.ts'
+ import { DesktopPlatformView, PLATFORM_IPC, platformBounds } from './platform-view.ts'
+@@ -103,12 +103,15 @@ function quitWithoutConfirmation(): void {
+   skipQuitConfirmation = true
+   app.quit()
+ }
++// UMA distribution: the managed product resolves its own data root (~/.uma, $UMA_HOME
++// overrides) and every consumer - including the fatal-recovery path - shares it.
++let productHome: string | undefined
+ const recovery = new DesktopFatalRecovery({
+   messages: () => currentDesktopLocale().messages,
+   show: options => dialog.showMessageBox(options),
+   stop: () => { shuttingDown = true; return stopForRecovery() },
+   disablePlugins: async () => {
+-    const manager = new DesktopProjectManager(resolveDesktopPaths(), runtimeResources())
++    const manager = new DesktopProjectManager(resolveDesktopPaths(productHome), runtimeResources())
+     const backupPath = await manager.disableAllPlugins()
+     console.info('Desktop profile recovery completed:', { profilePatchBackup: backupPath ?? null, homePatch: 'unchanged' })
+   },
+@@ -385,7 +388,14 @@ async function main(): Promise<void> {
+   const journalDirectory = process.env.DSH_DESKTOP_UPDATE_JOURNAL_DIR
+   const updateJournal = journalDirectory === undefined ? undefined : new DesktopUpdateJournal(journalDirectory, app.getVersion())
+   const resources = runtimeResources()
+-  const paths = resolveDesktopPaths()
++  // The packaged manifest drives the managed-account identity (extraMetadata writes
++  // dshDesktopManagedAccount / dshDesktopProtocolScheme from the packaging environment).
++  const manifest: unknown = JSON.parse(await readFile(join(app.getAppPath(), 'package.json'), 'utf8'))
++  const manifestField = (name: string): unknown =>
++    typeof manifest === 'object' && manifest !== null ? (manifest as Record<string, unknown>)[name] : undefined
++  const managedAccount = manifestField('dshDesktopManagedAccount') === true
++  if (managedAccount) productHome = resolveUmaDesktopHome()
++  const paths = resolveDesktopPaths(productHome)
+   const development = !app.isPackaged
+   const primaryRuntime = development
+     ? developmentPrimaryRuntime()
+@@ -541,6 +551,8 @@ async function main(): Promise<void> {
+     const hostEnvironmentOverrides: NodeJS.ProcessEnv = {
+       ...(umaProductPatch !== undefined && existsSync(umaProductPatch)
+         ? { DSH_DESKTOP_PRODUCT_PATCH: umaProductPatch } : {}),
++      // The Host shares the product's data root; upstream consumers read DSH_HOME.
++      ...(productHome !== undefined ? { DSH_HOME: productHome } : {}),
+     }
+     const host = new DesktopHostProcess(resources.node, resources.dsh, activeProject,
+       hostInspectPort, { ...hostEnvironment, ...hostEnvironmentOverrides, DSH_CLIENT_VERSION: desktopClientVersion() }, onFailure,
+@@ -703,7 +715,6 @@ async function main(): Promise<void> {
+     return startup
+   }
+ 
+-  const manifest: unknown = JSON.parse(await readFile(join(app.getAppPath(), 'package.json'), 'utf8'))
+   const packagedChannel = desktopUpdateChannel(manifest)
+   const channelSettings = new DesktopUpdateSettings(app.getPath('userData'), packagedChannel)
+   const initialChannel = await channelSettings.load()
+@@ -1494,10 +1505,18 @@ async function main(): Promise<void> {
+     window.focus()
+   }
+ 
+-  if (app.isPackaged || process.env.DSH_DESKTOP_DEV_APP === '1') app.setAsDefaultProtocolClient('dsh')
++  // Protocol scheme mirrors the UMA shell: managed products register their own scheme
++  // (dshDesktopProtocolScheme, packaged via extraMetadata); upstream keeps 'dsh'.
++  const protocolScheme = typeof manifestField('dshDesktopProtocolScheme') === 'string'
++    && manifestField('dshDesktopProtocolScheme') !== '' ? manifestField('dshDesktopProtocolScheme') as string : 'dsh'
++  if (managedAccount) {
++    if (process.env.DSH_DESKTOP_ISOLATED_INSTANCE !== '1') app.setAsDefaultProtocolClient(protocolScheme)
++  } else if (app.isPackaged || process.env.DSH_DESKTOP_DEV_APP === '1') {
++    app.setAsDefaultProtocolClient(protocolScheme)
++  }
+   app.on('open-url', (event, url) => {
+     event.preventDefault()
+-    if (url === 'dsh://open' || url === 'dsh://open/') focusPrimaryWindow()
++    if (url === `${protocolScheme}://open` || url === `${protocolScheme}://open/`) focusPrimaryWindow()
+   })
+ 
+   app.on('activate', (_event, hasVisibleWindows) => {
+diff --git a/apps/desktop/src/paths.ts b/apps/desktop/src/paths.ts
+index cf03e38c..fc434ec9 100644
+--- a/apps/desktop/src/paths.ts
++++ b/apps/desktop/src/paths.ts
+@@ -1,5 +1,6 @@
+ /** Filesystem ownership for the Electron-managed desktop installation. */
+ 
++import { homedir } from 'node:os'
+ import { join } from 'node:path'
+ import { resolveDshHome } from '@deepseek-ai/dsh-home-paths'
+ 
+@@ -20,3 +21,14 @@ export function resolveDesktopPaths(dshHome: string = resolveDshHome()): Desktop
+     lock: join(dshHome, 'profiles', 'desktop', 'lock'),
+   }
+ }
++
++/**
++ * Select the UMA distribution's own data root without consulting the kernel's DSH_HOME
++ * override (mirrors the UMA shell's `resolveUmaDesktopHome`; no legacy data migration).
++ * @param env - Process environment containing optional UMA_HOME.
++ * @param userHome - Operating-system account home.
++ * @returns Absolute application data root (`$UMA_HOME` or `~/.uma`).
++ */
++export function resolveUmaDesktopHome(env: Record<string, string | undefined> = process.env, userHome: string = homedir()): string {
++  return resolveDshHome(env.UMA_HOME?.trim() || join(userHome, '.uma'), {})
++}
