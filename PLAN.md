@@ -73,10 +73,16 @@
 
 ## Phase 3 — 更新通道 + 缓存清理修复
 
+> 实测（2026-11-16，Mac 版 `~/Library/Caches/uma-studio-updater/`，798MB）：
+> - `pending/uma-studio-1.0.0-beta3.20261116.1-mac-arm64.zip` 418MB + `pending/current.blockmap` 424KB + `pending/update-info.json`（electron-updater 的 pending 三元组，正常）
+> - **根目录另有一份 `update.zip`（418MB）与 `current.blockmap`（424KB）**，后者与 `pending/current.blockmap` **逐字节相同**
+> - 上游 `src/updates/electron-updater/discard.ts` 已存在（与 UMA 版字段集一致），但它只清 `helper.cacheDirForPendingUpdate`（即 `pending/`），**根级这对文件从无人清** → 双份共存 = 798MB
+> - 结论：不是 discard 缺失，而是「安装成功后没人回收根级暂存」+「discard 只在切换通道时触发」
+
 - [ ] `app-update.yml`：generic provider，url 指向 `https://studio.umayun.com/uma-studio/feeds/win-x64/`，channel nightly，`updaterCacheDirName: uma-studio-updater`
 - [ ] 服务端建 `feeds/win-x64/` 目录，上传 latest.yml + 安装包 + blockmap
-- [ ] **修 bug**：在更新成功落地后清理缓存目录中的 `pending/` 与根目录 `update.zip`（Mac 版双份 798MB 的教训）
-- [ ] **验收**：发一个新版本号，实测夜间通道自动更新成功且无残留
+- [ ] **修 bug（根因见上）**：应用启动后、无下载在飞（`updateState.phase === 'idle'`、journal 无 in-flight）时清扫缓存目录根级的 `update.zip` / `current.blockmap`，并复用 `recordUpdateCleanupFailure` 记录失败；`pending/` 仍只交给 `discardDesktopUpdate` 处理，避免破坏可恢复的下载
+- [ ] **验收**：检查更新→下载→安装→重启后，缓存目录只剩 `pending/` 三元组且无根级残留；再切一次通道，`pending/` 被 discard 清空
 
 ## Phase 4 — 功能验收（对照 Mac 版 1:1）
 
