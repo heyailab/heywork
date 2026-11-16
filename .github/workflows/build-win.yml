@@ -74,12 +74,12 @@ jobs:
       - name: Apply UMA patches to upstream source
         # 从 git blob 取补丁，绕过 Windows runner 的 core.autocrlf 工作树换行转换：
         # 补丁一旦变成 CRLF，git apply 的上下文行尾部多出 \r，全部 hunk 匹配失败。
-        # 顺序敏感：phase1（注入链路）→ phase2（产品身份/协议/数据根）。
+        # 顺序敏感：phase1（注入链路）→ phase2（产品身份/协议/数据根）→ phase2b（8 语 locale 字典）。
         working-directory: deepseek-harness
         shell: bash
         run: |
           set -euo pipefail
-          for name in uma-phase1.patch uma-phase2.patch; do
+          for name in uma-phase1.patch uma-phase2.patch uma-phase2b.patch; do
             patch_file="$RUNNER_TEMP/$name"
             git -C .. cat-file blob "HEAD:patches/$name" > "$patch_file"
             if grep -q $'\r' "$patch_file"; then
@@ -91,6 +91,14 @@ jobs:
             git apply --whitespace=nowarn --verbose "$patch_file"
           done
           git --no-pager diff --stat
+
+      - name: Overlay UMA renderer assets
+        # UMA 品牌的欢迎页/更新对话框 renderer 文件直接覆盖上游同名文件
+        # （mandatory-update-frame.js 已在资产准备期把 uma-app:// 改回 dsh-app://）。
+        shell: bash
+        run: node scripts/overlay-renderer.mjs
+        env:
+          UMA_PORT_ROOT: ${{ github.workspace }}
 
       - name: Install dependencies
         working-directory: deepseek-harness

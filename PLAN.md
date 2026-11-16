@@ -62,11 +62,13 @@
 > - 图标：`uma-assets/brand/` 由 Mac 包 `icon.icns` 提取（`scripts/build-ico.mjs` 组装 PNG 条目 ICO：16/24/32/48/64/128/256 + 托盘 16/24/32）
 
 - [x] `apps/desktop` electron-builder 配置：`appId: studio.uma.desktop`、`productName: UMA Studio`、icon.ico、NSIS 目标
-- [ ] 欢迎页/品牌：搬运 `shell/renderer/welcome.html + welcome.css`（注意 macOS vibrancy 样式已有降级注释，Windows 上视觉验收）
-- [ ] 8 语种 locale 字典（`main.js` 1735-3747 区段）+ 菜单定制（`main` 区段 speechMenu 等）
-- [ ] about 模块（UMA 品牌"关于"页）
+- [x] 8 语种 locale 字典：`patches/uma-phase2b.patch`（`scripts/locale-port.mjs` 从 UMA bundle 抽取，键级比对：上游 4 键回填、UMA 新增 47 键含 `trayRoles` 嵌套对象；`DesktopMessages` 改为条件映射放宽字面量类型）
+- [x] renderer 品牌覆盖：`scripts/overlay-renderer.mjs`（welcome.css、update-dialog.html/css/js、mandatory-update-frame.js[uma-app→dsh-app]、3 个品牌 svg）
+- [ ] about 流程（desktopAboutContent + ordinaryMessageBox about 视图 + 菜单入口；依赖 `messages.about*` 键已就位）
+- [ ] 菜单定制（main 区段 speechMenu / operationsMenu 等，配合 trayRoles）
+- [ ] lib/welcome 源（`src/client/welcome.tsx` 的 UMA 版 + ui-theme 品牌字体，编译进 `lib/welcome/welcome.js`）
 - [ ] 签名：`apps/desktop/config/windows-packaging/windows-signing.env.example` 按样例配置 Authenticode（建议 EV 证书防 SmartScreen 误报）
-- [ ] **验收**：启动页为 UMA 品牌；`uma://` 链接可唤起应用；数据写入 `~/.uma`
+- [ ] **验收**：启动页为 UMA 品牌；`uma://` 链接可唤起应用；数据写入 `~/.uma`；更新对话框含 UMA 品牌样式
 
 ## Phase 3 — 更新通道 + 缓存清理修复
 
