@@ -79,9 +79,9 @@
 > - 上游 `src/updates/electron-updater/discard.ts` 已存在（与 UMA 版字段集一致），但它只清 `helper.cacheDirForPendingUpdate`（即 `pending/`），**根级这对文件从无人清** → 双份共存 = 798MB
 > - 结论：不是 discard 缺失，而是「安装成功后没人回收根级暂存」+「discard 只在切换通道时触发」
 
-- [ ] `app-update.yml`：generic provider，url 指向 `https://studio.umayun.com/uma-studio/feeds/win-x64/`，channel nightly，`updaterCacheDirName: uma-studio-updater`
-- [ ] 服务端建 `feeds/win-x64/` 目录，上传 latest.yml + 安装包 + blockmap
-- [ ] **修 bug（根因见上）**：应用启动后、无下载在飞（`updateState.phase === 'idle'`、journal 无 in-flight）时清扫缓存目录根级的 `update.zip` / `current.blockmap`，并复用 `recordUpdateCleanupFailure` 记录失败；`pending/` 仍只交给 `discardDesktopUpdate` 处理，避免破坏可恢复的下载
+- [x] 更新 feed 直配：`patches/uma-phase3.patch` 新增 `DSH_DESKTOP_UPDATE_PUBLIC_URL`（https + 尾斜杠校验），设了就绕过 `dsh-desk/<releaseId>` 部署布局 —— 关键是它让 **unsigned 构建也产出 app-update.yml**（上游 `update = unsigned ? undefined : …`，否则产物里更新链路永久关闭）
+- [x] **修 bug（根因见上）**：`src/updates/electron-updater/cache-sweep.ts`，启动后、首次检查前清缓存根级 `update.zip` + `current.blockmap`；目录用 app-update.yml 的 `updaterCacheDirName` 解析（与 electron-updater 的 `join(baseCachePath, dirName || app.name)` 同源），`pending/` 一律不碰，失败走 `recordUpdateCleanupFailure`
+- [ ] 服务端建 `feeds/win-x64/` 目录，上传 CI 产出的 `latest.yml` + 安装包 + `.blockmap`（**需要你在 studio.umayun.com 上建路径**，否则检查更新会 404）
 - [ ] **验收**：检查更新→下载→安装→重启后，缓存目录只剩 `pending/` 三元组且无根级残留；再切一次通道，`pending/` 被 discard 清空
 
 ## Phase 4 — 功能验收（对照 Mac 版 1:1）

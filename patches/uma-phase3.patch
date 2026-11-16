@@ -1,0 +1,128 @@
+diff --git a/apps/desktop/scripts/electron-builder-config.mjs b/apps/desktop/scripts/electron-builder-config.mjs
+index a5184392..1086be8e 100644
+--- a/apps/desktop/scripts/electron-builder-config.mjs
++++ b/apps/desktop/scripts/electron-builder-config.mjs
+@@ -20,7 +20,7 @@ import {
+   resolveWindowsUpdatePublisher,
+   scrubWindowsSigningEnvironment,
+ } from './windows-sign.mjs'
+-import { resolveDesktopAutoUpdateConfig } from '@deepseek-ai/dsh-desktop-publisher/desktop-auto-update-environment.mjs'
++import { resolveDesktopAutoUpdateConfig, resolveDesktopUpdateChannel } from '@deepseek-ai/dsh-desktop-publisher/desktop-auto-update-environment.mjs'
+ import { resolveDesktopBuildCommit } from './desktop-build-commit.mjs'
+ import { resolveDesktopBuildVersion } from './desktop-build-version.mjs'
+ import { resolveDesktopPolicyEnvironment } from './desktop-policy-environment.mjs'
+@@ -101,7 +101,15 @@ export function createElectronBuilderConfig(
+   if (windowsSigner !== undefined) {
+     installWindowsNsisBootstrapSigner({ sign: windowsSigner })
+   }
+-  const update = unsigned ? undefined : resolveDesktopAutoUpdateConfig(env, resolvedPlatform, resolvedArch)
++  // A product-owned feed URL replaces the dsh-desk/<releaseId> deployment layout, so an unsigned
++  // qualification build still ships app-update.yml instead of a permanently disabled updater.
++  const explicitFeedUrl = env.DSH_DESKTOP_UPDATE_PUBLIC_URL?.trim() || undefined
++  if (explicitFeedUrl !== undefined && !/^https:\/\/[^/]+\//u.test(explicitFeedUrl)) {
++    throw new Error('desktop package: DSH_DESKTOP_UPDATE_PUBLIC_URL must be an https URL with a trailing slash')
++  }
++  const update = explicitFeedUrl !== undefined
++    ? { publicUrl: explicitFeedUrl, channel: resolveDesktopUpdateChannel(env) }
++    : unsigned ? undefined : resolveDesktopAutoUpdateConfig(env, resolvedPlatform, resolvedArch)
+   if (preparedRuntime !== undefined) buildPaths.dsh = preparedRuntime
+   // electron-builder merges extraMetadata into the packaged manifest, so a build version here reaches
+   // the artifact names, the update feed, and the installed app.getVersion() the updater compares against.
+diff --git a/apps/desktop/src/main.ts b/apps/desktop/src/main.ts
+index c7060a0c..d0179d67 100644
+--- a/apps/desktop/src/main.ts
++++ b/apps/desktop/src/main.ts
+@@ -1,6 +1,7 @@
+ /** Electron shell: desktop project ownership, custom protocol, windows, and lifecycle. */
+ 
+ import { installFileActions } from './file-actions.ts'
++import { resolveUpdaterCacheDirectory, sweepDesktopUpdateCache } from './updates/electron-updater/cache-sweep.ts'
+ import { desktopAboutContent } from './about.ts'
+ import { configurationFailure, channelSaveFailure, configurationMessage } from './update-configuration.ts'
+ import type { DesktopChannelState, DesktopChannelChangeResult } from '@deepseek-ai/dsh-client-ui-settings-general/types'
+@@ -842,6 +843,16 @@ async function main(): Promise<void> {
+     return state
+   }
+ 
++  // A completed install leaves the fixed-name download staging at the cache root: electron-updater
++  // only ever empties pending/, so the package would otherwise stay on disk twice. Nothing can be
++  // downloading yet in this process, so the sweep cannot race a live download.
++  void sweepDesktopUpdateCache(
++    resolveUpdaterCacheDirectory(process.resourcesPath, app.getPath('cache'), app.getName()),
++    app.getPath('logs'),
++  ).then((removed) => {
++    if (removed.length > 0) console.info('desktop update: reclaimed stale update staging', removed)
++  }).catch((error: unknown) => { console.error('desktop update: cache sweep failed', error) })
++
+   const updateSchedule = new DesktopUpdateSchedule(updates, resolveDesktopUpdateScheduleConfig(process.env))
+ 
+   const downloadUpdate = async (version: string, revision = updates.revision): Promise<DesktopUpdateState> => {
+diff --git a/apps/desktop/src/updates/electron-updater/cache-sweep.ts b/apps/desktop/src/updates/electron-updater/cache-sweep.ts
+new file mode 100644
+index 00000000..0f623507
+--- /dev/null
++++ b/apps/desktop/src/updates/electron-updater/cache-sweep.ts
+@@ -0,0 +1,63 @@
++/** Reclaim the fixed-name download staging electron-updater leaves at the update cache root. */
++
++import { readFileSync } from 'node:fs'
++import { rm } from 'node:fs/promises'
++import { join } from 'node:path'
++import { recordUpdateCleanupFailure } from '../../update-cleanup-log.ts'
++
++/**
++ * Names the updater rewrites at the cache root on every download, outside `pending/`.
++ * `DownloadedUpdateHelper` only ever empties `pending/`, so a completed install leaves
++ * these behind and the update package ends up stored twice.
++ */
++const STAGING_FILES = ['update.zip', 'current.blockmap'] as const
++
++/** Key electron-updater reads through `configOnDisk` to name its cache directory. */
++const CACHE_DIR_KEY = 'updaterCacheDirName:'
++
++/**
++ * Resolve the directory electron-updater stages downloads in.
++ * Mirrors `path.join(app.baseCachePath, updaterCacheDirName || app.name)`; the fallback
++ * applies only when a build shipped no configuration, where the updater is disabled anyway.
++ * @param resources - Packaged resources directory containing `app-update.yml`.
++ * @param cacheRoot - `app.getPath('cache')`.
++ * @param applicationName - Name used by electron-updater when the configuration omits the key.
++ * @returns Absolute cache directory owned by the updater.
++ */
++export function resolveUpdaterCacheDirectory(resources: string, cacheRoot: string, applicationName: string): string {
++  let name = applicationName
++  try {
++    const line = readFileSync(join(resources, 'app-update.yml'), 'utf8')
++      .split('\n')
++      .map(entry => entry.trim())
++      .find(entry => entry.startsWith(CACHE_DIR_KEY))
++    const value = line?.slice(CACHE_DIR_KEY.length).trim().replace(/^['"]|['"]$/gu, '')
++    if (value !== undefined && value !== '') name = value
++  }
++  catch { /* An absent configuration keeps the library's own fallback; nothing to reclaim either. */ }
++  return join(cacheRoot, name)
++}
++
++/**
++ * Remove the fixed-name staging files a settled update left behind.
++ * Runs before the first check of a fresh process, when no download can be in flight.
++ * A missing file is not a failure; an unremovable one is logged without reviving the target.
++ * @param directory - Directory returned by {@link resolveUpdaterCacheDirectory}.
++ * @param logs - Shell-owned log directory for durable cleanup warnings.
++ * @returns Names that were actually removed.
++ */
++export async function sweepDesktopUpdateCache(directory: string, logs: string): Promise<readonly string[]> {
++  const removed: string[] = []
++  for (const name of STAGING_FILES) {
++    const path = join(directory, name)
++    try {
++      await rm(path)
++      removed.push(name)
++    }
++    catch (error) {
++      if (error instanceof Error && 'code' in error && error.code === 'ENOENT') continue
++      recordUpdateCleanupFailure(logs, { operation: 'remove', path, error })
++    }
++  }
++  return removed
++}
