@@ -196,7 +196,7 @@ index ea244526..22fd548d 100644
    if (signPrimaryRuntime) await execute(['run', 'sign:primary-runtime', '--dsh'], electronBuilderEnv)
 +  // UMA injection hook: runs after the dsh tree is materialized and verified, before packaging.
 +  if (process.env.DSH_DESKTOP_UMA_INJECT !== undefined) {
-+    await executePreparation([process.execPath, process.env.DSH_DESKTOP_UMA_INJECT], electronBuilderEnv)
++    await executePreparation(['exec', 'node', process.env.DSH_DESKTOP_UMA_INJECT], electronBuilderEnv)
 +  }
    if (invocation.prepareOnly) return
    const buildMacArtifact = (artifact: DesktopPrepackagedArtifact) => execute(
