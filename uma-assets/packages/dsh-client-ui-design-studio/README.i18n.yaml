@@ -1,0 +1,40 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/client/ui-design-studio/README.md
+/:
+  en: 62bb93e2dfe83e28
+  zh: 2bfad1b8e2fdc182
+/deepseek-ai-dsh-client-ui-design-studio:
+  en: 8daa42fd7642feb8
+  zh: acfbffa0a5663512
+/deepseek-ai-dsh-client-ui-design-studio/summary:
+  en: b5163661b9d5a70a
+  zh: 39fb473278a00882
+/deepseek-ai-dsh-client-ui-design-studio/table-of-contents:
+  en: 4e53164159b5ce41
+  zh: bd61ce1bef78579b
+/deepseek-ai-dsh-client-ui-design-studio/use-this-package:
+  en: 492a2a741e93017e
+  zh: dded4e0346a500ed
+/deepseek-ai-dsh-client-ui-design-studio/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-client-ui-design-studio/model-experience/presentation-only:
+  en: db68982a2c324d5a
+  zh: c86dfe942d94329c
+/deepseek-ai-dsh-client-ui-design-studio/model-experience/presentation-only/what-the-model-sees:
+  en: dd9c77e6b1670610
+  zh: 52444f32121245f6
+/deepseek-ai-dsh-client-ui-design-studio/model-experience/presentation-only/token-effect:
+  en: b58897e7559feb4a
+  zh: b21d2ab7d1c6b30b
+/deepseek-ai-dsh-client-ui-design-studio/model-experience/presentation-only/kv-cache-effect:
+  en: 7593cf5d0d2cedd6
+  zh: 2b8407d9344886f7
+/deepseek-ai-dsh-client-ui-design-studio/known-limitations-and-deferred-work:
+  en: 04b12e06a56c0634
+  zh: f7f4bab1764920d5
+/deepseek-ai-dsh-client-ui-design-studio/known-limitations-and-deferred-work/dev-note:
+  en: 1acfffd6831a945a
+  zh: 2ee2a65d2ba85f72

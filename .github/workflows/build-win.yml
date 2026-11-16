@@ -1,11 +1,12 @@
 name: build-windows
 
-# UMA Windows 移植 CI（Phase 1 · UMA 插件层注入）
-# 官方 package-target.ts 全流程 + patches/uma-phase1.patch（6 处上游源码改动）
+# UMA Windows 移植 CI
+# 官方 package-target.ts 全流程 + patches/uma-phase1..3（6+2+2c/3 处上游源码改动）
 # 注入链路：patch 提供注入 hook（DSH_DESKTOP_UMA_INJECT）→ prepare:dsh 后运行
-# scripts/inject-uma.mjs：12 个 uma 插件包 + ssh2 闭包 + 重算 desktop-runtime.json
+# scripts/inject-uma.mjs：23 个包（12 个 UMA 产品包 + 11 个上游公开仓库未发布的一等包，
+#   后者见 uma-assets/packages.extras.json）+ 三方依赖池（uma-assets/deps）+ 重算
+#   desktop-runtime.json，末尾调用 scripts/verify-uma-platform.mjs 做合成门禁
 # 产品激活：uma-platform.patch.yml（win32 版）随包附带；Host 经 DSH_DESKTOP_PRODUCT_PATCH 应用
-# TODO(Phase 2)：品牌（productName/icon/uma://）、locale、菜单、updater discard、DSH_HOME=~/.uma
 # TODO(Phase 3)：签名接入（secrets → DSH_DESKTOP_WINDOWS_*，用 package:desktop:win:x64 签名版）
 
 on:
@@ -107,6 +108,17 @@ jobs:
       - name: Install dependencies
         working-directory: deepseek-harness
         run: pnpm install --frozen-lockfile
+
+      - name: Verify UMA platform composition
+        # Phase 4 gate: the 22 product switches must resolve against the desktop
+        # layer stack, every package the UMA layers mount must be vendored or
+        # upstream, and the tool families must still register. Runs before the
+        # two-hour packaging step so a composition break fails in seconds.
+        # (The same verifier re-runs against the materialized tree from the
+        # injection hook, where it can also see the packaged node_modules.)
+        run: node scripts/verify-uma-platform.mjs
+        env:
+          UMA_PORT_ROOT: ${{ github.workspace }}
 
       - name: Package Windows installer (unsigned, official pipeline + UMA injection)
         working-directory: deepseek-harness

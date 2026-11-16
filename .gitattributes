@@ -20,3 +20,8 @@
 *.yml  text eol=lf
 *.yaml text eol=lf
 *.json text eol=lf
+
+# 从 Mac 包 asar 原样抽取的第三方/一等包：必须逐字节等于抽取结果
+# （packages.extras.json 记录了每包 SHA-256；任何换行重写都会让它失真）
+uma-assets/packages/** -text
+uma-assets/deps/**     -text

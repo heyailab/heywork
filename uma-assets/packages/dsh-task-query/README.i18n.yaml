@@ -1,0 +1,43 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/context/task-query/README.md
+/:
+  en: 98520a6b2cfd137d
+  zh: 78cd2e0e672685bc
+/deepseek-ai-dsh-task-query:
+  en: c22fe6648acac1f4
+  zh: 423a4f2782d1a756
+/deepseek-ai-dsh-task-query/summary:
+  en: 2d1bb2455acb6f3c
+  zh: 89945618bd7c626f
+/deepseek-ai-dsh-task-query/table-of-contents:
+  en: 76368b6b1da79c80
+  zh: 5cbf1a117f4259af
+/deepseek-ai-dsh-task-query/use-this-package:
+  en: 77250eee54e7b712
+  zh: 09a5857e09aeeed6
+/deepseek-ai-dsh-task-query/understand-the-implementation:
+  en: a0092fa8056f241d
+  zh: f539c00752434978
+/deepseek-ai-dsh-task-query/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-task-query/model-experience/retrieval-hint:
+  en: 555bdeb016e02a28
+  zh: 4bba72a2b5d6adf2
+/deepseek-ai-dsh-task-query/model-experience/retrieval-hint/what-the-model-sees:
+  en: d7e70de02229dc75
+  zh: 7c873bfeb0cdc4ed
+/deepseek-ai-dsh-task-query/model-experience/retrieval-hint/token-effect:
+  en: 0a3a29c9ea417d9c
+  zh: e6e12ae0fb2e5dd0
+/deepseek-ai-dsh-task-query/model-experience/retrieval-hint/kv-cache-effect:
+  en: 1f069eb863ed44db
+  zh: a412ad7230566507
+/deepseek-ai-dsh-task-query/known-limitations-and-deferred-work:
+  en: 01b7dfa54896392a
+  zh: c56dfa9765dcc573
+/deepseek-ai-dsh-task-query/known-limitations-and-deferred-work/dev-note:
+  en: 0a1253c6f7b5e8b9
+  zh: 9f56528562c7c914

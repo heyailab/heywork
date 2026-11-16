@@ -1,0 +1,148 @@
+{
+  "source": "UMA Studio.app/Contents/Resources/app.asar → dsh/node_modules/@deepseek-ai",
+  "desktopVersion": "0.2.2-rc.3",
+  "note": "First-party packages the UMA desktop layers mount but the public deepseek-harness ref does not publish.",
+  "packages": [
+    {
+      "name": "@deepseek-ai/dsh-api-account-controller",
+      "version": "0.2.2-rc.3",
+      "files": 20,
+      "bytes": 179094,
+      "sha256": "0d798e7cc8279948041723d3f8a5288804a1ea6ad0c296951a3d78ff5c5b6177",
+      "natives": []
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-design-studio",
+      "version": "0.2.2-rc.3",
+      "files": 524,
+      "bytes": 11007903,
+      "sha256": "6de0398ddb2d74efc65b0ffe28038fa36165af10b7909643c301cdc4cc07e1f3",
+      "natives": []
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-knowledge",
+      "version": "0.2.2-rc.3",
+      "files": 15,
+      "bytes": 201013,
+      "sha256": "e3d4e82afc54c9dcccaccc14672508a32e55dd126e0bce3c7cf8d82c42e0d8e8",
+      "natives": []
+    },
+    {
+      "name": "@deepseek-ai/dsh-client-ui-repo-wiki",
+      "version": "0.2.2-rc.3",
+      "files": 16,
+      "bytes": 3693799,
+      "sha256": "639f46d0734ef8ff7916eac412b9c44fbb19b390c8d697543fc52ea7da0dc9ad",
+      "natives": []
+    },
+    {
+      "name": "@deepseek-ai/dsh-coding-workbench",
+      "version": "0.2.2-rc.3",
+      "files": 47,
+      "bytes": 788875,
+      "sha256": "8fb002c8c1730dcd87c32467a1bd4a40f91ce061c297477e6709cbd94d903ccd",
+      "natives": []
+    },
+    {
+      "name": "@deepseek-ai/dsh-deepseek-account-platform",
+      "version": "0.2.2-rc.3",
+      "files": 26,
+      "bytes": 269804,
+      "sha256": "49cf09b041294ec620630e31f9a4af90d17a5183039cc40c5ef61012ca73a537",
+      "natives": []
+    },
+    {
+      "name": "@deepseek-ai/dsh-knowledge",
+      "version": "0.2.2-rc.3",
+      "files": 30,
+      "bytes": 509138,
+      "sha256": "b17653afff1be020fbac0a474294ee81e4a7a556d07443b71b8ac27fe5283177",
+      "natives": []
+    },
+    {
+      "name": "@deepseek-ai/dsh-task-query",
+      "version": "0.2.2-rc.3",
+      "files": 14,
+      "bytes": 13935,
+      "sha256": "05df3ddc6129b8cf66533f16fdee75f9f56c9b66aa425499baef50d2461c9d6c",
+      "natives": []
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-repo-wiki",
+      "version": "0.2.2-rc.3",
+      "files": 625,
+      "bytes": 5668448,
+      "sha256": "d114a0bc9ec387ba24cab9c51a8a8e25747038da5d97227e84760f21b7ad7a24",
+      "natives": []
+    },
+    {
+      "name": "@deepseek-ai/dsh-util-repo-wiki",
+      "version": "0.2.2-rc.3",
+      "files": 600,
+      "bytes": 5440237,
+      "sha256": "3a87507f912676009f33d6e0cd67f30e878dcf1c75aaf302f3cd85ff964dcc20",
+      "natives": []
+    },
+    {
+      "name": "@deepseek-ai/dsh-util-uma-delivery",
+      "version": "0.2.2-rc.3",
+      "files": 6,
+      "bytes": 55651,
+      "sha256": "27e58acd384a4e3ea14a5de5b4e39fd8678a29ebe9c2d7d401ca577ac59025ad",
+      "natives": []
+    },
+    {
+      "name": "@deepseek-ai/dsh-worktree",
+      "version": "0.2.2-rc.3",
+      "files": 30,
+      "bytes": 171197,
+      "sha256": "fa25c01dda06a977cc9506c65f7f95de32ce9397c03bfec9d040a8c73d36e48e",
+      "natives": []
+    },
+    {
+      "name": "zod",
+      "version": "4.6.6",
+      "files": 592,
+      "bytes": 5412495,
+      "sha256": "25a16e4d621702c9acc8b2f2ac56c30b247305ff4bace7516772e2862d124cb7",
+      "natives": [],
+      "pool": "deps"
+    },
+    {
+      "name": "pdfjs-dist",
+      "version": "6.3.289",
+      "files": 390,
+      "bytes": 16157596,
+      "sha256": "96bf1bb148ab171e793fa7c010b83386671da60ebac6fdc26a977bb6c3615dc1",
+      "natives": [],
+      "pool": "deps"
+    },
+    {
+      "name": "picomatch",
+      "version": "4.0.7",
+      "files": 10,
+      "bytes": 93192,
+      "sha256": "1a6a99b92ddc2c31590e817ae231251ea128f025479ec80a824584499c6182d3",
+      "natives": [],
+      "pool": "deps"
+    },
+    {
+      "name": "typescript",
+      "version": "6.0.3",
+      "files": 30,
+      "bytes": 19971600,
+      "sha256": "3d5f26f7821258624e71d79c66f3c91ff4666c85d21e13d858b02218fe3db1bc",
+      "natives": [],
+      "pool": "deps"
+    },
+    {
+      "name": "js-yaml",
+      "version": "4.3.2",
+      "files": 33,
+      "bytes": 404670,
+      "sha256": "ceabe89171f1d09a3de081cde2c5fd29db696c7d728993f654dab15dd9c05d33",
+      "natives": [],
+      "pool": "deps"
+    }
+  ]
+}

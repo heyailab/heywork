@@ -1,0 +1,126 @@
+{
+  "name": "@deepseek-ai/dsh-coding-workbench",
+  "description": "Workspace coding checks, durable review evidence, versioned acceptance and isolated task management",
+  "version": "0.2.2-rc.3",
+  "private": true,
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./locale/*.json": "./locale/*.json",
+    "./package.json": "./package.json",
+    "./policy": {
+      "types": "./lib/types/policy.d.ts",
+      "default": "./lib/policy.js"
+    },
+    "./protocol": {
+      "types": "./lib/types/completion.d.ts",
+      "default": "./lib/completion.js"
+    },
+    "./compaction-refresh": {
+      "types": "./lib/types/compaction-refresh.d.ts",
+      "default": "./lib/compaction-refresh.js"
+    },
+    "./remote": {
+      "types": "./lib/typert.remote-client.d.ts",
+      "default": "./lib/typert.remote-client.js"
+    },
+    "./tools": {
+      "types": "./lib/types/tools.d.ts",
+      "default": "./lib/tools.js"
+    },
+    "./typert": {
+      "types": "./lib/typert.host.d.ts",
+      "default": "./lib/typert.host.js"
+    },
+    "./types": {
+      "types": "./lib/types/types.d.ts",
+      "default": "./lib/types/types.js"
+    },
+    "./experience-recall": {
+      "types": "./lib/types/experience-recall.d.ts",
+      "default": "./lib/experience-recall.js"
+    },
+    "./standards-context": {
+      "types": "./lib/types/standards-context.d.ts",
+      "default": "./lib/standards-context.js"
+    }
+  },
+  "files": [
+    "locale/*.json",
+    "lib/index.js",
+    "lib/completion.js",
+    "lib/policy.js",
+    "lib/tools.js",
+    "lib/compaction-refresh.js",
+    "lib/experience-recall.js",
+    "lib/standards-context.js",
+    "lib/source-*.js",
+    "lib/process-*.js",
+    "lib/schema-*.js",
+    "lib/verification-*.js",
+    "lib/experience-*.js",
+    "lib/context-*.js",
+    "lib/types/**/*.js",
+    "lib/types/**/*.d.ts",
+    "lib/typert.host.js",
+    "lib/typert.host.d.ts",
+    "lib/typert.remote-client.js",
+    "lib/typert.remote-client.d.ts"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.1.0",
+    "@deepseek-ai/dsh-agent-team": "0.2.2-rc.3"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "~4.1.0",
+    "@deepseek-ai/dsh-agent": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-agent-loop": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-agent-preset-registry": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-worktree": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-fs": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-llm": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-sandbox": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-sandbox-policy": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-session": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-session-projection": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-session-query": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-session-persistence-jsonl": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-subprocess": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-system-prompt": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tools": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tool-executor-ptc": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tool-executor-native": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-working-directory": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-workspace": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-workspace-changes": "0.2.2-rc.3",
+    "@types/picomatch": "^4.0.3",
+    "@deepseek-ai/dsh-tool-todo": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-agent-team": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-subagent": "0.2.2-rc.3"
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh-atomic-write": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-brand": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-compaction": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-home-paths": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-llm": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-sandbox-policy": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-session": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-storage-domain": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-timeout": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tools": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-typert-protocol": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-user-approval": "0.2.2-rc.3",
+    "@deepseek-ai/schemastery": "~3.19.0",
+    "picomatch": "^4.0.7",
+    "zod": "4.6.6",
+    "typescript": "^6.0.3",
+    "@deepseek-ai/dsh-util-uma-delivery": "0.2.2-rc.3"
+  }
+}

@@ -19,7 +19,7 @@
 
 ## 关键事实（逆向已确认，移植时直接引用）
 
-1. **12 个 uma 插件包 0 平台耦合**：无 darwin 引用、无 process.platform 分支，依赖的 dsh 核心包（dsh-tools/skill/credentials/llm/session/storage-domain/typert-protocol/cordis/schemastery）全部在本仓库 packages/ 内。
+1. **12 个 uma 插件包本体 0 平台耦合**：无 darwin 引用、无 process.platform 分支。但**依赖面不止这 12 个**——UMA 层还挂载 11 个公开仓库未发布的一等包（见 Phase 4 与 `uma-assets/packages.extras.json`），它们同样无原生二进制，需一并 vendor。
 2. **壳层已内置 win32 支持**：Mac 包 `lib/main.js` 含 `uma.cmd` 启动器、`node.exe` 路径、win32 路径比较、`desktop-win` 客户端标识等分支——上游开源壳同版本应已包含等价逻辑，个别 UMA 定制（如欢迎页/更新文案）需比对搬运。
 3. **resources.umadb 跨平台**：AES-256-GCM 解密在 Node 层（密钥 sha256('UMA Studio local resource container v1')），Windows 直接可用。
 4. **`desktopPlatform` 必改**：`uma-platform.patch.yml` → `deepseek-account` 配置中 `"darwin"` → `"win32"`。
@@ -86,13 +86,24 @@
 
 ## Phase 4 — 功能验收（对照 Mac 版 1:1）
 
-- [ ] 交付流水线：`uma_artifact_write/read` + gate 八工件分级（patch/feature/product）
-- [ ] 设计工具族 10 个工具：design_context / design_asset_list/get / design_rule_search 等
-- [ ] 任务预算 `uma_session_budgets` read/update
-- [ ] 专家指导 `uma_guidance`
-- [ ] SSH 运维（ssh2 跨平台，重点测 Windows 路径 + 中文路径）
-- [ ] WeKnora 知识库检索、项目记忆（node:sqlite）、经验沉淀
-- [ ] 多语言 8 语种 locale 正常显示
+> 详见 `notes/phase4-acceptance.md`。**本轮关键发现**：UMA 桌面层挂载了 11 个公开仓库
+> 未发布的一等包（knowledge / task-query / worktree / coding-workbench / tool-repo-wiki /
+> util-repo-wiki / client-ui-knowledge / client-ui-repo-wiki / client-ui-design-studio /
+> api-account-controller / deepseek-account-platform）。缺了它们 Host 起不来 profile，
+> 而 prepare 阶段的 runtime smoke 跑在注入之前，所以构建期完全看不出来。
+> 已用 `scripts/extract-mac-extras.mjs` 从 Mac asar 按闭包抽取补齐（26.7MB，无原生二进制，
+> 清单见 `uma-assets/packages.extras.json`），注入清单改为目录驱动 23 个包。
+
+- [x] 合成门禁 `scripts/verify-uma-platform.mjs`：22 开关全部落到 269 个可挂载 id；8 启用/14 禁用与 Mac 原文逐字段一致；`desktopPlatform=win32`；层引用零悬空；40 个工具在册；8 语种齐全。源码模式（打包前，秒级）+ `--tree` 模式（注入后，看真实 node_modules）各跑一次
+- [x] 缺失包补齐 + 三方依赖池（typescript / pdfjs-dist / zod / picomatch / js-yaml，树里已有则不复制）
+- [x] 交付流水线：`uma_artifact_write/read` + gate 分级（`dsh-tool-uma-workflow` + `dsh-util-uma-delivery`）
+- [x] 设计工具族 9 个 + `uma_resource_read` / `uma_knowledge_search`（`dsh-tool-uma-design`）
+- [x] 任务预算 `uma_session_budgets`（typert 描述符注册，非 `defineTool`，校验器单独解析）
+- [x] 专家指导 `uma_guidance`（产品补丁内 `disabled: true`，与 Mac 一致）
+- [x] SSH 运维：`ssh2` 1.17.0 纯 JS 闭包随包；工具走 `ctx.subprocess.spawn`
+- [x] WeKnora / 项目记忆（node:sqlite，Electron 44 = Node 24）/ 经验沉淀
+- [x] 20 个内置技能可枚举：`node --experimental-sqlite scripts/inspect-skill-container.mjs` → 20 技能 / 642 目录 / 2895 文件
+- [ ] **真机验收**：按 `notes/phase4-acceptance.md` 第 4 节的 9 步在装好的 Windows 包上走一遍（启动、工具自述、工件、团队板、SSH 中文路径、切语言、更新缓存清扫）
 
 ## Phase 5 — 发布
 

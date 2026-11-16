@@ -1,0 +1,45 @@
+/** Resource bounds and optional semantic retrieval for the local knowledge service. @module */
+import z from '@deepseek-ai/schemastery';
+/** Validated defaults for desktop-scale local indexing. */
+export const Config = z.object({
+    dshHome: z.string(),
+    maxBases: z.number().min(1).step(1).default(100),
+    maxTeams: z.number().min(1).step(1).default(50),
+    maxStoredBytes: z.number().min(1048576).step(1).default(2147483648),
+    maxIndexBytes: z.number().min(1048576).step(1).default(2147483648),
+    previewPassages: z.number().min(1).step(1).default(40),
+    revisionListLimit: z.number().min(1).step(1).default(50),
+    minVectorSimilarity: z.number().min(0).max(1).default(0.4),
+    integrityCacheEntries: z.number().min(1).step(1).default(256),
+    maxFileBytes: z.number().min(1024).step(1).default(20971520),
+    maxTextBytes: z.number().min(1024).step(1).default(4194304),
+    maxPages: z.number().min(1).step(1).default(300),
+    maxSourceFiles: z.number().min(1).step(1).default(1000),
+    maxDocuments: z.number().min(1).step(1).default(1000),
+    maxChunks: z.number().min(1).step(1).default(4000),
+    parentChars: z.number().min(200).step(1).default(1800),
+    childChars: z.number().min(100).step(1).default(500),
+    overlapChars: z.number().min(0).step(1).default(80),
+    parsingConcurrency: z.number().min(1).step(1).default(2),
+    parseTimeoutMs: z.number().min(1000).step(1).default(60000),
+    workerMemoryMb: z.number().min(64).step(1).default(256),
+    syncIntervalMs: z.number().min(1000).step(1).default(15000),
+    searchLimit: z.number().min(1).step(1).default(8),
+    candidateLimit: z.number().min(1).step(1).default(32),
+    maxVectorCandidates: z.number().min(1).step(1).default(20000),
+    contextMaxBytes: z.number().min(1024).step(1).default(20000),
+    busyTimeoutMs: z.number().min(1).step(1).default(5000),
+    excludeDirectories: z
+        .array(z.string())
+        .default(['.git', '.uma', 'node_modules', 'vendor', 'dist', 'lib', 'build', '.cache']),
+    embeddingUrl: z.string(),
+    embeddingModel: z.string(),
+    embeddingKeyRef: z.string(),
+    embeddingTimeoutMs: z.number().min(1000).step(1).default(30000),
+    embeddingBatchSize: z.number().min(1).step(1).default(16),
+    maxEmbeddingDimensions: z.number().min(1).step(1).default(4096),
+    maxEmbeddingResponseBytes: z.number().min(1024).step(1).default(8388608),
+    queryPrefix: z.string().default(''),
+    documentPrefix: z.string().default(''),
+});
+//# sourceMappingURL=config.js.map

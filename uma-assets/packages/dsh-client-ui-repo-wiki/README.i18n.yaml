@@ -1,0 +1,43 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/client/ui-repo-wiki/README.md
+/:
+  en: 781d1b9c53f32365
+  zh: 7c5c1794660fc3c3
+/deepseek-ai-dsh-client-ui-repo-wiki:
+  en: 271a23f457d1b6a0
+  zh: 1ee52a74f1dca7f6
+/deepseek-ai-dsh-client-ui-repo-wiki/summary:
+  en: 1228eadee5dbb830
+  zh: ac17819361e7f4a1
+/deepseek-ai-dsh-client-ui-repo-wiki/table-of-contents:
+  en: 76368b6b1da79c80
+  zh: 5cbf1a117f4259af
+/deepseek-ai-dsh-client-ui-repo-wiki/use-this-package:
+  en: fb53e4d6b1abcc6c
+  zh: 5ab6a4df6b51586f
+/deepseek-ai-dsh-client-ui-repo-wiki/understand-the-implementation:
+  en: 44cda450b9d607f8
+  zh: b403a4d3eaedf025
+/deepseek-ai-dsh-client-ui-repo-wiki/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-client-ui-repo-wiki/model-experience/explicit-generation-tasks:
+  en: cb78cf8f4b3a2592
+  zh: e28e8c48704d5d32
+/deepseek-ai-dsh-client-ui-repo-wiki/model-experience/explicit-generation-tasks/what-the-model-sees:
+  en: 4e266a1f81ccd020
+  zh: 981f6459a426a870
+/deepseek-ai-dsh-client-ui-repo-wiki/model-experience/explicit-generation-tasks/token-effect:
+  en: 37473c1c76896384
+  zh: b350df0c90a73316
+/deepseek-ai-dsh-client-ui-repo-wiki/model-experience/explicit-generation-tasks/kv-cache-effect:
+  en: af203a2212e29647
+  zh: 34f88363e9562101
+/deepseek-ai-dsh-client-ui-repo-wiki/known-limitations-and-deferred-work:
+  en: d1ebc5399a93f1a6
+  zh: bb1f3b41946430a7
+/deepseek-ai-dsh-client-ui-repo-wiki/known-limitations-and-deferred-work/dev-note:
+  en: e67f633dc6fe7773
+  zh: 8ec3e73528ddb1a6
