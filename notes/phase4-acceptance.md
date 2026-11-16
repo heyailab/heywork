@@ -31,7 +31,9 @@ Mac 包 `app.asar` 内 `dsh/node_modules/@deepseek-ai` 有 **362** 个包；上�
 
 ### 第三方依赖池
 
-11 个包的硬依赖里，`typescript`（`dsh-coding-workbench/lib/index.js` 顶层静态 import）、`pdfjs-dist`（PDF worker）、`zod`、`picomatch`、`js-yaml` 未必被上游组合进装上来的树。这 5 个一并抽到 `uma-assets/deps/`，注入时**仅在树里缺失才补**（树里已有则零成本），避免「打包成功、启动后某个包 import 失败」。
+23 个包的**全部**非 `@deepseek-ai` 运行时依赖一共 9 个：`zod`、`pdfjs-dist`、`picomatch`、`typescript`、`js-yaml`、`papaparse`、`yaml`、`ws`、`ssh2`。它们未必都被上游组合进装上来的树（`typescript` 靠 `typert-loader`、`ws` 靠 webserver、`papaparse`/`pdfjs-dist` 只有实验包在用），其中 `yaml` 一旦缺失，`dsh-skill-uma` 解析技能 front matter 就会失败——等于 `uma_resource_read` 全废。这 9 个全部抽到 `uma-assets/deps/`，注入时**仅在树里缺失才补**（树里已有则零成本），避免「打包成功、启动后某个包 import 失败」。
+
+两条账号相关的包（`dsh-api-account-controller`、`dsh-deepseek-account-platform`）在现有层里**没有被任何 `name:` 挂载**：上游 `deepseek-account` 只用到同名 credential key（`credentialKey('deepseek-account-platform', …)`），并未 import 这两个包。按 Mac 包 1:1 保留（合计 ~440KB，且 `typert.host.js` 表明它们可能由 typert 协议侧发现），不在门禁里要求挂载。
 
 ## 1. 门禁：`scripts/verify-uma-platform.mjs`
 
@@ -83,8 +85,9 @@ verify-uma-platform: OK — 22 switches, 40 tools, 23 packages
 
 ## 3. 已知与 Mac 逐字相同的行为（不算移植缺陷）
 
-- `dsh-api-account-controller` / `dsh-deepseek-account-platform` 的 `locale/en.json` 缺 `meta.description`，其它语种有。文件与 Mac 包逐字节相同，不做本地化修补。
+- `dsh-api-account-controller` / `dsh-deepseek-account-platform` 的 `locale/en.json` 缺 `meta.description`，其它语种有。文件与 Mac 包逐字节相同，不做本地化修补（也因此门禁只校验 8 个语种文件存在，不校验翻译键集合）。
 - UMA 层给 `session-query-sqlite`、`uma-project-memory` 等用的是 `!!js dshHomePath(...)`，在 Windows 上落到 `%USERPROFILE%\.uma\...`——`packages/util/home-paths` 用 `node:path.join` 且有 Windows 专用的 realpath 归一化，不需要改。
+- `dsh-knowledge` 里 `O_NOFOLLOW` 在 win32 上被显式跳过（`process.platform === 'win32' ? 0 : constants.O_NOFOLLOW`），Windows 没有该标志——已由包自己处理。
 
 ## 4. 真机验收清单（装完 Windows 包后按序做）
 
@@ -109,4 +112,10 @@ node scripts/verify-uma-platform.mjs
 
 # 技能清单
 node --experimental-sqlite scripts/inspect-skill-container.mjs
+
+# 在本地伪造一棵“已注入”的树，提前验证 --tree 分支（CI 上不必等 2 小时）
+#   node_modules/@deepseek-ai/{dsh-base,dsh-web-app} ← 上游源码包
+#   node_modules/@deepseek-ai/* ← uma-assets/packages/*
+#   node_modules/*              ← uma-assets/deps/*
+node scripts/verify-uma-platform.mjs --tree /tmp/faketree
 ```
