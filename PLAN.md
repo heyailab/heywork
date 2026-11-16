@@ -64,8 +64,9 @@
 - [x] `apps/desktop` electron-builder 配置：`appId: studio.uma.desktop`、`productName: UMA Studio`、icon.ico、NSIS 目标
 - [x] 8 语种 locale 字典：`patches/uma-phase2b.patch`（`scripts/locale-port.mjs` 从 UMA bundle 抽取，键级比对：上游 4 键回填、UMA 新增 47 键含 `trayRoles` 嵌套对象；`DesktopMessages` 改为条件映射放宽字面量类型）
 - [x] renderer 品牌覆盖：`scripts/overlay-renderer.mjs`（welcome.css、update-dialog.html/css/js、mandatory-update-frame.js[uma-app→dsh-app]、3 个品牌 svg）
-- [ ] about 流程（desktopAboutContent + ordinaryMessageBox about 视图 + 菜单入口；依赖 `messages.about*` 键已就位）
+- [x] about 流程：`patches/uma-phase2c.patch`（新增 `src/about.ts` 纯函数 + `update-dialog` 的 `about` 视图与带标签 `keepOpenAction` + 主进程富「关于」对话框：检查更新/复制诊断/官网/许可证）
 - [ ] 菜单定制（main 区段 speechMenu / operationsMenu 等，配合 trayRoles）
+- [ ] DevTools 门控（UMA 用 `debugging = development && DSH_DESKTOP_OPEN_DEVTOOLS !== '0'` 去掉 release 的 toggleDevTools 菜单与 F12；会改动上游 2 处测试断言，暂缓）
 - [ ] lib/welcome 源（`src/client/welcome.tsx` 的 UMA 版 + ui-theme 品牌字体，编译进 `lib/welcome/welcome.js`）
 - [ ] 签名：`apps/desktop/config/windows-packaging/windows-signing.env.example` 按样例配置 Authenticode（建议 EV 证书防 SmartScreen 误报）
 - [ ] **验收**：启动页为 UMA 品牌；`uma://` 链接可唤起应用；数据写入 `~/.uma`；更新对话框含 UMA 品牌样式

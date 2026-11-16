@@ -1,0 +1,267 @@
+diff --git a/apps/desktop/scripts/electron-builder-config.mjs b/apps/desktop/scripts/electron-builder-config.mjs
+index c9c159ce..a5184392 100644
+--- a/apps/desktop/scripts/electron-builder-config.mjs
++++ b/apps/desktop/scripts/electron-builder-config.mjs
+@@ -129,6 +129,9 @@ export function createElectronBuilderConfig(
+     protocols: [{ name: productName, schemes: [protocolScheme] }],
+     extraMetadata: {
+       dshDesktopAppId: appId,
++      // app.getName() reads this from the packaged manifest; the About prompt and
++      // the diagnostics summary print it, so the brand must survive packaging.
++      ...(productName === 'DeepSeek Harness' ? {} : { productName }),
+       dshDesktopUpdateChannel: update?.channel ?? 'nightly',
+       ...(protocolScheme === 'dsh' ? {} : { dshDesktopProtocolScheme: protocolScheme }),
+       ...(managedAccount ? { dshDesktopManagedAccount: true } : {}),
+diff --git a/apps/desktop/src/about.ts b/apps/desktop/src/about.ts
+new file mode 100644
+index 00000000..3a157ac2
+--- /dev/null
++++ b/apps/desktop/src/about.ts
+@@ -0,0 +1,80 @@
++/** Product information for the About prompt; never carries account data, paths or credentials. */
++
++import { formatDesktopMessage, type DesktopMessages } from './locale.ts'
++
++/** Runtime facts the shell owns, injected so the copy stays testable without Electron. */
++export interface DesktopAboutFacts {
++  readonly productName: string
++  readonly productVersion: string
++  /** Kernel version reported by the packaged runtime tree, or null when it cannot be read. */
++  readonly kernelVersion: string | null
++  readonly development: boolean
++  readonly channel: string | null
++  readonly platform: string
++  readonly arch: string
++  readonly electron: string
++  readonly chromium: string
++  readonly node: string
++  /** Packaged manifest fields (build commit) read from the application's package.json. */
++  readonly manifest: unknown
++}
++
++/** Localized About body plus the plain-text summary the copy action writes to the clipboard. */
++export interface DesktopAboutContent {
++  readonly detail: string
++  readonly about: {
++    readonly version: string
++    readonly rows: readonly { readonly label: string; readonly value: string }[]
++    readonly upstream: string
++    readonly copyright: string
++  }
++  readonly technicalDetails: string
++  readonly licenseDetails: string
++}
++
++/**
++ * Build localized product information without account details, local paths or credentials.
++ * @param facts - Application version and independently read kernel version.
++ * @param messages - Current shell dictionary.
++ * @returns About content and a plain-text support summary.
++ */
++export function desktopAboutContent(facts: DesktopAboutFacts, messages: DesktopMessages): DesktopAboutContent {
++  const channel = facts.development
++    ? messages.aboutDevelopment
++    : facts.channel === 'stable' ? messages.aboutStable
++      : facts.channel === 'nightly' ? messages.aboutPreview
++        : messages.aboutUnavailable
++  const system = `${facts.platform === 'darwin' ? 'macOS' : facts.platform === 'win32' ? 'Windows' : facts.platform} · ${facts.arch}`
++  const kernel = facts.kernelVersion === null ? messages.aboutUnavailable : `DeepSeek Harness ${facts.kernelVersion}`
++  const rows = [
++    { label: messages.aboutKernel, value: facts.kernelVersion ?? messages.aboutUnavailable },
++    { label: messages.aboutChannel, value: channel },
++    { label: messages.aboutPlatform, value: system },
++  ]
++  const diagnostics = [
++    `${facts.productName} ${facts.productVersion}`,
++    `${messages.aboutKernel}: ${kernel}`,
++    `${messages.aboutChannel}: ${channel}`,
++    `${messages.aboutPlatform}: ${system}`,
++    `Electron: ${facts.electron}`,
++    `Chromium: ${facts.chromium}`,
++    `Node.js: ${facts.node}`,
++  ]
++  const manifest = facts.manifest
++  if (typeof manifest === 'object' && manifest !== null && 'dshBuildCommit' in manifest
++    && typeof manifest.dshBuildCommit === 'string' && /^[0-9a-f]{40}$/u.test(manifest.dshBuildCommit)) {
++    diagnostics.push(`${messages.aboutBuild}: ${manifest.dshBuildCommit}`)
++    if ('dshBuildDirty' in manifest && manifest.dshBuildDirty === true) diagnostics.push(messages.aboutModified)
++  }
++  return {
++    detail: messages.aboutDescription,
++    about: {
++      version: formatDesktopMessage(messages.aboutVersion, { version: facts.productVersion }),
++      rows,
++      upstream: messages.aboutUpstream,
++      copyright: `© ${facts.productName}`,
++    },
++    technicalDetails: diagnostics.join('\n'),
++    licenseDetails: 'DeepSeek Harness\nMIT License\nCopyright (c) 2026 DeepSeek',
++  }
++}
+diff --git a/apps/desktop/src/main.ts b/apps/desktop/src/main.ts
+index ea270f56..c7060a0c 100644
+--- a/apps/desktop/src/main.ts
++++ b/apps/desktop/src/main.ts
+@@ -1,6 +1,7 @@
+ /** Electron shell: desktop project ownership, custom protocol, windows, and lifecycle. */
+ 
+ import { installFileActions } from './file-actions.ts'
++import { desktopAboutContent } from './about.ts'
+ import { configurationFailure, channelSaveFailure, configurationMessage } from './update-configuration.ts'
+ import type { DesktopChannelState, DesktopChannelChangeResult } from '@deepseek-ai/dsh-client-ui-settings-general/types'
+ import { DesktopUpdateSettings } from './update-settings.ts'
+@@ -482,10 +483,59 @@ async function main(): Promise<void> {
+   }
+   // Copy comes from the same locale as the update prompts so the dialog
+   // chrome and its content never mix languages.
++  // The packaged tree is rewritten by the product injector, so an unreadable descriptor
++  // degrades the kernel row to "unavailable" instead of failing the whole prompt.
++  const aboutKernelVersion = (): string | null => {
++    try {
++      return readDesktopRuntime(resources.dsh).sharedPackages
++        .find(entry => entry.name === '@deepseek-ai/dsh-agent')?.version ?? null
++    }
++    catch { return null }
++  }
+   const showAbout = async (): Promise<void> => {
+-    await ordinaryMessageBox({ type: 'info', title: locale.messages.aboutMenu, message: locale.messages.aboutProduct,
+-      detail: formatDesktopMessage(locale.messages.aboutVersion, { version: app.getVersion() }),
+-      buttons: [locale.messages.updateAcknowledge], cancelId: 0 })
++    if (isMandatory()) return
++    if (updateDialog.isOpen) { updateDialog.focus(); return }
++    const messages = locale.messages
++    const content = desktopAboutContent({
++      productName: app.getName(),
++      productVersion: app.getVersion(),
++      kernelVersion: aboutKernelVersion(),
++      development,
++      channel: channelState?.channel ?? null,
++      platform: process.platform,
++      arch: process.arch,
++      electron: process.versions.electron,
++      chromium: process.versions.chrome,
++      node: process.versions.node,
++      manifest,
++    }, messages)
++    const result = await ordinaryMessageBox({
++      title: messages.aboutMenu,
++      message: messages.aboutProduct,
++      detail: content.detail,
++      about: content.about,
++      buttons: [messages.checkUpdatesMenu, messages.aboutCopy, messages.aboutWebsite, messages.aboutLicense],
++      keepOpenAction: {
++        index: 1,
++        run: async () => { await clipboard.writeText(content.technicalDetails) },
++        completedLabel: messages.aboutCopied,
++        failedLabel: messages.welcomeAuthCopyFailed,
++      },
++      cancelId: 4,
++    })
++    if (result.response === 0) await openUpdatePrompt(true)
++    if (result.response === 2) await shell.openExternal('https://studio.umayun.com')
++    if (result.response === 3) {
++      const license = await ordinaryMessageBox({
++        title: messages.aboutLicense,
++        message: messages.aboutLicense,
++        detail: content.licenseDetails,
++        buttons: [messages.aboutSource, messages.aboutFullLicense],
++        cancelId: 2,
++      })
++      if (license.response === 0) await shell.openExternal('https://github.com/deepseek-ai/deepseek-harness')
++      if (license.response === 1) await shell.openExternal('https://github.com/deepseek-ai/deepseek-harness/blob/master/LICENSE')
++    }
+   }
+   const commandManager = new DesktopCommandManager({
+     resources: process.resourcesPath,
+diff --git a/apps/desktop/src/update-dialog.ts b/apps/desktop/src/update-dialog.ts
+index 65efdd80..42396ebc 100644
+--- a/apps/desktop/src/update-dialog.ts
++++ b/apps/desktop/src/update-dialog.ts
+@@ -6,6 +6,14 @@ import type { DesktopUpdateOverlays, DesktopUpdateOverlay } from './update-overl
+ /** Channels available only to the isolated update-dialog document. */
+ export const UPDATE_DIALOG_IPC = { status: 'dsh-update-dialog:status', changed: 'dsh-update-dialog:changed', respond: 'dsh-update-dialog:respond' } as const
+ 
++/** Product facts rendered as the About projection of this prompt instead of a plain message. */
++export interface DesktopAboutView {
++  readonly version: string
++  readonly rows: readonly { readonly label: string; readonly value: string }[]
++  readonly upstream: string
++  readonly copyright: string
++}
++
+ /** Text and choices supplied by the main process, never by product documents. */
+ export interface UpdateDialogView {
+   /** Button running a main-owned action; responses are disabled until it settles. */
+@@ -19,6 +27,8 @@ export interface UpdateDialogView {
+   readonly buttons: readonly string[]
+   readonly cancelId: number
+   readonly closeLabel: string
++  /** Present only for the About prompt; the document then renders product facts and link buttons. */
++  readonly about?: DesktopAboutView
+   readonly technicalDetails: string
+   readonly technicalDetailsLabel: string
+ }
+@@ -26,8 +36,18 @@ export interface UpdateDialogView {
+ /** Electron message options with separately expandable, main-owned diagnostics. */
+ export interface UpdateDialogOptions extends MessageBoxOptions {
+   readonly technicalDetails?: string
+-  /** Synchronous auxiliary action that leaves the current prompt and choices open. */
+-  readonly keepOpenAction?: { index: number; run: () => void }
++  /** Replaces the plain detail with product facts and moves the trailing buttons into the link row. */
++  readonly about?: DesktopAboutView
++  /**
++   * Auxiliary action that leaves the current prompt and choices open.
++   * Its button shows a busy state while `run` settles, then the completed or failed label.
++   */
++  readonly keepOpenAction?: {
++    index: number
++    run: () => void | Promise<void>
++    completedLabel?: string
++    failedLabel?: string
++  }
+   /** Main-owned action kept in this dialog; false keeps the prompt open for correction. */
+   readonly action?: { index: number; run: () => Promise<boolean> }
+ }
+@@ -108,6 +128,7 @@ export class DesktopUpdateDialog {
+     this.parent = parent
+     let view: UpdateDialogView = { revision: ++this.revision, locale: locale.id, title: options.title ?? '', message: options.message,
+       detail: options.detail ?? '', buttons, cancelId, closeLabel: locale.messages.updateClose,
++      ...(options.about === undefined ? {} : { about: options.about }),
+       technicalDetails: options.technicalDetails ?? '', technicalDetailsLabel: locale.messages.updateTechnicalDetails }
+     return new Promise((resolve) => {
+       const abort = (): void => { finish(cancelId) }
+@@ -128,9 +149,31 @@ export class DesktopUpdateDialog {
+           if (this.active !== undefined) this.active.view = view
+           surface.webContents.send(UPDATE_DIALOG_IPC.changed, view)
+         }
+-        if (options.keepOpenAction?.index === index) {
+-          options.keepOpenAction.run()
+-          publish(false)
++        const keepOpen = options.keepOpenAction
++        if (keepOpen?.index === index) {
++          // A labelled auxiliary action reports its progress and outcome in place (About's
++          // "copy details"); an unlabelled one keeps the prompt unchanged apart from the revision.
++          if (keepOpen.completedLabel === undefined && keepOpen.failedLabel === undefined) {
++            await keepOpen.run()
++            publish(false)
++            return
++          }
++          const feedback = (label: string | undefined): void => {
++            if (this.active?.view !== view) return
++            if (label !== undefined) {
++              view = { ...view, buttons: view.buttons.map((value, position) => position === index ? label : value) }
++            }
++            publish(false)
++          }
++          publish(true)
++          try {
++            await keepOpen.run()
++            feedback(keepOpen.completedLabel)
++          }
++          catch (error) {
++            feedback(keepOpen.failedLabel)
++            throw error
++          }
+           return
+         }
+         if (options.action?.index !== index) { finish(index); return }
