@@ -1,11 +1,12 @@
 name: build-windows
 
-# UMA Windows 移植 CI（Phase 0 基线版）
-# 当前：从官方源码构建未签名 Windows NSIS 安装包，验证基线可跑
-# TODO(Phase 1)：加入 UMA 资产注入步骤（uma-assets/packages → dsh node_modules，
+# UMA Windows 移植 CI（Phase 0 基线版 · 官方打包入口）
+# 关键修正：不直接调 npx electron-builder（会被 desktop-release-environment 校验拦下），
+# 改用官方 package-target.ts 全流程：prepare runtime/dsh/electron → build → 打包 → 校验
+# TODO(Phase 1)：加入 UMA 资产注入（uma-assets/packages → dsh node_modules、
 #                uma-platform.patch.yml（desktopPlatform=win32）、resources.umadb、品牌资源）
-# TODO(Phase 2)：替换 electron-builder 配置为 UMA 产品参数（appId studio.uma.desktop 等）
-# TODO(Phase 3)：接入签名（secrets.WINDOWS_SIGNING_*）与 feeds/win-x64 发布
+# TODO(Phase 2)：MANDATORY_UPDATE_* 目前是占位 origin，接真实 UMA 策略服务后替换
+# TODO(Phase 3)：签名接入（secrets → DSH_DESKTOP_WINDOWS_*，用 package:desktop:win:x64 签名版）
 
 on:
   push:
@@ -20,7 +21,7 @@ env:
 jobs:
   build:
     runs-on: windows-latest
-    timeout-minutes: 90
+    timeout-minutes: 150
     steps:
       - name: Checkout (port workspace)
         uses: actions/checkout@v4
@@ -43,32 +44,50 @@ jobs:
         with:
           version: 11.28.5
 
+      - name: Write desktop release environment (.env.windows)
+        # 官方 .env.windows.example 要求的最小未签名集合：
+        # - APP_ID：reverse-DNS，先与 Mac 版 bundle id 对齐（studio.uma.desktop）
+        # - MANDATORY_UPDATE_*：win32 即使 unsigned 也必须提供策略 origin（打包时嵌入）
+        working-directory: deepseek-harness/apps/desktop
+        shell: pwsh
+        run: |
+          $lines = @(
+            'DSH_DESKTOP_APP_ID=studio.uma.desktop'
+            'DSH_DESKTOP_AUTO_UPDATE_ENV=test'
+            'DSH_DESKTOP_MANDATORY_UPDATE_TEST_ORIGIN=https://studio.umayun.com'
+            'DSH_DESKTOP_MANDATORY_UPDATE_CONFIG={"allowedAuthOrigins":["https://studio.umayun.com"]}'
+          )
+          Set-Content -Path .env.windows -Value $lines -Encoding utf8
+          Get-Content .env.windows
+
       - name: Install dependencies
         working-directory: deepseek-harness
         run: pnpm install --frozen-lockfile
 
-      - name: Build
+      - name: Package Windows installer (unsigned, official pipeline)
         working-directory: deepseek-harness
-        run: pnpm build
-
-      - name: Package Windows installer
-        working-directory: deepseek-harness/apps/desktop
-        run: npx electron-builder --win nsis --config electron-builder.config.mjs
-        env:
-          # 未签名基线；签名接入后在此注入 secrets
-          CSC_IDENTITY_AUTO_DISCOVERY: false
+        run: pnpm run package:desktop:win:x64:unsigned
 
       - name: Collect artifacts
         shell: pwsh
         run: |
-          Get-ChildItem -Path deepseek-harness/apps/desktop/dist -Recurse -Include *.exe,*.yml,*.blockmap |
-            Copy-Item -Destination deepseek-harness/dist -Force
-          Get-ChildItem deepseek-harness/dist
+          $src = 'deepseek-harness/apps/desktop/.desktop-build/targets/win-x64/unsigned-artifacts'
+          if (-not (Test-Path $src)) { throw "artifact dir missing: $src" }
+          Get-ChildItem $src
 
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
           name: uma-window-baseline
-          path: deepseek-harness/dist/
+          path: deepseek-harness/apps/desktop/.desktop-build/targets/win-x64/unsigned-artifacts/
           if-no-files-found: error
           retention-days: 14
+
+      - name: Upload packaging diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: packaging-logs
+          path: deepseek-harness/apps/desktop/.desktop-build/packaging-runs/
+          if-no-files-found: ignore
+          retention-days: 7
