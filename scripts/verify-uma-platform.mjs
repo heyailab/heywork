@@ -22,6 +22,13 @@
  *     `lib/client.js`.
  *  5. The skill container must stay outside the asar (node:sqlite cannot open a
  *     virtual path) and all eight locales must ship.
+ *  6. The container must still hold what dsh-tool-uma-design hard-requires at
+ *     module init (skills, design systems, DESIGN.md brands, knowledge roots).
+ *     A right-sized but empty container takes the whole profile down at launch,
+ *     and nothing else here inspects its contents — verify-skill-container.mjs does.
+ *  7. The desktop mandatory-update policy must stay on the production preset.
+ *     `test` yields `authentication: feishu-test`, so the first launch queues a
+ *     login window the Mac build never shows; the bundle still builds and starts.
  *
  * Usage:
  *   node scripts/verify-uma-platform.mjs                 # source checkout + uma-assets
@@ -32,6 +39,7 @@
  *       apps/desktop/scripts/electron-builder-config.mjs (asarUnpack).
  */
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
 import { join, relative, resolve } from 'node:path'
 
 const ARGS = process.argv.slice(2)
@@ -440,6 +448,41 @@ else {
   const builderConfig = join(DSH_ROOT, 'apps', 'desktop', 'scripts', 'electron-builder-config.mjs')
   if (existsSync(builderConfig) && !readFileSync(builderConfig, 'utf8').includes('dsh-skill-uma/resources.umadb')) {
     fail('electron-builder-config.mjs no longer unpacks resources.umadb — node:sqlite cannot open a path inside app.asar')
+  }
+  // A container that is the right size but missing its design payload takes the whole
+  // profile down at module init (dsh-tool-uma-design throws when systems/brands/knowledge
+  // are empty) and nothing else here would notice. Decrypt and count instead.
+  if (existsSync(join(PORT_ROOT, 'scripts', 'verify-skill-container.mjs'))) {
+    const probe = spawnSync(process.execPath, [join(PORT_ROOT, 'scripts', 'verify-skill-container.mjs')], { encoding: 'utf8' })
+    if (probe.status !== 0) {
+      fail(`skill container content check failed: ${(probe.stderr ?? '').trim().split('\n').filter(line => line.trim() !== '').slice(-4).join(' / ')}`)
+    } else {
+      const counted = (probe.stdout ?? '').split('\n').map(line => line.trim()).filter(line => /^(skills|design systems|DESIGN\.md brands|knowledge roots):/u.test(line))
+      notes.push(`skill container content: ${counted.join(', ')}`)
+    }
+  }
+}
+
+// --------------------------------------- 6. desktop policy must match the Mac build
+//
+// The packaged manifest carries `dshMandatoryUpdatePolicy`; the deployment preset picks
+// both the origin and `authentication`. Mac ships `anonymous`, while a `test` preset
+// produces `feishu-test`, which makes the first launch queue an interactive login window.
+// The bundle still builds and still starts, so only a text check stops this regressing.
+
+const workflow = join(PORT_ROOT, '.github', 'workflows', 'build-win.yml')
+if (existsSync(workflow)) {
+  const source = readFileSync(workflow, 'utf8')
+  const preset = /DSH_DESKTOP_AUTO_UPDATE_ENV=(\w+)/u.exec(source)?.[1]
+  if (preset === undefined) notes.push('desktop policy: no AUTO_UPDATE_ENV in CI (unsigned Windows build would ship no policy)')
+  else if (preset !== 'production') {
+    fail(`CI uses DSH_DESKTOP_AUTO_UPDATE_ENV=${preset}; the Mac build ships authentication=anonymous, which requires the production preset`)
+  } else if (source.includes('DSH_DESKTOP_MANDATORY_UPDATE_CONFIG')) {
+    fail('CI sets MANDATORY_UPDATE_CONFIG together with the production preset — packaging rejects allowedAuthOrigins there')
+  } else if (!/DSH_DESKTOP_MANDATORY_UPDATE_PROD_ORIGIN=https:\/\//u.test(source)) {
+    fail('CI selects the production preset without DSH_DESKTOP_MANDATORY_UPDATE_PROD_ORIGIN — packaging stops')
+  } else {
+    notes.push('desktop policy: production preset, anonymous authentication (matches the Mac manifest)')
   }
 }
 

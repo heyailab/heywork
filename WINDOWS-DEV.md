@@ -16,7 +16,7 @@
 | `uma-assets/deps/`（9 个） | 三方依赖池（zod/pdfjs-dist/typescript/yaml/ws/ssh2 等） | 注入时树里缺失才补 |
 | `uma-assets/renderer/` + `brand/` | 欢迎页/更新页覆盖文件、图标 | 直接覆盖/读取 |
 | `uma-assets/uma-platform.patch.mac.yml` | 22 条产品开关的 **Mac 原文**（留档）；真正随包的 win32 版由 phase1 补丁生成 | 参考文件，勿改 |
-| `scripts/` | 注入、校验、抽取、locale 移植等 8 个脚本 | Node ESM |
+| `scripts/` | 注入、校验（平台合成 + 容器内容）、Mac 包事实读取、抽取、locale 移植等 10 个脚本 | Node ESM |
 | `.github/workflows/build-win.yml` | 与下文「完整出包」完全相同的步骤 | GitHub Actions |
 
 **不在仓库里**：官方 dsh 源码（`.gitignore` 排除，CI 按 pinned commit 拉取）——所以本机要先自己 clone；
@@ -39,6 +39,15 @@ git -C deepseek-harness checkout 39163dd30f703a79079e2d2446545cff3c453738
 
 Node/pnpm 安装可用 nvm-windows 或直接装 Node 24；`corepack enable` 激活 pnpm。
 
+**环境前置（缺了会在运行期而不是构建期炸）**：
+
+| 依赖 | 是否必需 | 说明 |
+|---|---|---|
+| **Git for Windows** | **必需** | `dsh-tool-repo-wiki` / `dsh-worktree` / `dsh-coding-workbench` 都 spawn `git`（argv 形式、无 shell），靠官方 `resolveExecutable` 解析 PATHEXT。装完确认 `git --version` 在 PowerShell 里可用 |
+| Python | **不需要** | 技能容器里有 18 个 `uma-design-system/scripts/*.py`（含测试），那是**构建/维护期资产**；运行期设计数据全部经 `uma_resource_read` / `design_*` 从容器读，不执行脚本 |
+| Node 24.x | 必需（构建） | CI 用 24.9.0；运行时用的是 Electron 内置 Node 24，构建机版本只影响打包脚本 |
+| 长期路径 | 建议 | `dsh-worktree` 会在项目旁建 `uma-*` worktree，路径总长接近 260 字符时 Windows 会失败；仓库别放太深 |
+
 ## 2. 完整出包（与 CI 逐步一致，唯一完全验证的路径）
 
 在仓库根（PowerShell 或 Git Bash 均可，示例为 Git Bash）：
@@ -58,11 +67,10 @@ DSH_DESKTOP_PRODUCT_NAME=UMA Studio
 DSH_DESKTOP_PROTOCOL_SCHEME=uma
 DSH_DESKTOP_ARTIFACT_BASE=uma-studio
 DSH_DESKTOP_MANAGED_ACCOUNT=1
-DSH_DESKTOP_AUTO_UPDATE_ENV=test
+DSH_DESKTOP_AUTO_UPDATE_ENV=production
 DSH_DESKTOP_UPDATE_CHANNEL=nightly
 DSH_DESKTOP_UPDATE_PUBLIC_URL=https://studio.umayun.com/uma-studio/feeds/win-x64/
-DSH_DESKTOP_MANDATORY_UPDATE_TEST_ORIGIN=https://studio.umayun.com
-DSH_DESKTOP_MANDATORY_UPDATE_CONFIG={"allowedAuthOrigins":["https://studio.umayun.com"]}
+DSH_DESKTOP_MANDATORY_UPDATE_PROD_ORIGIN=https://studio.umayun.com
 EOF
 
 # ③ 覆盖 renderer 品牌资产 + 装依赖
@@ -70,7 +78,7 @@ cd ..
 node scripts/overlay-renderer.mjs
 cd deepseek-harness && pnpm install --frozen-lockfile
 
-# ④ 秒级合成门禁（22 开关 / 40 工具 / 23 包 / 客户端挂载）
+# ④ 秒级合成门禁（22 开关 / 40 工具 / 23 包 / 客户端挂载 / 容器内容 / 强更策略）
 cd .. && node scripts/verify-uma-platform.mjs
 
 # ⑤ 出包（60-120 分钟；产物在 deepseek-harness/apps/desktop/.desktop-build/targets/win-x64/unsigned-artifacts/）
@@ -81,6 +89,12 @@ UMA_ASSETS_DIR="$(cd .. && pwd)/uma-assets" \
 DSH_DESKTOP_BRAND_DIR="$(cd .. && pwd)/uma-assets/brand" \
   pnpm run package:desktop:win:x64:unsigned
 ```
+
+> **② 里的策略必须与 Mac 一致**：Mac 包 `package.json` 的 `dshMandatoryUpdatePolicy` 是
+> `{"origin":"https://studio.umayun.com","allowedPageOrigins":["…"],"authentication":"anonymous"}`。
+> 若写 `AUTO_UPDATE_ENV=test`，产物会变成 `authentication: "feishu-test"`，首启
+> `mandatoryPolicy.check('launch')` 拿到 `authentication-required` 就弹飞书测试登录窗（Mac 没有这个窗口）；
+> 且 production 下**不能**再传 `DSH_DESKTOP_MANDATORY_UPDATE_CONFIG`（带 `allowedAuthOrigins` 打包直接报错）。
 
 装完后的 `unsigned-artifacts/` 里就是 NSIS 安装包。不想本机等两小时，直接 push 让 Actions 出包（Actions 页下载 `uma-window-baseline`）。
 
@@ -149,4 +163,9 @@ API 面（`defineTool` / `dsh.client` / `ctx.subprocess.spawn` / home-paths 表�
 
 - **不做**：自动更新链路（Phase 3 代码在 patch 里保留，不验收）、UMA Operations SSH 面板
   （工具带 `when` 门控，不出现 ≠ 报错）。详见 `PLAN.md`「范围边界」表。
-- **待真机验收**：`notes/phase4-acceptance.md` 第 4 节 9 步。
+- **待决策**（见 `notes/parity-gap-review.md` §4）：
+  - 更新 feed 半开——CI 仍设 `UPDATE_PUBLIC_URL`，未签名包也会带 `app-update.yml`，而
+    `feeds/win-x64/` 没部署，点「检查更新」会 404。建议去掉该变量（UI 变「不支持」）或建目录。
+  - 壳层基线是 beta3，Mac 已 beta4（`main.js` +6,617 字节）。插件层未变，壳层差异未逐一比对。
+- **待真机验收**：`notes/phase4-acceptance.md` 第 4 节 9 步 + `notes/parity-gap-review.md` §5 的 4 项
+  （CI 完整出包记录、账号登录、`coding_*` 在 ACL 沙箱下跑通、卸载重装）。

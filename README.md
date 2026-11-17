@@ -7,6 +7,12 @@
 功能面的 95% 是插件（23 个包：40 个工具 / 20 个技能 / 6 个 UI 面板 / 22 条产品开关），
 壳层只有 5 段补丁（触及 11 个上游文件）。详见 [PLAN.md](PLAN.md) 的范围边界一节。
 
+**基线口径**（2026-11-17 复核）：插件层、开关层、工具层与 Mac `1.0.0-beta4.20261117.1`
+逐项一致（内核同为 `0.2.2-rc.3`、362 个包、12 个 UMA 包、开关文件逐字节相同）；
+壳层补丁基于 `beta3` 的 `main.js`，与 beta4 相差 6,617 字节，且 Mac 的 `dshBuildCommit`
+（`a7e944e3`）与我们 pin 的 `39163dd` 不同——这两点是**已知差异**，判断见
+[notes/parity-gap-review.md](notes/parity-gap-review.md) §4.2。
+
 ---
 
 ## 一、文档索引（全部在本仓库，clone 即得）
@@ -17,6 +23,7 @@
 | [PLAN.md](PLAN.md) | 所有人 | 目标与验收标准、阶段进度（Phase 1–4）、关键事实与范围边界、风险与取舍 |
 | **[notes/uma-team-feature-report.md](notes/uma-team-feature-report.md)** | 想理解 UMA 产品机制的人 | 开发团队功能全链路：官方协作原语 + UMA 五项增值、任务板机制、财务预算、交付门禁、编码证据链、设计系统与技术栈的选择机制 |
 | [notes/phase4-acceptance.md](notes/phase4-acceptance.md) | 做真机验收的人 | 缺口分析（11 个上游未发布包）、门禁说明、9 步真机验收清单、复跑方式 |
+| **[notes/parity-gap-review.md](notes/parity-gap-review.md)** | **想知道「还差什么」的人** | 第二轮复核：6 条新取证、2 个已修缺陷（强更策略 / 容器门禁）、2 个待决策（更新 feed / 壳层基线）、4 条真机待验、**Mac↔Windows 单一差异矩阵** |
 | [notes/main-js-diff-checklist.md](notes/main-js-diff-checklist.md) | 想核对壳层差异的人 | Mac 主进程与官方的 IPC/能力差异清单（50 通道 vs 42） |
 | [notes/main-js-regions.txt](notes/main-js-regions.txt) | 同上 | Mac `lib/main.js` 的打包 region 索引（定位实现片段） |
 | [notes/worklog/](notes/worklog/) | 接手的人 | 逐日工作日志：决策、踩坑、修复（Phase 1→4 全过程） |
@@ -55,6 +62,8 @@ uma-windows-port/
 ├── scripts/
 │   ├── inject-uma.mjs           ← 打包期注入：复制包 → 挂载 → 重算 desktop-runtime.json
 │   ├── verify-uma-platform.mjs  ← 合成门禁（源码模式 / --tree 模式）
+│   ├── verify-skill-container.mjs ← 解密技能容器，断言技能/设计系统/品牌/知识根齐全
+│   ├── inspect-mac-manifest.mjs ← 读 Mac 包的版本 / 内核 / commit / 强更策略（核对基线漂移）
 │   ├── extract-mac-extras.mjs   ← 从 Mac app.asar 按闭包抽取（换 Mac 版本时用）
 │   ├── inspect-skill-container.mjs ← 技能容器检查
 │   ├── build-ico.mjs            ← 零依赖 PNG→ICO
@@ -99,16 +108,18 @@ pnpm run package:desktop:win:x64:unsigned
 ## 四、门禁（push 前先跑，秒级）
 
 ```bash
-node scripts/verify-uma-platform.mjs          # 源码模式：开关 / 层引用 / 工具 / 客户端组合
+node scripts/verify-uma-platform.mjs          # 源码模式：开关 / 层引用 / 工具 / 客户端组合 / 强更策略
 node scripts/verify-uma-platform.mjs --tree <已注入的树>   # 注入后：检查真实 node_modules
-node --experimental-sqlite scripts/inspect-skill-container.mjs   # 20 技能 / 2895 文件
+node scripts/verify-skill-container.mjs       # 容器内容：20 技能 / 507 设计系统 / 84 品牌 / 知识根
 ```
 
-当前基线：**22 开关（8 启用 / 14 禁用）· 40 工具 · 23 包 · 7 个客户端插件全挂载 · 8 语种齐全**。
+当前基线：**22 开关（8 启用 / 14 禁用）· 40 工具 · 23 包 · 7 个客户端插件全挂载 · 8 语种齐全 ·
+强更策略 anonymous（与 Mac 一致）· 容器内 507 套设计系统 / 84 个 DESIGN.md 品牌**。
 
 门禁能挡住的问题类型：开关指向不存在的插件 id（会被静默忽略）、层引用悬空、
 客户端包缺 `lib/client.js`（UI 静默不出现）、`dsh.client.inject` 目标不可解析、
-技能容器被误打进 asar。
+技能容器被误打进 asar、**容器缺设计资产（会让 profile 初始化直接抛错）**、
+**强更策略被改成 test（会在首启弹 Mac 上不存在的登录窗）**。
 
 ---
 
@@ -131,6 +142,12 @@ node --experimental-sqlite scripts/inspect-skill-container.mjs   # 20 技能 / 2
 3. **注入早于 smoke**：`prepare:dsh` 的 runtime smoke 在注入之前跑，所以「构建通过」不代表
    插件层完好——必须靠 `verify-uma-platform.mjs`。
 4. **技能容器必须留在 asar 外**（asarUnpack），否则 `node:sqlite` 打不开。
+5. **别去「修」不存在的 `dsh-skill-uma/assets` 目录**。设计工具的 `assetRoot` 指向它，
+   但该目录本来就该缺席：`resources.js` 的 `locate()` 会向上找到同级的 `resources.umadb`，
+   用「相对 `assets/` 的 POSIX 路径」查容器。真建一个明文目录会让读取走磁盘分支，等于把
+   30MB 加密资产变明文、AAD 校验形同虚设。详见 `notes/parity-gap-review.md` §1.1。
+6. **强更策略必须是 production**：`AUTO_UPDATE_ENV=test` 会打成 `authentication: feishu-test`，
+   Windows 首启就弹飞书测试登录窗（Mac 是 `anonymous`，没有这个窗口）。门禁已拦这条。
 
 ---
 
@@ -138,5 +155,10 @@ node --experimental-sqlite scripts/inspect-skill-container.mjs   # 20 技能 / 2
 
 - Phase 1（插件层注入）：完成，CI 出包通过
 - Phase 2 / 2b / 2c（品牌、数据根、8 语、About）：完成
-- Phase 4（功能验收）：静态可证项全部闭环；**待真机 9 步验收**
+- Phase 4（功能验收）：静态可证项全部闭环（含容器内容门禁、强更策略门禁）；**待真机验收**
 - Phase 3（更新）：挂起
+- 第二轮复核（2026-11-17）：修掉强更策略错配 + 补齐容器内容门禁；**待你决策**更新 feed 去留、
+  壳层是否升 beta4 —— 见 [notes/parity-gap-review.md](notes/parity-gap-review.md)
+
+真机验收除原有 9 步外，新增 2 项必须验的：**账号登录链路**（`uma://` + safeStorage + 托管账号）
+与 **`coding_*` 在 Windows ACL 沙箱下跑通一次**（机制存在，未实证）。

@@ -3,6 +3,13 @@
 > 基线依据：Mac 版 UMA Studio `1.0.0-beta3.20261116.1`（dsh `0.2.2-rc.3`）逆向分析结论
 > 源码基线：`deepseek-harness` 官方仓库 `39163dd`（2026-11-13），**版本 0.2.2-rc.3 与 Mac 包完全一致**
 > 分析产物：`../uma-analysis/`（插件源码 / 解密技能库 / 壳层代码）
+>
+> **基线核对（2026-11-17，Mac 已升 beta4）**：本机 Mac 现为 `1.0.0-beta4.20261117.1`。
+> 复核结论：内核仍 `0.2.2-rc.3`、362 个 `@deepseek-ai` 包、12 个 UMA 包、`uma-platform.patch.yml`
+> 逐字节相同 → **插件层/开关层/工具层无需重做**；但壳层 `main.js` 由 1,045,645 增至 1,052,262 字节
+> （+6,617），且 Mac 的 `dshBuildCommit=a7e944e3` 与 pin 的 `39163dd` 不同 → 精确表述应为
+> 「**版本号一致，commit 不同，功能面逐项核对一致**」。取舍见 `notes/parity-gap-review.md` §4.2。
+> 复跑：`node scripts/inspect-mac-manifest.mjs`。
 
 ## goal（目标）
 
@@ -14,11 +21,14 @@
 ## acceptance（验收标准）
 
 - [ ] Windows x64 安装包可安装、可启动进入 UMA 欢迎页
+- [ ] **账号登录可用**：`uma://` 回调 + `safeStorage` 凭据落盘 + 托管账号（`deepseek-account` / `platform-account`）
 - [ ] 20 个内置技能全部可通过 `uma_resource_read` 加载（resources.umadb 原样复用）
 - [ ] `.uma/` 工件写入 + `uma_gate_status` 门禁全链路可用
 - [ ] 团队模式（agent-team）可建板、派任务、交叉评审
+- [ ] **`coding_inspect` / `coding_check` 在 Windows ACL 沙箱下跑通一次**
 - [ ] `uma-platform.patch.yml` 中 22 个功能开关行为与 Mac 版一致（遥测类保持禁用）
 - [ ] 7 个客户端插件在窗口内正常挂载（注入目标全部可解析）
+- [ ] 强更策略为 `anonymous`（与 Mac 包 `dshMandatoryUpdatePolicy` 一致，首启无登录窗）
 - [ ] ~~自动更新走 `feeds/win-x64/` 通道~~ → 移出本期，见 Phase 3
 
 ## 范围边界（哪些是插件，哪些必须动壳）
@@ -131,7 +141,9 @@ UMA 只多 8 个：`operations-{list,save,remove,connect,trust}`（5 个，Opera
 - [x] SSH 运维工具进包：`ssh2` 1.17.0 纯 JS 闭包随包；工具走 `ctx.subprocess.spawn`
 - [x] WeKnora / 项目记忆（node:sqlite，Electron 44 = Node 24）/ 经验沉淀
 - [x] 20 个内置技能可枚举：`node --experimental-sqlite scripts/inspect-skill-container.mjs` → 20 技能 / 642 目录 / 2895 文件
-- [ ] **真机验收**：按 `notes/phase4-acceptance.md` 第 4 节在装好的 Windows 包上走一遍（启动、44 个工具自述、工件 + 门禁、团队板、切语言）
+- [x] **容器内容门禁**（2026-11-17 复核新增）：`scripts/verify-skill-container.mjs` 解密容器并断言 20 技能（各带 SKILL.md）/ 507 设计系统（各带 manifest.json）/ 84 个 DESIGN.md 品牌 / 6 个知识根。设计工具在模块初始化时对这三类数据有 `throw` 硬断言，缺了会拖垮整个 profile
+- [x] **强更策略对齐**（2026-11-17 复核修正）：CI 由 `AUTO_UPDATE_ENV=test`（→`feishu-test`）改为 `production` + `PROD_ORIGIN`（→`anonymous`），与 Mac 包内置策略一致；门禁静态拦截回退
+- [ ] **真机验收**：按 `notes/phase4-acceptance.md` 第 4 节在装好的 Windows 包上走一遍（启动、44 个工具自述、工件 + 门禁、团队板、切语言），外加 `notes/parity-gap-review.md` §5 的 4 项（CI 完整出包记录 / 账号登录 / `coding_*` 沙箱 / 卸载重装）
 
 ### UMA Operations（SSH 面板）——判定为不做
 

@@ -55,7 +55,11 @@ jobs:
         # - APP_ID：reverse-DNS，与 Mac 版 bundle id 对齐（studio.uma.desktop）
         # - PRODUCT_NAME / PROTOCOL_SCHEME / ARTIFACT_BASE：品牌与 uma:// 协议
         # - MANAGED_ACCOUNT=1：开启 .uma 数据根 + uma:// 注册（等价 UMA 壳的 managedAccount）
-        # - MANDATORY_UPDATE_*：win32 即使 unsigned 也必须提供策略 origin（打包时嵌入）
+        # - AUTO_UPDATE_ENV=production + MANDATORY_UPDATE_PROD_ORIGIN：必须与 Mac 正式包一致。
+        #   Mac 包内置策略是 {origin: studio.umayun.com, authentication: 'anonymous'}；
+        #   deployment=test 会生成 authentication='feishu-test'，于是首启 mandatoryPolicy.check('launch')
+        #   拿到 authentication-required 就弹飞书测试登录窗（Mac 上不存在该窗口）。
+        #   production 下禁止 allowedAuthOrigins（打包脚本会 throw），故不再传 MANDATORY_UPDATE_CONFIG。
         working-directory: deepseek-harness/apps/desktop
         shell: pwsh
         run: |
@@ -65,12 +69,11 @@ jobs:
             'DSH_DESKTOP_PROTOCOL_SCHEME=uma'
             'DSH_DESKTOP_ARTIFACT_BASE=uma-studio'
             'DSH_DESKTOP_MANAGED_ACCOUNT=1'
-            'DSH_DESKTOP_AUTO_UPDATE_ENV=test'
+            'DSH_DESKTOP_AUTO_UPDATE_ENV=production'
             'DSH_DESKTOP_UPDATE_CHANNEL=nightly'
             # 与 Mac 包 app-update.yml 同形：generic + <origin>/uma-studio/feeds/<target>/
             'DSH_DESKTOP_UPDATE_PUBLIC_URL=https://studio.umayun.com/uma-studio/feeds/win-x64/'
-            'DSH_DESKTOP_MANDATORY_UPDATE_TEST_ORIGIN=https://studio.umayun.com'
-            'DSH_DESKTOP_MANDATORY_UPDATE_CONFIG={"allowedAuthOrigins":["https://studio.umayun.com"]}'
+            'DSH_DESKTOP_MANDATORY_UPDATE_PROD_ORIGIN=https://studio.umayun.com'
           )
           Set-Content -Path .env.windows -Value $lines -Encoding utf8
           Get-Content .env.windows
