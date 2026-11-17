@@ -98,8 +98,48 @@ V1 放在 profile patch（也是 bundle 之后）——**位置等价**。
 这个折中保住了"官方账号 + UMA 功能面"的核心目标，代价是保留 1-2 段壳补丁，
 跟着官方升级时需要 rebase——但只 rebase 注入 hook 那一小段，比原来的 5 段轻得多。
 
-## 6. 待办
+## 6. 端到端验证执行方案（依赖就绪后照此跑）
 
-- [ ] 依赖装完后跑官方 `manager.spec.ts`，端到端确认 `ctx` 服务一致
-- [ ] 把静态实测脚本固化进仓库（`scripts/probe-overlay.mjs`），作为可复跑证据
-- [ ] 若端到端通过 → V1 定案走 profile bundle；若不通过 → 切 §5 的 Plan B
+依赖：`deepseek-harness/node_modules` 建立完成后（当前 pnpm install 进行中，Node 22.22
+用 `--config.engine-strict=false` 跳过 24.x 的 engine 检查）。
+
+**步骤 1 — 跑官方 profile 夹具测试**：
+
+```bash
+cd deepseek-harness
+corepack pnpm vitest run packages/boot/plugin-manager/tests/manager.spec.ts
+```
+
+它构造真实的 profile 目录（`initProfile(dir, ['core','extra'])`）、两个 bundle
+（各自有 `package.json` 的 `dsh.bundle.patch` + `cordis.patch.yml` + `plugin.mjs`），
+boot 后断言 `ctx` 里的服务与开关状态。重点看这几条测试名：
+
+- `install` / `enable` / `disable` —— bundle 能从 profile 加载与切换
+- 含 `overlay` 的用例 —— profile patch 覆盖 bundle patch 的行为
+
+**步骤 2 — 加一条我们自己的探针**（若步骤 1 通过，作为 V1 的持久证据）：
+
+在 `manager.spec.ts` 同目录加一个 `heywork-probe.spec.ts`，复用它的夹具构造方式：
+
+1. 构造 profile：`initProfile(dir, ['@deepseek-ai/dsh-base', 'heywork'])`
+2. heywork bundle 的 `cordis.patch.yml` 放原 UMA 层的 rows（从 `uma-assets/packages/dsh-uma-base/cordis.patch.yml` 取）
+3. profile 的 `cordis.patch.yml` 放 22 开关
+4. boot 后断言：
+   - `ctx.subprocess` / `ctx.sandbox` / `ctx.tools` / `ctx.credentials` 都存在（权限等价）
+   - 22 个开关 id 的最终值与原 UMA 一致（叠加等价）
+   - 客户端 entry 能被 Loader 扫到（UI 挂载等价）
+
+**判断标准**：
+
+| 结果 | 结论 |
+|---|---|
+| 步骤 1 + 2 全绿 | V1 定案：走 profile bundle，无需 Plan B |
+| 步骤 1 绿、步骤 2 有差异 | 差异项逐个排查；若是叠加顺序问题，把开关挪进 bundle patch |
+| 步骤 1 就失败（Node 版本 / 依赖问题） | 环境阻塞，不是方案问题——改用 Mac 上装 Node 24 后重跑，或直接在 Windows 出包验证 |
+
+## 7. 待办
+
+- [x] 静态实测脚本固化进仓库（`scripts/probe-overlay.mjs`），提交 `f37866d`
+- [ ] 依赖装完 → 执行 §6 步骤 1（官方 profile 夹具测试）
+- [ ] 步骤 1 通过 → 写并执行 §6 步骤 2（heywork 探针）
+- [ ] 全绿 → V1 定案走 profile bundle；有实质差异 → 切 §5 Plan B
