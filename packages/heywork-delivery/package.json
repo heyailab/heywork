@@ -1,0 +1,8 @@
+{
+  "name": "@heywork/delivery",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "description": "HeyWork delivery artifact / guidance contract — rewritten from behavior specs"
+}

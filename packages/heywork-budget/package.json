@@ -1,0 +1,8 @@
+{
+  "name": "@heywork/budget",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "description": "HeyWork task budget typert remote service — rewritten from specs/budget.md"
+}
