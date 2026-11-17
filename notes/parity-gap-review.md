@@ -287,3 +287,30 @@ grep -rn --include=*.js -E "sh -c|/bin/sh|bash -lc|chmod|symlink" uma-assets/pac
 # Mac 侧事实：版本 / 内核 / 构建 commit / 强更策略 / 包数（§2 / §4.2 / §6）
 node scripts/inspect-mac-manifest.mjs
 ```
+
+---
+
+## 附：TS 源码还原可行性（2026-11-17 追加）
+
+**问题**：UMA 自有 12 个包能不能还原成 `src/*.ts` 级别？
+
+**关键纠正**：本仓库里 3 个带原始 `src/*.ts` 的包（`dsh-worktree`、`dsh-deepseek-account-platform`、
+`dsh-api-account-controller`）**都是上游一等包，不是 UMA 自有的**。UMA 12 包一个原始 TS 都没有，
+全部是 Mac 包里的 `lib/*.js`（362 包内 sourcemap = 0、`.d.ts` = 0）。
+
+| UMA 包分组 | 规模 | 编译形态 | 还原判断 |
+|---|---|---|---|
+| 8 个服务端包（base / design / task-budget / delivery / guidance / skill-uma / workflow / web） | 约 6,300 行 | tsc 直出或 esbuild 轻度打包，JSDoc + 变量名保留 | **可还原成可读 TS**，类型靠推断，逻辑可逐行等价 |
+| 4 个 UI 包（3 × client-ui-uma + remotes） | 50 行但单行 25K–258K 字符 | 压缩 bundle | **不可还原**，硬转只是给压缩代码标 `any` |
+
+**已做样本**：`uma-assets/packages/dsh-skill-uma/src/` —— 还原了 `types/resources.ts`（194 行）、
+`types/index.ts`（153 行）、`index.ts`（10 行），导出面与 `lib/index.js` 逐字一致，
+三个文件均通过本地 TypeScript `transpileModule` 语法校验。还原依据：
+
+- `lib/types/*.js` 是 tsc 直出（注释、命名、函数签名完整）；
+- `lib/index.js` 是 esbuild bundle，`//#region lib/types/...` 标记保留了原始模块边界；
+- 推断部分：`interface` / 类型注解 / 泛型参数由调用点反推，名字可能与原始定义不同；
+- 等价部分：控制流、字符串、加解密参数、错误文本与 `lib` 逐行核对一致。
+
+**注意**：`src` 是只读参考 + 改动草稿，不是构建输入。`package.json` 仍指向 `lib/index.js`，
+改 `src` 必须手动同步回 `lib`，否则两边分叉。完整说明见该目录的 `README.md`。
