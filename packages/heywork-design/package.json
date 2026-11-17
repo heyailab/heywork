@@ -1,0 +1,8 @@
+{
+  "name": "@heywork/design",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "description": "HeyWork design tool family — rewritten from behavior specs"
+}

@@ -286,7 +286,7 @@
 - `RULE_DOMAINS`（Rules:36-50，枚举逐字）：`ux`、`web`、`react`、`style`、`color`、`typography`、`chart`、`motion`、`product`、`layout`、`reasoning`、`icons`、`stack`。
 - 执行（I:443-449）：
   - `limit = Math.min(Math.max(args.limit ?? 3, 1), config.ruleMaxResults ?? 10)`
-  - 返回 `Promise.resolve(JSON.stringify(searchDesignRules(join(assetRoot,'hey-design-system/data'), { ...args, limit })))`
+  - 返回 `Promise.resolve(JSON.stringify(searchDesignRules(join(assetRoot,'uma-design-system/data'), { ...args, limit })))`
 - 输出 schema：`{ type: 'string' }`（I:437）。
 - render：`[{ type:'text', text: value }]`（I:438-441）。
 
@@ -305,7 +305,7 @@
 
 | 字段 | 类型 | 含义 |
 |---|---|---|
-| `source` | string | \`hey-design-system/data/${file}\`，`file` 为该域的 CSV 文件名（如 `ux-guidelines.csv`；stack 域为 `stacks/<stack>.csv`） |
+| `source` | string | \`uma-design-system/data/${file}\`，`file` 为该域的 CSV 文件名（如 `ux-guidelines.csv`；stack 域为 `stacks/<stack>.csv`） |
 | `row` | number | CSV 中的数据行号（表头算第 1 行，首条数据为 2） |
 | `fields` | `Record<string,string>` | 该 CSV 记录的**全部字段**（含 do/dont、code sample、source 行等，逐字段原样返回） |
 | `score` | number | BM25 相关度分数（大于 0） |
