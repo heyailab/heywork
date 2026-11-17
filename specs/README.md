@@ -18,7 +18,8 @@
 | 包 | spec | 状态 | 工具/API 数 |
 |---|---|---|---|
 | `dsh-skill-uma` | [skill-uma.md](skill-uma.md) | **已冻结**（待 P0.7 评审） | 6 API + 4 导出 |
-| `dsh-tool-uma-design` | tool-uma-design.md | 待写 | 11 工具 + 服务 |
+| `dsh-tool-uma-design`（核心 7 工具） | [tool-uma-design-core.md](tool-uma-design-core.md) | **已冻结**（待 P0.7 评审） | 7 工具 + 导出面 |
+| `dsh-tool-uma-design`（项目 4 工具） | [tool-uma-design-project.md](tool-uma-design-project.md) | **已冻结**（待 P0.7 评审） | 4 工具 |
 | `dsh-uma-base`（非 SSH） | uma-base.md | 待写 | 4 工具 |
 | `dsh-tool-uma-workflow` | workflow.md | 待写 | 3 工具 |
 | `dsh-util-uma-delivery` | delivery.md | 待写 | 14 导出 |
