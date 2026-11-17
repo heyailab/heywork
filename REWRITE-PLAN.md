@@ -71,6 +71,46 @@
 
 ---
 
+## 1.5 在哪里开发：Mac 为主，Windows 只用在两个节点
+
+**问**：在现在的 Mac 上重写可以吗，还是要回 Windows？
+**答**：**绝大部分工作在 Mac 上做，且 Mac 有 Windows 没有的优势**。只有两件事必须回 Windows。
+
+| 工作 | 在哪做 | 原因 |
+|---|---|---|
+| 读还原件写 `specs/` / 写重写代码 / 单元测试 / golden 回放 | **Mac（本机）** | 纯 TS，跨平台；还原件、数据、官方文档全在本机 |
+| 录 golden 基线（对照行为） | **Mac（本机）** | 本机就装着真实 UMA `1.0.0-beta4`（`/Applications/UMA Studio.app`），这是**比整合版更权威的黄金对照**——直接跑它取真实输入输出，不必等 Windows 出包 |
+| 容器格式兼容测试（旧 umadb 可读） | **Mac（本机）** | Node 22.22 实测 `node:sqlite` 免 flag 可用，加解密与 brotli 全在 Node 层，与平台无关 |
+| 22 开关 / 层配置 / 工具在册门禁 | **Mac（本机）** | `verify-uma-platform.mjs` 是纯文本/JSON 分析 |
+| **① Windows 平台行为验证** | **必须 Windows** | 沙箱 ACL（restricted token）、`PATHEXT` 可执行解析、`~/.uma` 路径、长路径、`uma://` 协议注册、SmartScreen —— 这些在 Mac 上**无法证伪** |
+| **② 最终真机出包 + 9 步验收** | **必须 Windows** | 交付物是 Windows 安装包；真实 UI 挂载与登录链只能装包验 |
+
+**本机环境现状（2026-11-17 实测）**：Node v22.22.2（内置 sqlite 可用）、pnpm 未启用
+（`corepack enable` 即可）、本地 dsh 树在 `4ee92289`（已打补丁），**但上游包尚无 `lib/` 编译产物**
+（需先 `pnpm install && pnpm build`）。也就是说：
+
+- **录 golden 有两条路**：
+  1. **最准**：直接用本机 `/Applications/UMA Studio.app`（真实 beta4）跑工具调用，取真实返回；
+  2. **最快**：本地 dsh 树 `pnpm install && pnpm build` 后 headless 调包（一次性成本，之后每次回放秒级）。
+  建议 M1 用 ① 定基线、② 做日常回放，两者结果应一致。
+- **重写代码本身不需要 pnpm / 不需要 dsh build**：自研包是独立 TS 文件，
+  写 specs 和 golden 样例阶段一行上游代码都不用编译。
+
+**Mac 上写、Windows 上跑的防坑约定**（这是从前面平台核对里提炼的，写码时就要守）：
+
+1. 路径一律 `node:path.join` / `resolve`，不硬编码 `/` 或 `C:\`；用户目录走官方 `home-paths` 服务。
+2. 不依赖符号链接 / `O_NOFOLLOW`（`dsh-knowledge` 已在 win32 跳过，重写时照抄这个分支）。
+3. 子进程用 `ctx.subprocess.spawn({ argv })` + `resolveExecutable`，不写 `sh -c` / `bash -lc`。
+4. 容器内部路径用 POSIX 相对名（`split(sep).join('/')`），Windows 的 `\` 在写入前归一化。
+5. `.patch` 与 umadb 保持二进制/原样，别让 git 做 CRLF 归一化（`.gitattributes` 已护住）。
+6. Windows 长路径：worktree 名前缀短一点，仓库别放太深（260 字符限制）。
+7. UI 文案全部走 8 语 locale，不内嵌中文/英文硬编码。
+
+→ **结论：不用现在切 Windows**。从 Mac 上的 M1 开始，等 M1 的 golden 全过、
+需要验证「沙箱/路径/协议」这类平台行为时，再切一次 Windows 做节点验收即可。
+
+---
+
 ## 2. 重写的方法论：先锁行为，再换实现
 
 这是「1:1」能不能成立的关键。**不要对照还原的 TS 抄代码**——那还是同一份实现的复制品，
