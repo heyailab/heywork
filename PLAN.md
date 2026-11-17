@@ -164,11 +164,17 @@ UMA 只多 8 个：`operations-{list,save,remove,connect,trust}`（5 个，Opera
 
 ## 目录说明
 
-```
+```text
 uma-windows-port/
-├── PLAN.md                  ← 本文件
-├── deepseek-harness/        ← 官方源码（git 39163dd, 0.2.2-rc.3）
-├── scripts/                 ← copy-uma-assets.sh 等搬运脚本
-├── notes/                   ← 移植过程中的记录（差异比对、问题）
+├── PLAN.md                  ← 本文件（计划 + 范围边界）
+├── WINDOWS-DEV.md           ← Windows 本机开发指南（出包 / 迭代 / 提交纪律）
+├── patches/                 ← 5 段壳层补丁（对官方 TS 源码的 diff，顺序敏感）
+├── uma-assets/              ← UMA 功能面：23 个插件包 + 9 个三方依赖池 + renderer/brand 资产
+├── scripts/                 ← 注入 / 校验 / 抽取 / locale 移植脚本
+├── notes/                   ← 移植过程记录（phase4-acceptance.md 为验收清单）
+├── deepseek-harness/        ← 官方源码（gitignored，按 pinned commit 39163dd 自行拉取）
 └── dist/                    ← 构建产物输出
 ```
+
+**开发入口看 `WINDOWS-DEV.md`**：环境准备、完整出包（与 CI 逐步一致）、插件/壳层/新功能的迭代方式、提交纪律。
+
