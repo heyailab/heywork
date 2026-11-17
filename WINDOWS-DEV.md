@@ -136,6 +136,8 @@ API 面（`defineTool` / `dsh.client` / `ctx.subprocess.spawn` / home-paths 表�
 
 ## 4. 提交纪律
 
+- 文档也是代码的一部分：每轮的决策/踩坑记进 `notes/`，会话工作日志同步到 `notes/worklog/<日期>.md`
+  （多机协作时另一台机器只能看到 git 里的东西）
 - 改壳层 → 重新生成对应 patch：在 `deepseek-harness` 里 `git diff > ../patches/uma-phaseN.patch`
   （**保持 LF**；`.gitattributes` 已把 `*.patch` 标记 `-text`，但生成时注意别引入 CRLF）
 - 改插件/renderer/脚本 → 直接提交 `uma-assets/`、`scripts/`、`patches/` 的改动
