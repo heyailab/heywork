@@ -45,7 +45,7 @@
 |---|---|---|---|---|
 | **P0 ✅** | 规格冻结 | 8 个服务端包的完整 specs（2,843 行，已入库 `c35d38b`） | 八份全部 7/7 段齐全，无算法描述 | 无 |
 | **P1 ✅** | 数据底座 | 容器层（`a12cc6c`，23/23 golden + 双向兼容）+ design 11 工具（`6fa143d`，三自测 + 整体注册全过） | 20 技能/507 系统可读，11 工具注册 | P0 ✅ |
-| **P2** | 交付链 | workflow + delivery + budget 重写 | artifact/gate/budget golden 全过 | P1 |
+| **P2 ✅** | 交付链 | workflow / delivery / budget 三包（`5b93089`，自测 74+23+全过，exit=0） | artifact/gate/budget 行为对齐 spec | P1 ✅ |
 | **P3** | 一等包 | knowledge + wiki + coding-workbench 重写 | 40 工具在册 | P1,P2 |
 | **P4** | UI 面板 | 6 处界面按界面稿重写 | 界面出现、inject 目标解析 | P3 |
 | **P5** | 集成出包 | profile bundle 打包 + Windows 真机验证 | 装包后 9 步验收 | P1-P4 |
