@@ -35,6 +35,29 @@ Mac 包 `app.asar` 内 `dsh/node_modules/@deepseek-ai` 有 **362** 个包；上�
 
 两条账号相关的包（`dsh-api-account-controller`、`dsh-deepseek-account-platform`）在现有层里**没有被任何 `name:` 挂载**：上游 `deepseek-account` 只用到同名 credential key（`credentialKey('deepseek-account-platform', …)`），并未 import 这两个包。按 Mac 包 1:1 保留（合计 ~440KB，且 `typert.host.js` 表明它们可能由 typert 协议侧发现），不在门禁里要求挂载。
 
+### 边界判定：功能全在插件里，壳只剩「跑起来 + 品牌」
+
+要判断「还差多少功能」，先要知道 Mac 版里哪些东西不是插件。三组证据：
+
+**一、产品开关全指向插件。** `uma-platform.patch.yml` 的 22 条全是 cordis 插件 id（8 启用：`ui-skill`、`session-log-download`、`uma-feedback`、`deepseek-account`、`llm-deepseek-account`、`ui-settings-models`、`session-controller`、`web`；14 禁用含全部遥测与官方品牌）。没有一条落到 Electron 代码路径。
+
+**二、主进程只是官方壳 + 薄增量。** 从 Mac `lib/main.js` 抽 IPC 注册，与上游 `apps/desktop/src` 对比：
+
+| | 数量 |
+|---|---|
+| Mac 主进程注册通道 | 50 |
+| 上游 `39163dd` 注册通道 | 42 |
+| 上游有、Mac 没有 | **0** |
+| Mac 独有 | **8**：`operations-{list,save,remove,connect,trust}`、`tray-publish`、`product-version`、`boot-mounted` |
+
+welcome / update-dialog / mandatory-update / platform-account / shortcuts / file-drag 这些通道逐一相同。所以 UMA 没有另写一套桌面应用。
+
+**三、UI 也是插件。** 6 个 UMA 客户端包（brand / design-studio / knowledge / repo-wiki / task-budget / remotes + 一个 `immediately` 的 remotes）声明 `dsh.client`，由 `dsh-uma-web/cordis.patch.yml` 以 `id` + `name` 挂成 Host Loader entry。浏览器侧的 `dsh-client-modules` 是**按 Loader entry 扫 `dsh.client` 组模块图**（`packages/client/modules/src/index.ts` 头注释与 `ClientModuleRegistry` 实现），不认层 id，也不需要改 web shell。它们的 `inject` 目标 21 个，19 个是上游一等 client 包（全部存在），2 个是 UMA 自有包（在注入集里）。
+
+→ 因此「在官方 dsh 上对齐 UMA 功能」的实际工作 = 23 个包 + 22 条开关 + 7 个客户端 entry。这三样都已就位，门禁每次构建都验。
+
+**唯一非插件的功能缺口**：UMA Operations（SSH 运维面板）。它需要主进程 `OperationsVault`（`safeStorage` 存凭据，挂在 `managedAccount` 分支）、5 个 `operations-*` 通道、以及 Mac 专属菜单入口（`...darwin ? [{ label: operationsMenu }] : []`——Windows 本来就没这个入口，若做要另找落点如设置页或托盘），UI 还在 dsh-web-app 渲染层而非插件里。插件侧 `uma_ssh_servers`/`uma_ssh_run` 靠 local webServer 的 `connection.admit` 接收委派，带 `when: active(agent).length > 0` 门控——没有面板就是工具不出现，不报错、不影响启动。**本期判定不做。**
+
 ## 1. 门禁：`scripts/verify-uma-platform.mjs`
 
 一条命令覆盖本轮所有静态可证项，CI 在打包前（源码模式、秒级）与注入后（`--tree` 模式、能看到真实 node_modules）各跑一次：
@@ -93,13 +116,16 @@ verify-uma-platform: OK — 22 switches, 40 tools, 23 packages
 
 1. 首次启动 → UMA 欢迎页品牌（不是 DSH 默认页）；数据写在 `%USERPROFILE%\.uma`，`dsh/profiles/desktop/cordis.patch.yml` 里的 bundle 列表含 `dsh-uma-base` / `dsh-uma-web`。
 2. 插件管理器能看到 12 个 UMA 包 + 11 个一等包；`uma-platform.patch.yml` 的 8 启用 / 14 禁用与实际一致。
-3. 问一句「列出你能用的 uma/design/wiki 工具」→ 应能报出 40 个里的相关项（尤其 `uma_wiki_lookup`、`coding_inspect`）。
-4. `uma_resource_read` 读一遍任一技能（如 `uma-code-review`）。
-5. `uma_artifact_write` 写一个 feature 级工件 → `uma_gate_status` 看到分级结果。
-6. 团队模式建板 → 派任务 → 交叉评审。
-7. SSH：连一台 Linux 机器，在中文路径下执行命令。
-8. 切语言到 ja/de，重启后保持。
-9. 检查更新走 `feeds/win-x64/`；装完看缓存目录只剩 `pending/` 三元组（Phase 3 的清扫）。
+3. **界面挂载**：品牌标识、设计工作室、知识库、项目 wiki、任务预算、团队板 6 处 UI 都要出现（它们由 7 个客户端插件注入；少一处说明浏览器模块图缺行）。
+4. 问一句「列出你能用的 uma/design/wiki 工具」→ 应能报出 40 个里的相关项（尤其 `uma_wiki_lookup`、`coding_inspect`）。
+5. `uma_resource_read` 读一遍任一技能（如 `uma-code-review`）。
+6. `uma_artifact_write` 写一个 feature 级工件 → `uma_gate_status` 看到分级结果。
+7. 团队模式建板 → 派任务 → 交叉评审。
+8. SSH：`uma_ssh_servers` / `uma_ssh_run` 在本期**预期不出现**（Operations 面板未移植，工具带 `when` 门控）。若要验证 ssh2 闭包本身，可在开发构建里直接调 `runConnectedSsh`。
+9. 切语言到 ja/de，重启后保持。
+
+> 更新链路（检查更新 / 下载 / 缓存清扫）已划出本期范围，不再作为验收项。
+
 
 ## 5. 复跑方式
 

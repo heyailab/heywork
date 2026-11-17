@@ -6,16 +6,39 @@
 
 ## goal（目标）
 
-在官方 dsh 开源 Windows 桌面基线上，叠加 UMA 专属插件层与产品配置，产出可安装、可自动更新、功能与 Mac 版 1:1 的 Windows 版本。
+在官方 dsh 开源 Windows 桌面基线上，叠加 UMA 专属插件层与产品配置，让 **UMA 的功能面在 Windows 上与 Mac 版一致**。
+
+范围口径（2026-11-17 明确）：**要功能对齐，不要更新链路**。UMA 的产品功能全部由插件承载
+（详见下方「范围边界」），壳层只保留让这些插件跑起来的最小改动；自动更新（Phase 3）不作为本期交付项。
 
 ## acceptance（验收标准）
 
-- [ ] Windows x64 安装包可安装、可签名验证、可启动进入 UMA 欢迎页
+- [ ] Windows x64 安装包可安装、可启动进入 UMA 欢迎页
 - [ ] 20 个内置技能全部可通过 `uma_resource_read` 加载（resources.umadb 原样复用）
 - [ ] `.uma/` 工件写入 + `uma_gate_status` 门禁全链路可用
 - [ ] 团队模式（agent-team）可建板、派任务、交叉评审
-- [ ] 自动更新走 `feeds/win-x64/` 通道，且更新完成后无缓存残留（修复 Mac 版遗留 bug）
 - [ ] `uma-platform.patch.yml` 中 22 个功能开关行为与 Mac 版一致（遥测类保持禁用）
+- [ ] 7 个客户端插件在窗口内正常挂载（注入目标全部可解析）
+- [ ] ~~自动更新走 `feeds/win-x64/` 通道~~ → 移出本期，见 Phase 3
+
+## 范围边界（哪些是插件，哪些必须动壳）
+
+逆向结论：**功能在插件里，壳只剩「让插件跑起来 + 品牌」**。
+
+| 层 | 承载方式 | Windows 侧动作 | 状态 |
+|---|---|---|---|
+| 工具 / 技能 / 知识库 / 设计 / 预算 / 交付门禁 / 团队板 / 项目 wiki / 编码工作台 | 23 个插件包 + 22 个产品开关 | 注入 + 配置，零代码改动 | 完成 |
+| UI 面板（brand / design studio / knowledge / repo-wiki / task-budget / remotes） | 6 个客户端插件，`dsh.client.inject` 注入上游 client 包；`dsh-client-modules` 按 **Loader entry** 扫 `dsh.client` 组浏览器模块图 | 只需挂成 entry（`dsh-uma-web/cordis.patch.yml` 已做） | 完成，门禁已加 |
+| 品牌壳（productName / 图标 / `uma://` / `~/.uma` / 单实例） | Electron 主进程 + 打包配置 | Phase 2 补丁 | 完成 |
+| 8 语文案 + 欢迎页 / 更新页 / mandatory 渲染层 | `src/locale.ts` + renderer 覆盖 | Phase 2b | 完成 |
+| About 对话框 / 版本通道 | 主进程 | Phase 2c | 完成 |
+| UMA Operations（SSH 面板） | 主进程 `OperationsVault`（safeStorage）+ Mac 专属菜单项 | **不做**（理由见 Phase 4） | 挂起 |
+| 自动更新 + 缓存清扫 | 主进程 | **不做**（用户 2026-11-17 明确） | 挂起 |
+
+判据：Mac 主进程注册的 50 个 IPC 通道里，官方 `39163dd` 的 42 个**全部**存在（官方 ⊂ UMA，无独有项），
+UMA 只多 8 个：`operations-{list,save,remove,connect,trust}`（5 个，Operations 面板）、`tray-publish`、
+`product-version`、`boot-mounted`。也就是说 UMA 的壳不是另一套应用，而是官方壳 + 薄增量；功能差异由插件携带。
+
 
 ## 关键事实（逆向已确认，移植时直接引用）
 
@@ -23,7 +46,7 @@
 2. **壳层已内置 win32 支持**：Mac 包 `lib/main.js` 含 `uma.cmd` 启动器、`node.exe` 路径、win32 路径比较、`desktop-win` 客户端标识等分支——上游开源壳同版本应已包含等价逻辑，个别 UMA 定制（如欢迎页/更新文案）需比对搬运。
 3. **resources.umadb 跨平台**：AES-256-GCM 解密在 Node 层（密钥 sha256('UMA Studio local resource container v1')），Windows 直接可用。
 4. **`desktopPlatform` 必改**：`uma-platform.patch.yml` → `deepseek-account` 配置中 `"darwin"` → `"win32"`。
-5. **Mac 版遗留 bug**：更新缓存目录双份 update.zip（798MB 残留）。Windows 版实现时安装成功后必须清理 `pending/` 与根目录 `update.zip`。
+5. ~~**Mac 版遗留 bug**：更新缓存目录双份 update.zip（798MB 残留）~~ —— 本期不修（更新链路已挂起），代码在 `patches/uma-phase3.patch` 里保留。
 
 ---
 
@@ -71,7 +94,11 @@
 - [ ] 签名：`apps/desktop/config/windows-packaging/windows-signing.env.example` 按样例配置 Authenticode（建议 EV 证书防 SmartScreen 误报）
 - [ ] **验收**：启动页为 UMA 品牌；`uma://` 链接可唤起应用；数据写入 `~/.uma`；更新对话框含 UMA 品牌样式
 
-## Phase 3 — 更新通道 + 缓存清理修复
+## Phase 3 — 更新通道 + 缓存清理（**挂起，不在本期范围**）
+
+> 2026-11-17 用户明确：更新功能不用管，只要在官方 dsh 上对齐 UMA 功能。
+> 下面的代码已实现且随 CI 应用（不影响功能验收，也不阻挡启动），但**不作为交付验收项**；
+> 服务端 `feeds/win-x64/` 与签名链路一并挂起。若日后要恢复，直接从「待办」两条接上即可。
 
 > 实测（2026-11-16，Mac 版 `~/Library/Caches/uma-studio-updater/`，798MB）：
 > - `pending/uma-studio-1.0.0-beta3.20261116.1-mac-arm64.zip` 418MB + `pending/current.blockmap` 424KB + `pending/update-info.json`（electron-updater 的 pending 三元组，正常）
@@ -95,15 +122,28 @@
 > 清单见 `uma-assets/packages.extras.json`），注入清单改为目录驱动 23 个包。
 
 - [x] 合成门禁 `scripts/verify-uma-platform.mjs`：22 开关全部落到 269 个可挂载 id；8 启用/14 禁用与 Mac 原文逐字段一致；`desktopPlatform=win32`；层引用零悬空；40 个工具在册；8 语种齐全。源码模式（打包前，秒级）+ `--tree` 模式（注入后，看真实 node_modules）各跑一次
+- [x] **客户端组合门禁**：7 个客户端插件必须各自被某层挂成 Loader entry（`id` 或 `name` 命中），且 `dsh.client.inject` 的 21 个目标全部可解析——否则浏览器模块图少一行，界面静默不出现、构建期零报错
 - [x] 缺失包补齐 + 三方依赖池（typescript / pdfjs-dist / zod / picomatch / js-yaml，树里已有则不复制）
 - [x] 交付流水线：`uma_artifact_write/read` + gate 分级（`dsh-tool-uma-workflow` + `dsh-util-uma-delivery`）
 - [x] 设计工具族 9 个 + `uma_resource_read` / `uma_knowledge_search`（`dsh-tool-uma-design`）
 - [x] 任务预算 `uma_session_budgets`（typert 描述符注册，非 `defineTool`，校验器单独解析）
 - [x] 专家指导 `uma_guidance`（产品补丁内 `disabled: true`，与 Mac 一致）
-- [x] SSH 运维：`ssh2` 1.17.0 纯 JS 闭包随包；工具走 `ctx.subprocess.spawn`
+- [x] SSH 运维工具进包：`ssh2` 1.17.0 纯 JS 闭包随包；工具走 `ctx.subprocess.spawn`
 - [x] WeKnora / 项目记忆（node:sqlite，Electron 44 = Node 24）/ 经验沉淀
 - [x] 20 个内置技能可枚举：`node --experimental-sqlite scripts/inspect-skill-container.mjs` → 20 技能 / 642 目录 / 2895 文件
-- [ ] **真机验收**：按 `notes/phase4-acceptance.md` 第 4 节的 9 步在装好的 Windows 包上走一遍（启动、工具自述、工件、团队板、SSH 中文路径、切语言、更新缓存清扫）
+- [ ] **真机验收**：按 `notes/phase4-acceptance.md` 第 4 节在装好的 Windows 包上走一遍（启动、44 个工具自述、工件 + 门禁、团队板、切语言）
+
+### UMA Operations（SSH 面板）——判定为不做
+
+非插件的唯一一块功能。事实链：
+
+1. Mac 上入口是**菜单项**，且被 `...darwin ? [{ label: operationsMenu, click }] : []` 包住——Windows 上本来就没有这个入口；
+2. 主进程 `OperationsVault(app.getPath('userData'))` 用 `safeStorage` 存连接凭据，挂在 `if (managedAccount)` 分支里，业务是 `list/save/remove/connect/trust` + `open-operations` 发 IPC 给渲染层；
+3. 插件侧 `dsh-uma-base/lib/operations-ssh.js` 起一个 local webServer 端点，`scope.connection.admit(request)` 接收「委派某台服务器给本次会话」，然后 `uma_ssh_servers` / `uma_ssh_run` 才有对象；
+4. 两个工具都带 `when: ({ agent }) => active(agent).length > 0` —— **没有委派就是工具不出现**，不是报错、不影响启动，也不影响其它 38 个工具。
+
+结论：不追 1:1 时这块可以不做。真要做，成本 = vault + 5 个 IPC + 一个 Windows 侧入口（菜单已无，需放设置页或托盘），并要重做 UI（Mac 的面板在 dsh-web-app 渲染层，不是插件）。
+
 
 ## Phase 5 — 发布
 

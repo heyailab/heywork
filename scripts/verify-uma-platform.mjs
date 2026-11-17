@@ -373,6 +373,51 @@ for (const name of injectedPackages) {
   }
 }
 
+// ------------------------------------- 4b. client composition reaches the window
+//
+// Client packages are not mounted by layer id alone: dsh-client-modules builds
+// the browser module graph by scanning the Host Loader's entries for packages
+// declaring `dsh.client`, and each graph row resolves its `inject` targets out of
+// that same table. A client package that no layer mounts as an entry, or an
+// inject target nothing provides, produces a window missing that UI with no
+// error at build time — exactly the failure class this gate exists for.
+
+/** Package names a layer file mounts as Host Loader entries. */
+function collectEntryNames(files) {
+  const names = new Set()
+  for (const file of files) {
+    for (const match of readFileSync(file, 'utf8').matchAll(/^\s*-?\s*name:\s*['"](@[^'"]+)['"]\s*$/gm)) names.add(match[1])
+  }
+  return names
+}
+
+const declaredNames = collectEntryNames(layerFiles)
+const clientPackages = []
+const unresolvedInject = new Map()
+for (const name of injectedPackages) {
+  const entry = packageIndex.get(name)
+  const client = entry?.manifest.dsh?.client
+  if (client === undefined) continue
+  clientPackages.push(name)
+  if (client.platform !== 'web') fail(`${name} declares dsh.client.platform = ${String(client.platform)}; the desktop profile is a web profile`)
+  const mounted = declaredNames.has(name) || declaredIds.has(name.replace('@deepseek-ai/', ''))
+  if (!mounted) fail(`${name} declares dsh.client but no desktop layer mounts it as an entry — its UI would never load`)
+  for (const target of client.inject ?? []) {
+    if (packageIndex.has(target)) continue
+    const bucket = unresolvedInject.get(target) ?? []
+    bucket.push(name)
+    unresolvedInject.set(target, bucket)
+  }
+}
+for (const [target, requesters] of unresolvedInject) {
+  // UMA client packages inject each other; anything else must be a real package
+  // in the composition or the browser module table cannot satisfy the row.
+  if (!injectedPackages.includes(target) && !declaredNames.has(target)) {
+    fail(`${target} is injected by ${requesters.join(', ')} but is not part of the composition`)
+  }
+}
+notes.push(`client packages: ${clientPackages.length} mounted as loader entries, ${new Set([...clientPackages].flatMap(name => packageIndex.get(name)?.manifest.dsh?.client?.inject ?? [])).size} distinct inject targets resolve`)
+
 // The extras import third-party packages that no composed upstream package
 // declares, so the tree only carries them because uma-assets/deps tops it up.
 if (TREE !== undefined) {
