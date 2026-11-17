@@ -1,40 +1,40 @@
 # Phase 4 功能验收 — 对照 Mac 版 1:1
 
-> 基线：Mac `UMA Studio 1.0.0-beta3.20261116.1`（dsh `0.2.2-rc.3`）
+> 基线：Mac `HeyWork 1.0.0-beta3.20261116.1`（dsh `0.2.2-rc.3`）
 > 结论口径：**静态可证**（本机可复跑）与**需真机**（必须装到 Windows 上才能确认）分开记，不把推断写成事实。
 >
 > **后续**：第二轮复核（含强更策略修正、容器内容门禁、基线漂移核对、新增 4 条真机项）见
 > [parity-gap-review.md](parity-gap-review.md)；两篇冲突时以那一篇为准。
 
-## 0. 本轮最重要的一条：UMA 桌面层引用了 11 个公开仓库没有的包
+## 0. 本轮最重要的一条：HEY 桌面层引用了 11 个公开仓库没有的包
 
-Mac 包 `app.asar` 内 `dsh/node_modules/@deepseek-ai` 有 **362** 个包；上游公开仓库 `39163dd` 有 **406** 个包名，但两者差集里除了 12 个 UMA 产品包，还有 **11 个一等包只在 UMA 版构建里存在**：
+Mac 包 `app.asar` 内 `dsh/node_modules/@deepseek-ai` 有 **362** 个包；上游公开仓库 `39163dd` 有 **406** 个包名，但两者差集里除了 12 个 HEY 产品包，还有 **11 个一等包只在 HEY 版构建里存在**：
 
 | 包 | 角色 | 谁在挂它 |
 |---|---|---|
-| `dsh-knowledge` | 知识库服务（embedding / PDF 解析 / node:sqlite） | `uma-base` `insert:` |
-| `dsh-task-query` | 任务查询服务 | `uma-base` `insert:` |
-| `dsh-worktree` | git worktree（`coding-worktrees`，namePrefix `uma-`） | `uma-base` `insert:` |
-| `dsh-coding-workbench` | 编码工作台：`coding_task/inspect/check/repair/review/acceptance/restore` | `uma-base` `insert:` |
-| `dsh-tool-repo-wiki` | 项目 Wiki 工具族（`uma_wiki_lookup` + 10 个 `wiki_*`） | `uma-base` `insert:`、三个 preset |
+| `dsh-knowledge` | 知识库服务（embedding / PDF 解析 / node:sqlite） | `hey-base` `insert:` |
+| `dsh-task-query` | 任务查询服务 | `hey-base` `insert:` |
+| `dsh-worktree` | git worktree（`coding-worktrees`，namePrefix `hey-`） | `hey-base` `insert:` |
+| `dsh-coding-workbench` | 编码工作台：`coding_task/inspect/check/repair/review/acceptance/restore` | `hey-base` `insert:` |
+| `dsh-tool-repo-wiki` | 项目 Wiki 工具族（`hey_wiki_lookup` + 10 个 `wiki_*`） | `hey-base` `insert:`、三个 preset |
 | `dsh-util-repo-wiki` | Wiki 的底层工具库（`tool-repo-wiki` 的依赖） | 依赖闭包 |
-| `dsh-client-ui-knowledge` | 知识库页面 | `uma-web` |
-| `dsh-client-ui-repo-wiki` | 项目 Wiki 页面 | `uma-web` |
-| `dsh-client-ui-design-studio` | 设计工作台页面 | `uma-web` |
+| `dsh-client-ui-knowledge` | 知识库页面 | `hey-web` |
+| `dsh-client-ui-repo-wiki` | 项目 Wiki 页面 | `hey-web` |
+| `dsh-client-ui-design-studio` | 设计工作台页面 | `hey-web` |
 | `dsh-api-account-controller` | 账号 API 控制器 | 账号链路 |
 | `dsh-deepseek-account-platform` | 平台账号适配 | 账号链路 |
 
 **为什么之前没被发现**：`prepare:dsh` 阶段的 runtime smoke 跑在注入**之前**（phase1 补丁里刻意保留上游 bundle 列表就是为了让它能过），所以「层里挂的包不存在」只会在用户第一次启动时炸；`pnpm build` 与 electron-builder 都不会校验 profile 层。
 
-**处置**：`scripts/extract-mac-extras.mjs` 从 Mac asar 按依赖闭包抽取这 11 个包 → `uma-assets/packages/`（26.7MB，无原生二进制），抽取清单与逐包 SHA-256 记在 `uma-assets/packages.extras.json`。注入脚本改为**目录驱动**（23 个包），不再硬编码 12。
+**处置**：`scripts/extract-mac-extras.mjs` 从 Mac asar 按依赖闭包抽取这 11 个包 → `hey-assets/packages/`（26.7MB，无原生二进制），抽取清单与逐包 SHA-256 记在 `hey-assets/packages.extras.json`。注入脚本改为**目录驱动**（23 个包），不再硬编码 12。
 
-### 连带发现：`uma_wiki_lookup` 不是笔误
+### 连带发现：`hey_wiki_lookup` 不是笔误
 
-`uma-base/cordis.patch.yml` 的 persona 里让模型「用 uma_wiki_lookup 查 Wiki」，第一轮校验时该工具**没有任何包注册**——因为 `dsh-tool-repo-wiki` 正是缺的 11 个之一。补齐后它随 `wiki_*` 一起注册，40 个工具的清单才闭合。
+`hey-base/cordis.patch.yml` 的 persona 里让模型「用 hey_wiki_lookup 查 Wiki」，第一轮校验时该工具**没有任何包注册**——因为 `dsh-tool-repo-wiki` 正是缺的 11 个之一。补齐后它随 `wiki_*` 一起注册，40 个工具的清单才闭合。
 
 ### 第三方依赖池
 
-23 个包的**全部**非 `@deepseek-ai` 运行时依赖一共 9 个：`zod`、`pdfjs-dist`、`picomatch`、`typescript`、`js-yaml`、`papaparse`、`yaml`、`ws`、`ssh2`。它们未必都被上游组合进装上来的树（`typescript` 靠 `typert-loader`、`ws` 靠 webserver、`papaparse`/`pdfjs-dist` 只有实验包在用），其中 `yaml` 一旦缺失，`dsh-skill-uma` 解析技能 front matter 就会失败——等于 `uma_resource_read` 全废。这 9 个全部抽到 `uma-assets/deps/`，注入时**仅在树里缺失才补**（树里已有则零成本），避免「打包成功、启动后某个包 import 失败」。
+23 个包的**全部**非 `@deepseek-ai` 运行时依赖一共 9 个：`zod`、`pdfjs-dist`、`picomatch`、`typescript`、`js-yaml`、`papaparse`、`yaml`、`ws`、`ssh2`。它们未必都被上游组合进装上来的树（`typescript` 靠 `typert-loader`、`ws` 靠 webserver、`papaparse`/`pdfjs-dist` 只有实验包在用），其中 `yaml` 一旦缺失，`dsh-skill-uma` 解析技能 front matter 就会失败——等于 `hey_resource_read` 全废。这 9 个全部抽到 `hey-assets/deps/`，注入时**仅在树里缺失才补**（树里已有则零成本），避免「打包成功、启动后某个包 import 失败」。
 
 两条账号相关的包（`dsh-api-account-controller`、`dsh-deepseek-account-platform`）在现有层里**没有被任何 `name:` 挂载**：上游 `deepseek-account` 只用到同名 credential key（`credentialKey('deepseek-account-platform', …)`），并未 import 这两个包。按 Mac 包 1:1 保留（合计 ~440KB，且 `typert.host.js` 表明它们可能由 typert 协议侧发现），不在门禁里要求挂载。
 
@@ -53,21 +53,21 @@ Mac 包 `app.asar` 内 `dsh/node_modules/@deepseek-ai` 有 **362** 个包；上�
 | 上游有、Mac 没有 | **0** |
 | Mac 独有 | **8**：`operations-{list,save,remove,connect,trust}`、`tray-publish`、`product-version`、`boot-mounted` |
 
-welcome / update-dialog / mandatory-update / platform-account / shortcuts / file-drag 这些通道逐一相同。所以 UMA 没有另写一套桌面应用。
+welcome / update-dialog / mandatory-update / platform-account / shortcuts / file-drag 这些通道逐一相同。所以 HEY 没有另写一套桌面应用。
 
-**三、UI 也是插件。** 6 个 UMA 客户端包（brand / design-studio / knowledge / repo-wiki / task-budget / remotes + 一个 `immediately` 的 remotes）声明 `dsh.client`，由 `dsh-uma-web/cordis.patch.yml` 以 `id` + `name` 挂成 Host Loader entry。浏览器侧的 `dsh-client-modules` 是**按 Loader entry 扫 `dsh.client` 组模块图**（`packages/client/modules/src/index.ts` 头注释与 `ClientModuleRegistry` 实现），不认层 id，也不需要改 web shell。它们的 `inject` 目标 21 个，19 个是上游一等 client 包（全部存在），2 个是 UMA 自有包（在注入集里）。
+**三、UI 也是插件。** 6 个 HEY 客户端包（brand / design-studio / knowledge / repo-wiki / task-budget / remotes + 一个 `immediately` 的 remotes）声明 `dsh.client`，由 `dsh-uma-web/cordis.patch.yml` 以 `id` + `name` 挂成 Host Loader entry。浏览器侧的 `dsh-client-modules` 是**按 Loader entry 扫 `dsh.client` 组模块图**（`packages/client/modules/src/index.ts` 头注释与 `ClientModuleRegistry` 实现），不认层 id，也不需要改 web shell。它们的 `inject` 目标 21 个，19 个是上游一等 client 包（全部存在），2 个是 HEY 自有包（在注入集里）。
 
-→ 因此「在官方 dsh 上对齐 UMA 功能」的实际工作 = 23 个包 + 22 条开关 + 7 个客户端 entry。这三样都已就位，门禁每次构建都验。
+→ 因此「在官方 dsh 上对齐 HEY 功能」的实际工作 = 23 个包 + 22 条开关 + 7 个客户端 entry。这三样都已就位，门禁每次构建都验。
 
-**唯一非插件的功能缺口**：UMA Operations（SSH 运维面板）。它需要主进程 `OperationsVault`（`safeStorage` 存凭据，挂在 `managedAccount` 分支）、5 个 `operations-*` 通道、以及 Mac 专属菜单入口（`...darwin ? [{ label: operationsMenu }] : []`——Windows 本来就没这个入口，若做要另找落点如设置页或托盘），UI 还在 dsh-web-app 渲染层而非插件里。插件侧 `uma_ssh_servers`/`uma_ssh_run` 靠 local webServer 的 `connection.admit` 接收委派，带 `when: active(agent).length > 0` 门控——没有面板就是工具不出现，不报错、不影响启动。**本期判定不做。**
+**唯一非插件的功能缺口**：HEY Operations（SSH 运维面板）。它需要主进程 `OperationsVault`（`safeStorage` 存凭据，挂在 `managedAccount` 分支）、5 个 `operations-*` 通道、以及 Mac 专属菜单入口（`...darwin ? [{ label: operationsMenu }] : []`——Windows 本来就没这个入口，若做要另找落点如设置页或托盘），UI 还在 dsh-web-app 渲染层而非插件里。插件侧 `hey_ssh_servers`/`hey_ssh_run` 靠 local webServer 的 `connection.admit` 接收委派，带 `when: active(agent).length > 0` 门控——没有面板就是工具不出现，不报错、不影响启动。**本期判定不做。**
 
-## 1. 门禁：`scripts/verify-uma-platform.mjs`
+## 1. 门禁：`scripts/verify-hey-platform.mjs`
 
 一条命令覆盖本轮所有静态可证项，CI 在打包前（源码模式、秒级）与注入后（`--tree` 模式、能看到真实 node_modules）各跑一次：
 
 ```bash
-node scripts/verify-uma-platform.mjs                 # 源码 + uma-assets
-node scripts/verify-uma-platform.mjs --tree <dsh树>  # 注入后、打包前
+node scripts/verify-hey-platform.mjs                 # 源码 + hey-assets
+node scripts/verify-hey-platform.mjs --tree <dsh树>  # 注入后、打包前
 ```
 
 当前输出：
@@ -75,56 +75,56 @@ node scripts/verify-uma-platform.mjs --tree <dsh树>  # 注入后、打包前
 ```
 product patch: 22 switches — 8 enabled, 14 disabled
 deepseek-account.desktopPlatform = win32 (x-client-platform: desktop-win)
-drift guard: compared against uma-assets/uma-platform.patch.mac.yml (desktopPlatform exempt)
-desktop profile = web template [dsh-base, dsh-web-app] + UMA pair
+drift guard: compared against hey-assets/hey-platform.patch.mac.yml (desktopPlatform exempt)
+desktop profile = web template [dsh-base, dsh-web-app] + HEY pair
 desktop layer stack: 4 bundles, 17 patch files, 269 mountable ids
-injected packages: 23 (12 UMA + 11 first-party extras)
+injected packages: 23 (12 HEY + 11 first-party extras)
 tools: 40 registered across 7 packages
 skill container: 8.5 MB
 locales: 20 localized packages × 8 languages
-verify-uma-platform: OK — 22 switches, 40 tools, 23 packages
+verify-hey-platform: OK — 22 switches, 40 tools, 23 packages
 ```
 
 它证明的事：
 
 1. **22 个开关全部有归属**：每个 id 都能在 `dsh-base + dsh-web-app + dsh-uma-base + dsh-uma-web` 的 269 个可挂载 id 里找到。产品补丁是最后叠加的一层，id 写错会被静默忽略——这正是需要门禁而不是人眼的原因。
-2. **8 启用 / 14 禁用与 Mac 原文逐字段一致**，唯一允许的差异是 `desktopPlatform`：`darwin` → `win32`（Mac 原文留档为 `uma-platform.patch.mac.yml`，改名就是为了防止有人去「修」错文件）。
+2. **8 启用 / 14 禁用与 Mac 原文逐字段一致**，唯一允许的差异是 `desktopPlatform`：`darwin` → `win32`（Mac 原文留档为 `hey-platform.patch.mac.yml`，改名就是为了防止有人去「修」错文件）。
 3. **`desktopPlatform = win32`** 对应 `packages/credentials/deepseek-account/src/client-metadata.ts:28` → `x-client-platform: desktop-win`；上游 base 层本就用 `process.platform` 推导同一个值（`packages/bundle/base/cordis.patch.yml:123`），这里显式钉住，防止环境异常时被降级成 `web` 而被 Platform 拒绝托管账号流程。
-4. **层引用零悬空**：UMA 层里 `name:` 的每个 `@deepseek-ai/*` 都要么是上游包、要么在 23 个注入包里。
+4. **层引用零悬空**：HEY 层里 `name:` 的每个 `@deepseek-ai/*` 都要么是上游包、要么在 23 个注入包里。
 5. **40 个工具在册**，且客户端包必须带预构建 `lib/client.js`（否则窗口是空的，构建期看不出来）。
 
 ## 2. Phase 4 各项对照
 
 | 验收项 | 机制（Windows 侧） | 静态证据 | 真机仍待确认 |
 |---|---|---|---|
-| 交付流水线 `uma_artifact_write/read` + gate 八工件 | `dsh-tool-uma-workflow` 3 个工具；`dsh-util-uma-delivery` 分级 patch/feature/product | 工具在册；包无平台分支 | 写入 `~/.uma` 与项目目录的实际落盘 |
-| 设计工具族 10 个 | `dsh-tool-uma-design` 9 个 `design_*` + `uma_resource_read` + `uma_knowledge_search` | 校验器逐个断言；`assetRoot` 走 `dshHomePath` / 资源容器 | 设计稿预览、`design_preview` 静态快照渲染 |
+| 交付流水线 `hey_artifact_write/read` + gate 八工件 | `dsh-tool-uma-workflow` 3 个工具；`dsh-util-uma-delivery` 分级 patch/feature/product | 工具在册；包无平台分支 | 写入 `~/.hey` 与项目目录的实际落盘 |
+| 设计工具族 10 个 | `dsh-tool-uma-design` 9 个 `design_*` + `hey_resource_read` + `hey_knowledge_search` | 校验器逐个断言；`assetRoot` 走 `dshHomePath` / 资源容器 | 设计稿预览、`design_preview` 静态快照渲染 |
 | 任务预算 `uma_session_budgets` read/update | `dsh-uma-task-budget`（typert 描述符注册，非 `defineTool`） | 校验器单独解析该描述符 | 预算耗尽的拦截行为 |
 | 专家指导 `uma_guidance` | `dsh-uma-guidance`，产品补丁里 `disabled: true`（与 Mac 一致），需要时由设置开启 | 开关状态 + 工具在册 | 开启后与 `studio.umayun.com` 的联通 |
-| SSH 运维 | `uma_ssh_run` / `uma_ssh_servers`，底层 `ssh2` 1.17.0（纯 JS） | `uma-assets/deps/ssh2` 闭包（asn1/bcrypt-pbkdf/safer-buffer/tweetnacl）随包补齐 | Windows 路径 + 中文路径 + 私钥文件权限 |
-| WeKnora 检索 | `uma_weknora_search`；`uma-weknora` 插件默认 `disabled: true` | 工具在册，层配置读 `UMA_*` 环境变量 | 开启后与知识库服务联通 |
-| 项目记忆（node:sqlite） | `uma_project_memory` + `dsh-knowledge` 的 `DatabaseSync` | Electron 44 / 运行时 Node 24 支持 `node:sqlite`；`resources.umadb` 已 asarUnpack | 首次建库、并发写入 |
-| 经验沉淀 | `uma_experience_record` | 工具在册 | 全局库待审队列 |
+| SSH 运维 | `hey_ssh_run` / `hey_ssh_servers`，底层 `ssh2` 1.17.0（纯 JS） | `hey-assets/deps/ssh2` 闭包（asn1/bcrypt-pbkdf/safer-buffer/tweetnacl）随包补齐 | Windows 路径 + 中文路径 + 私钥文件权限 |
+| WeKnora 检索 | `hey_weknora_search`；`hey-weknora` 插件默认 `disabled: true` | 工具在册，层配置读 `HEY_*` 环境变量 | 开启后与知识库服务联通 |
+| 项目记忆（node:sqlite） | `hey_project_memory` + `dsh-knowledge` 的 `DatabaseSync` | Electron 44 / 运行时 Node 24 支持 `node:sqlite`；`resources.umadb` 已 asarUnpack | 首次建库、并发写入 |
+| 经验沉淀 | `hey_experience_record` | 工具在册 | 全局库待审队列 |
 | 8 语种 locale | 20 个包 × 8 语言文件齐全 | 校验器断言文件存在（翻译质量不校验，与 Mac 同源） | 切换语言后 UI 文案 |
-| 20 个内置技能 | `resources.umadb` 原样复用 | `node --experimental-sqlite scripts/inspect-skill-container.mjs` → 20 个技能 / 642 目录 / 2895 文件 | `uma_resource_read` 实际读取 |
-| 团队模式 | `agent-team` 层 `defaultEnabled: true`；`uma-team` preset | 层配置；`tool-agent-team` 提示词已含 UMA 角色约定 | 建板、派活、交叉评审 |
+| 20 个内置技能 | `resources.umadb` 原样复用 | `node --experimental-sqlite scripts/inspect-skill-container.mjs` → 20 个技能 / 642 目录 / 2895 文件 | `hey_resource_read` 实际读取 |
+| 团队模式 | `agent-team` 层 `defaultEnabled: true`；`hey-team` preset | 层配置；`tool-agent-team` 提示词已含 HEY 角色约定 | 建板、派活、交叉评审 |
 
 ## 3. 已知与 Mac 逐字相同的行为（不算移植缺陷）
 
 - `dsh-api-account-controller` / `dsh-deepseek-account-platform` 的 `locale/en.json` 缺 `meta.description`，其它语种有。文件与 Mac 包逐字节相同，不做本地化修补（也因此门禁只校验 8 个语种文件存在，不校验翻译键集合）。
-- UMA 层给 `session-query-sqlite`、`uma-project-memory` 等用的是 `!!js dshHomePath(...)`，在 Windows 上落到 `%USERPROFILE%\.uma\...`——`packages/util/home-paths` 用 `node:path.join` 且有 Windows 专用的 realpath 归一化，不需要改。
+- HEY 层给 `session-query-sqlite`、`hey-project-memory` 等用的是 `!!js dshHomePath(...)`，在 Windows 上落到 `%USERPROFILE%\.hey\...`——`packages/util/home-paths` 用 `node:path.join` 且有 Windows 专用的 realpath 归一化，不需要改。
 - `dsh-knowledge` 里 `O_NOFOLLOW` 在 win32 上被显式跳过（`process.platform === 'win32' ? 0 : constants.O_NOFOLLOW`），Windows 没有该标志——已由包自己处理。
 
 ## 4. 真机验收清单（装完 Windows 包后按序做）
 
-1. 首次启动 → UMA 欢迎页品牌（不是 DSH 默认页）；数据写在 `%USERPROFILE%\.uma`，`dsh/profiles/desktop/cordis.patch.yml` 里的 bundle 列表含 `dsh-uma-base` / `dsh-uma-web`。
-2. 插件管理器能看到 12 个 UMA 包 + 11 个一等包；`uma-platform.patch.yml` 的 8 启用 / 14 禁用与实际一致。
+1. 首次启动 → HEY 欢迎页品牌（不是 DSH 默认页）；数据写在 `%USERPROFILE%\.hey`，`dsh/profiles/desktop/cordis.patch.yml` 里的 bundle 列表含 `dsh-uma-base` / `dsh-uma-web`。
+2. 插件管理器能看到 12 个 HEY 包 + 11 个一等包；`uma-platform.patch.yml` 的 8 启用 / 14 禁用与实际一致。
 3. **界面挂载**：品牌标识、设计工作室、知识库、项目 wiki、任务预算、团队板 6 处 UI 都要出现（它们由 7 个客户端插件注入；少一处说明浏览器模块图缺行）。
-4. 问一句「列出你能用的 uma/design/wiki 工具」→ 应能报出 40 个里的相关项（尤其 `uma_wiki_lookup`、`coding_inspect`）。
-5. `uma_resource_read` 读一遍任一技能（如 `uma-code-review`）。
-6. `uma_artifact_write` 写一个 feature 级工件 → `uma_gate_status` 看到分级结果。
+4. 问一句「列出你能用的 hey/design/wiki 工具」→ 应能报出 40 个里的相关项（尤其 `hey_wiki_lookup`、`coding_inspect`）。
+5. `hey_resource_read` 读一遍任一技能（如 `hey-code-review`）。
+6. `hey_artifact_write` 写一个 feature 级工件 → `hey_gate_status` 看到分级结果。
 7. 团队模式建板 → 派任务 → 交叉评审。
-8. SSH：`uma_ssh_servers` / `uma_ssh_run` 在本期**预期不出现**（Operations 面板未移植，工具带 `when` 门控）。若要验证 ssh2 闭包本身，可在开发构建里直接调 `runConnectedSsh`。
+8. SSH：`hey_ssh_servers` / `hey_ssh_run` 在本期**预期不出现**（Operations 面板未移植，工具带 `when` 门控）。若要验证 ssh2 闭包本身，可在开发构建里直接调 `runConnectedSsh`。
 9. 切语言到 ja/de，重启后保持。
 
 > 更新链路（检查更新 / 下载 / 缓存清扫）已划出本期范围，不再作为验收项。
@@ -134,17 +134,17 @@ verify-uma-platform: OK — 22 switches, 40 tools, 23 packages
 
 ```bash
 # 重新抽取缺失包（换了 Mac 包版本时）
-node scripts/extract-mac-extras.mjs --asar "<...>/UMA Studio.app/Contents/Resources/app.asar"
+node scripts/extract-mac-extras.mjs --asar "<...>/HeyWork.app/Contents/Resources/app.asar"
 
 # 合成门禁
-node scripts/verify-uma-platform.mjs
+node scripts/verify-hey-platform.mjs
 
 # 技能清单
 node --experimental-sqlite scripts/inspect-skill-container.mjs
 
 # 在本地伪造一棵“已注入”的树，提前验证 --tree 分支（CI 上不必等 2 小时）
 #   node_modules/@deepseek-ai/{dsh-base,dsh-web-app} ← 上游源码包
-#   node_modules/@deepseek-ai/* ← uma-assets/packages/*
-#   node_modules/*              ← uma-assets/deps/*
-node scripts/verify-uma-platform.mjs --tree /tmp/faketree
+#   node_modules/@deepseek-ai/* ← hey-assets/packages/*
+#   node_modules/*              ← hey-assets/deps/*
+node scripts/verify-hey-platform.mjs --tree /tmp/faketree
 ```

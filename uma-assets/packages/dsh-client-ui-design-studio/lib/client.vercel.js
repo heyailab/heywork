@@ -969,7 +969,7 @@ What distinguishes Vercel from other monochrome design systems is its shadow-as-
             </p>
           </div>
 
-          <div role="group" class="uma-preview-form form">
+          <div role="group" class="hey-preview-form form">
             <div class="row-between">
               <p class="eyebrow">Get the spec</p>
               <span class="badge badge-success">

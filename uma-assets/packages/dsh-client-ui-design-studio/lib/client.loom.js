@@ -452,7 +452,7 @@ Video-first responsive layout. At narrower breakpoints, the video thumbnail stac
               <span class="meta">v2.4 · 38 MB</span>
             </div>
           </div>
-          <div role="group" class="uma-preview-form form">
+          <div role="group" class="hey-preview-form form">
             <div class="field">
               <label for="email">Work email</label>
               <input id="email" type="email" placeholder="you@company.com" autocomplete="email" required />

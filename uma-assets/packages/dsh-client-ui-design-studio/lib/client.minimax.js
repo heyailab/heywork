@@ -550,7 +550,7 @@ What makes MiniMax distinctive is its pill-button geometry (9999px radius) for n
       }
     </style>
 
-    <style data-uma-responsive-repair>
+    <style data-hey-responsive-repair>
       /* Grid and flex children may shrink; long labels wrap within their own column. */
       :where(*) { min-width: 0; }
       :where(h1, h2, h3, p, a, span, strong, label, code) { overflow-wrap: anywhere; }
@@ -692,7 +692,7 @@ What makes MiniMax distinctive is its pill-button geometry (9999px radius) for n
             </ul>
           </div>
 
-          <div role="group" class="uma-preview-form form" aria-label="Render prompt">
+          <div role="group" class="hey-preview-form form" aria-label="Render prompt">
             <div class="field">
               <label for="prompt">Prompt</label>
               <textarea

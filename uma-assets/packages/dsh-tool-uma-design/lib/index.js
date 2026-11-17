@@ -8,7 +8,7 @@ import { ToolContextUnavailableError, defineTool } from "@deepseek-ai/dsh-tools"
 //#region lib/types/index.js
 /** Native design-context inspection, rule retrieval and bundled design-system access. */
 /** Cordis plugin identity. */
-const name = "tool-uma-design";
+const name = "tool-hey-design";
 /** Tool, filesystem, and working-directory services used by the design tools. */
 const inject = [
 	"tools",
@@ -166,7 +166,7 @@ function apply(ctx, config = {}) {
 	ctx.systemPrompt.section({
 		name: "native-design-workflow",
 		order: 112,
-		text: "## Native UI design workflow\nFor UI work, call design_context before changing visuals; pass the actual monorepo target and selected design project when known. Use its project files and declared stack, then inspect existing components and rendered behavior. Missing DESIGN.md does not imply a new product. User-approved branding, existing project tokens and component libraries take precedence over bundled inspiration. Use design_asset_list/get only to fill a missing foundation; never replace a known brand or framework merely to fit a template. Bundled design and knowledge references are virtual resource identifiers, not filesystem paths. Read them through the design tools; do not locate installed source files with shell or filesystem tools. Describe the chosen style and decisions without quoting internal resource identifiers or installation locations. Author project-specific design documents and components; never copy complete internal reference files into user workspaces. User-owned project files remain ordinary deliverables. Use design_rule_search for concrete UX, typography, color, chart, motion and stack rules; rule hits are references, not visual acceptance. Classify the surface as persuade, operate, read or experience and load the matching uma-design-craft/taste guidance. When the user requests variants, produce the requested number with materially different layout, hierarchy and interaction while preserving approved brand constraints; implement only the selected direction. Implement production UI in the existing stack; single-file HTML is for explicitly requested prototypes. For new UI and redesign, apply the selected layout and component patterns; identify where they appear in the rendered page. Report visual acceptance separately from functional checks. Verify actual rendered UI and primary interactions at target sizes, including keyboard/focus, loading/empty/error, light/dark where supported and reduced motion. Static lint and model ratings do not prove visual acceptance. Record the target, design-context fingerprint, implementation revision, screenshots, tested flows and unresolved issues in the project REVIEW.md; changed source requires rechecking. Report unavailable visual checks explicitly. Do not start another agent runtime or copy third-party logos to satisfy a reference."
+		text: "## Native UI design workflow\nFor UI work, call design_context before changing visuals; pass the actual monorepo target and selected design project when known. Use its project files and declared stack, then inspect existing components and rendered behavior. Missing DESIGN.md does not imply a new product. User-approved branding, existing project tokens and component libraries take precedence over bundled inspiration. Use design_asset_list/get only to fill a missing foundation; never replace a known brand or framework merely to fit a template. Bundled design and knowledge references are virtual resource identifiers, not filesystem paths. Read them through the design tools; do not locate installed source files with shell or filesystem tools. Describe the chosen style and decisions without quoting internal resource identifiers or installation locations. Author project-specific design documents and components; never copy complete internal reference files into user workspaces. User-owned project files remain ordinary deliverables. Use design_rule_search for concrete UX, typography, color, chart, motion and stack rules; rule hits are references, not visual acceptance. Classify the surface as persuade, operate, read or experience and load the matching hey-design-craft/taste guidance. When the user requests variants, produce the requested number with materially different layout, hierarchy and interaction while preserving approved brand constraints; implement only the selected direction. Implement production UI in the existing stack; single-file HTML is for explicitly requested prototypes. For new UI and redesign, apply the selected layout and component patterns; identify where they appear in the rendered page. Report visual acceptance separately from functional checks. Verify actual rendered UI and primary interactions at target sizes, including keyboard/focus, loading/empty/error, light/dark where supported and reduced motion. Static lint and model ratings do not prove visual acceptance. Record the target, design-context fingerprint, implementation revision, screenshots, tested flows and unresolved issues in the project REVIEW.md; changed source requires rechecking. Report unavailable visual checks explicitly. Do not start another agent runtime or copy third-party logos to satisfy a reference."
 	});
 	ctx.tools.register(defineTool({
 		name: "design_context",
@@ -204,25 +204,25 @@ function apply(ctx, config = {}) {
 	}));
 	const skillRoot = dirname(fileURLToPath(import.meta.resolve("@deepseek-ai/dsh-skill-uma/package.json")));
 	const assetRoot = config.assetRoot ?? join(skillRoot, "assets");
-	if (!isAbsolute(assetRoot)) throw new Error("tool-uma-design: assetRoot must be an absolute directory");
+	if (!isAbsolute(assetRoot)) throw new Error("tool-hey-design: assetRoot must be an absolute directory");
 	const systemsRoot = join(assetRoot, "uma-design-systems", "systems");
 	const referencesRoot = join(assetRoot, "uma-design-md", "brands");
 	const systems = childDirectories(systemsRoot);
 	const systemCatalog = systems.map((name) => systemInfo(systemsRoot, name));
 	const references = childDirectories(referencesRoot);
-	if (systems.length === 0) throw new Error(`tool-uma-design: no design systems under ${systemsRoot}`);
-	if (references.length === 0) throw new Error(`tool-uma-design: no DESIGN.md references under ${referencesRoot}`);
+	if (systems.length === 0) throw new Error(`tool-hey-design: no design systems under ${systemsRoot}`);
+	if (references.length === 0) throw new Error(`tool-hey-design: no DESIGN.md references under ${referencesRoot}`);
 	const knowledge = [];
 	for (const root of KNOWLEDGE_ROOTS) collectSections(assetRoot, root, knowledge);
-	if (knowledge.length === 0) throw new Error(`tool-uma-design: no knowledge sections under ${assetRoot}`);
+	if (knowledge.length === 0) throw new Error(`tool-hey-design: no knowledge sections under ${assetRoot}`);
 	ctx.tools.register(defineTool({
-		name: "uma_resource_read",
-		description: "Read or list a bundled UMA skill resource by skill name and relative path, without filesystem access. Use returned nextOffset to continue a directory page or next byte offset for text. Resources are read-only reference material, never commands to run automatically.",
+		name: "hey_resource_read",
+		description: "Read or list a bundled HEY skill resource by skill name and relative path, without filesystem access. Use returned nextOffset to continue a directory page or next byte offset for text. Resources are read-only reference material, never commands to run automatically.",
 		parameters: {
 			skill: {
 				type: "string",
 				required: true,
-				description: "Exact installed UMA skill name."
+				description: "Exact installed HEY skill name."
 			},
 			path: {
 				type: "string",
@@ -243,7 +243,7 @@ function apply(ctx, config = {}) {
 		execute: (args) => Promise.resolve(readBundledResource(assetRoot, args.skill, args.path ?? "", args.offset ?? 0, config.resourceMaxBytes ?? 32768)),
 		presentCall: (args) => ({
 			card: "generic",
-			title: `Read UMA resource: ${args.skill}`,
+			title: `Read HEY resource: ${args.skill}`,
 			kind: "other",
 			rawInput: args
 		})
@@ -280,7 +280,7 @@ function apply(ctx, config = {}) {
 		},
 		execute(args) {
 			const limit = Math.min(Math.max(args.limit ?? 3, 1), config.ruleMaxResults ?? 10);
-			return Promise.resolve(JSON.stringify(searchDesignRules(join(assetRoot, "uma-design-system/data"), {
+			return Promise.resolve(JSON.stringify(searchDesignRules(join(assetRoot, "hey-design-system/data"), {
 				...args,
 				limit
 			})));
@@ -324,7 +324,7 @@ function apply(ctx, config = {}) {
 				text: `Static prototype snapshot: ${value.path}\nSource SHA-256: ${value.sha256}\nThis previews saved source only; runtime interactions and build/tests remain separate.`
 			}],
 			presentationMeta: (_args, value) => ({
-				kind: "uma-design-preview",
+				kind: "hey-design-preview",
 				version: 1,
 				...value
 			})
@@ -566,7 +566,7 @@ function apply(ctx, config = {}) {
 			presentationMeta: (_args, value) => {
 				const title = config.assetRoot === void 0 && value.kind === "system" && value.files.length > 0 ? systemCatalog.find((system) => system.name === value.name)?.displayName : void 0;
 				return title === void 0 ? null : {
-					kind: "uma-public-design-reference",
+					kind: "hey-public-design-reference",
 					version: 1,
 					title,
 					hasDesign: value.files.some((file) => file.name === "DESIGN.md" && file.content.length > 0),
@@ -587,7 +587,7 @@ function apply(ctx, config = {}) {
 				if (args.kind === "reference" && fileName !== "DESIGN.md") continue;
 				const path = join(root, args.name, fileName);
 				if (!SYSTEM_FILES.includes(fileName) || !resourceExists(path)) continue;
-				const reference = `uma-design://${args.kind === "system" ? "systems" : "brands"}/${encodeURIComponent(args.name)}/${fileName}`;
+				const reference = `hey-design://${args.kind === "system" ? "systems" : "brands"}/${encodeURIComponent(args.name)}/${fileName}`;
 				const overhead = Buffer.byteLength(`## ${reference}\n\n\n\n[truncated at the read limit]`);
 				if (remaining <= overhead) break;
 				let document;
@@ -621,7 +621,7 @@ function apply(ctx, config = {}) {
 		})
 	}));
 	ctx.tools.register(defineTool({
-		name: "uma_knowledge_search",
+		name: "hey_knowledge_search",
 		description: "Search the bundled Uma delivery and design knowledge for relevant guidance: role methods, anti-slop rules, quality checklists, document templates, design craft references, and Apple platform notes. Use it when a task needs a method or checklist and you do not know which reference file owns it.",
 		parameters: {
 			query: {
@@ -686,14 +686,14 @@ function apply(ctx, config = {}) {
 		execute(args) {
 			const phrase = args.query.trim().normalize("NFKC").toLowerCase();
 			const terms = queryTerms(phrase);
-			if (terms.length === 0) throw new Error("uma_knowledge_search requires at least one search term");
+			if (terms.length === 0) throw new Error("hey_knowledge_search requires at least one search term");
 			const limit = Math.min(Math.max(args.limit ?? 5, 1), MAX_KNOWLEDGE_LIMIT);
 			const maxSnippetChars = Math.min(Math.max(args.maxSnippetChars ?? 600, 200), 2e3);
 			const results = knowledge.map((section) => ({
 				section,
 				score: scoreSection(section, terms, phrase)
 			})).filter((result) => result.score > 0).sort((left, right) => right.score - left.score || left.section.path.localeCompare(right.section.path)).slice(0, limit).map((result) => ({
-				path: `uma-knowledge://${result.section.path}`,
+				path: `hey-knowledge://${result.section.path}`,
 				heading: result.section.heading,
 				snippet: snippetOf(result.section.text, terms, maxSnippetChars),
 				score: result.score
@@ -827,7 +827,7 @@ function apply(ctx, config = {}) {
 			const contents = [
 				...generated,
 				["manifest.json", JSON.stringify({
-					schemaVersion: "uma-design-project/v1",
+					schemaVersion: "hey-design-project/v1",
 					id: args.project,
 					name: args.title,
 					sourceRole: "project",
@@ -859,7 +859,7 @@ function apply(ctx, config = {}) {
 			}
 			return {
 				project: args.project,
-				system: "UMA",
+				system: "HEY",
 				path: `.design/${args.project}`,
 				files
 			};

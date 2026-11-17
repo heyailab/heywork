@@ -1,11 +1,11 @@
 name: build-windows
 
-# UMA Windows 移植 CI
-# 官方 package-target.ts 全流程 + patches/uma-phase1..3（6+2+2c/3 处上游源码改动）
-# 注入链路：patch 提供注入 hook（DSH_DESKTOP_UMA_INJECT）→ prepare:dsh 后运行
-# scripts/inject-uma.mjs：23 个包（12 个 UMA 产品包 + 11 个上游公开仓库未发布的一等包，
+# HEY Windows 移植 CI
+# 官方 package-target.ts 全流程 + patches/hey-phase1..3（6+2+2c/3 处上游源码改动）
+# 注入链路：patch 提供注入 hook（DSH_DESKTOP_HEY_INJECT）→ prepare:dsh 后运行
+# scripts/inject-hey.mjs：23 个包（12 个 HEY 产品包 + 11 个上游公开仓库未发布的一等包，
 #   后者见 uma-assets/packages.extras.json）+ 三方依赖池（uma-assets/deps）+ 重算
-#   desktop-runtime.json，末尾调用 scripts/verify-uma-platform.mjs 做合成门禁
+#   desktop-runtime.json，末尾调用 scripts/verify-hey-platform.mjs 做合成门禁
 # 产品激活：uma-platform.patch.yml（win32 版）随包附带；Host 经 DSH_DESKTOP_PRODUCT_PATCH 应用
 # TODO(Phase 3)：签名接入（secrets → DSH_DESKTOP_WINDOWS_*，用 package:desktop:win:x64 签名版）
 
@@ -51,10 +51,10 @@ jobs:
           version: 11.28.5
 
       - name: Write desktop release environment (.env.windows)
-        # 官方 .env.windows.example 要求的最小未签名集合 + UMA 产品身份（Phase 2 起生效）：
-        # - APP_ID：reverse-DNS，与 Mac 版 bundle id 对齐（studio.uma.desktop）
-        # - PRODUCT_NAME / PROTOCOL_SCHEME / ARTIFACT_BASE：品牌与 uma:// 协议
-        # - MANAGED_ACCOUNT=1：开启 .uma 数据根 + uma:// 注册（等价 UMA 壳的 managedAccount）
+        # 官方 .env.windows.example 要求的最小未签名集合 + HEY 产品身份（Phase 2 起生效）：
+        # - APP_ID：reverse-DNS，与 Mac 版 bundle id 对齐（studio.hey.desktop）
+        # - PRODUCT_NAME / PROTOCOL_SCHEME / ARTIFACT_BASE：品牌与 hey:// 协议
+        # - MANAGED_ACCOUNT=1：开启 .hey 数据根 + hey:// 注册（等价 HEY 壳的 managedAccount）
         # - AUTO_UPDATE_ENV=production + MANDATORY_UPDATE_PROD_ORIGIN：必须与 Mac 正式包一致。
         #   Mac 包内置策略是 {origin: studio.umayun.com, authentication: 'anonymous'}；
         #   deployment=test 会生成 authentication='feishu-test'，于是首启 mandatoryPolicy.check('launch')
@@ -64,21 +64,21 @@ jobs:
         shell: pwsh
         run: |
           $lines = @(
-            'DSH_DESKTOP_APP_ID=studio.uma.desktop'
-            'DSH_DESKTOP_PRODUCT_NAME=UMA Studio'
-            'DSH_DESKTOP_PROTOCOL_SCHEME=uma'
-            'DSH_DESKTOP_ARTIFACT_BASE=uma-studio'
+            'DSH_DESKTOP_APP_ID=studio.hey.desktop'
+            'DSH_DESKTOP_PRODUCT_NAME=HeyWork'
+            'DSH_DESKTOP_PROTOCOL_SCHEME=hey'
+            'DSH_DESKTOP_ARTIFACT_BASE=heywork'
             'DSH_DESKTOP_MANAGED_ACCOUNT=1'
             'DSH_DESKTOP_AUTO_UPDATE_ENV=production'
             'DSH_DESKTOP_UPDATE_CHANNEL=nightly'
-            # 与 Mac 包 app-update.yml 同形：generic + <origin>/uma-studio/feeds/<target>/
-            'DSH_DESKTOP_UPDATE_PUBLIC_URL=https://studio.umayun.com/uma-studio/feeds/win-x64/'
+            # 与 Mac 包 app-update.yml 同形：generic + <origin>/heywork/feeds/<target>/
+            'DSH_DESKTOP_UPDATE_PUBLIC_URL=https://studio.umayun.com/heywork/feeds/win-x64/'
             'DSH_DESKTOP_MANDATORY_UPDATE_PROD_ORIGIN=https://studio.umayun.com'
           )
           Set-Content -Path .env.windows -Value $lines -Encoding utf8
           Get-Content .env.windows
 
-      - name: Apply UMA patches to upstream source
+      - name: Apply HEY patches to upstream source
         # 从 git blob 取补丁，绕过 Windows runner 的 core.autocrlf 工作树换行转换：
         # 补丁一旦变成 CRLF，git apply 的上下文行尾部多出 \r，全部 hunk 匹配失败。
         # 顺序敏感：phase1（注入链路）→ phase2（产品身份/协议/数据根）→ phase2b（8 语 locale 字典）
@@ -87,7 +87,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for name in uma-phase1.patch uma-phase2.patch uma-phase2b.patch uma-phase2c.patch uma-phase3.patch; do
+          for name in hey-phase1.patch hey-phase2.patch hey-phase2b.patch hey-phase2c.patch hey-phase3.patch; do
             patch_file="$RUNNER_TEMP/$name"
             git -C .. cat-file blob "HEAD:patches/$name" > "$patch_file"
             if grep -q $'\r' "$patch_file"; then
@@ -100,38 +100,38 @@ jobs:
           done
           git --no-pager diff --stat
 
-      - name: Overlay UMA renderer assets
-        # UMA 品牌的欢迎页/更新对话框 renderer 文件直接覆盖上游同名文件
-        # （mandatory-update-frame.js 已在资产准备期把 uma-app:// 改回 dsh-app://）。
+      - name: Overlay HEY renderer assets
+        # HEY 品牌的欢迎页/更新对话框 renderer 文件直接覆盖上游同名文件
+        # （mandatory-update-frame.js 已在资产准备期把 hey-app:// 改回 dsh-app://）。
         shell: bash
         run: node scripts/overlay-renderer.mjs
         env:
-          UMA_PORT_ROOT: ${{ github.workspace }}
+          HEY_ROOT: ${{ github.workspace }}
 
       - name: Install dependencies
         working-directory: deepseek-harness
         run: pnpm install --frozen-lockfile
 
-      - name: Verify UMA platform composition
+      - name: Verify HEY platform composition
         # Phase 4 gate: the 22 product switches must resolve against the desktop
-        # layer stack, every package the UMA layers mount must be vendored or
+        # layer stack, every package the HEY layers mount must be vendored or
         # upstream, and the tool families must still register. Runs before the
         # two-hour packaging step so a composition break fails in seconds.
         # (The same verifier re-runs against the materialized tree from the
         # injection hook, where it can also see the packaged node_modules.)
-        run: node scripts/verify-uma-platform.mjs
+        run: node scripts/verify-hey-platform.mjs
         env:
-          UMA_PORT_ROOT: ${{ github.workspace }}
+          HEY_ROOT: ${{ github.workspace }}
 
-      - name: Package Windows installer (unsigned, official pipeline + UMA injection)
+      - name: Package Windows installer (unsigned, official pipeline + HEY injection)
         working-directory: deepseek-harness
         run: pnpm run package:desktop:win:x64:unsigned
         env:
-          # prepare:dsh 之后、electron-builder 之前执行 UMA 注入（patch 提供的 hook）
-          DSH_DESKTOP_UMA_INJECT: ${{ github.workspace }}/scripts/inject-uma.mjs
-          UMA_PORT_ROOT: ${{ github.workspace }}
-          UMA_ASSETS_DIR: ${{ github.workspace }}/uma-assets
-          # UMA 品牌资产（icon.ico / tray.ico / icon.png），由 electron-builder 配置读取
+          # prepare:dsh 之后、electron-builder 之前执行 HEY 注入（patch 提供的 hook）
+          DSH_DESKTOP_HEY_INJECT: ${{ github.workspace }}/scripts/inject-hey.mjs
+          HEY_ROOT: ${{ github.workspace }}
+          HEY_ASSETS_DIR: ${{ github.workspace }}/uma-assets
+          # HEY 品牌资产（icon.ico / tray.ico / icon.png），由 electron-builder 配置读取
           DSH_DESKTOP_BRAND_DIR: ${{ github.workspace }}/uma-assets/brand
 
       - name: Collect artifacts
@@ -144,7 +144,7 @@ jobs:
       - name: Upload installer artifact
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: uma-window-baseline
+          name: heywork-baseline
           path: deepseek-harness/apps/desktop/.desktop-build/targets/win-x64/unsigned-artifacts/
           include-hidden-files: true
           if-no-files-found: error

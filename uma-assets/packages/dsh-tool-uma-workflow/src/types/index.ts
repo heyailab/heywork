@@ -2,7 +2,7 @@
  * 【逆向还原】由 `lib/index.js` 的 `//#region lib/types/index.js` 反推，非 DeepSeek 原始源码。
  *
  * name / inject / apply 为包级导出面；ctx、args、exec 等 interface 由调用点推断。
- * 三个工具（uma_artifact_write / uma_artifact_read / uma_gate_status）的参数、输出 schema、
+ * 三个工具（hey_artifact_write / hey_artifact_read / hey_gate_status）的参数、输出 schema、
  * render 文本、gate 分级（patch/feature/product × documents/delivery）与全部错误文本
  * 与 lib 逐行一致，未作"修正"。运行时仍以 lib/*.js 为准，详见 src/README.md。
  */
@@ -12,7 +12,7 @@ import { ARTIFACTS, evaluateArtifact, evaluateCheckpoint, requiredArtifacts } fr
 /** 工件种类；取值与 dsh-util-uma-delivery 的 ARTIFACTS 一致（该包无 .d.ts，故本地列出）。 */
 export type ArtifactKind = 'research' | 'prd' | 'architecture' | 'uiux' | 'spec' | 'preview' | 'qa' | 'delivery'
 
-/** uma_artifact_write 的参数。 */
+/** hey_artifact_write 的参数。 */
 export interface WriteArgs {
   artifact: ArtifactKind
   content: string
@@ -20,12 +20,12 @@ export interface WriteArgs {
   owner?: string
 }
 
-/** uma_artifact_read 的参数。 */
+/** hey_artifact_read 的参数。 */
 export interface ReadArgs {
   artifact: ArtifactKind
 }
 
-/** uma_gate_status 的参数；缺省 depth=product、phase=delivery。 */
+/** hey_gate_status 的参数；缺省 depth=product、phase=delivery。 */
 export interface GateArgs {
   depth?: 'patch' | 'feature' | 'product'
   phase?: 'documents' | 'delivery'
@@ -77,7 +77,7 @@ export interface WorkflowContext {
 }
 
 /** Cordis plugin identity. */
-export const name = "tool-uma-workflow";
+export const name = "tool-hey-workflow";
 /** Tool, filesystem, and working-directory services used by the artifact tools. */
 export const inject = [
   "tools",
@@ -90,19 +90,19 @@ function compose(artifact: ArtifactKind, status: string, owner: string, content:
 }
 
 /**
-* Register the `.uma/` artifact tools.
+* Register the `.hey/` artifact tools.
 * @param ctx - Context carrying the tool, filesystem, and working-directory services.
 */
 export function apply(ctx: WorkflowContext): void {
   ctx.tools.register(defineTool({
-    name: "uma_artifact_write",
-    description: "Write a controlling delivery artifact under `.uma/` in the current workspace: research, prd, architecture, uiux, spec, preview, qa, or delivery. Returns missing required sections and placeholder warnings so the artifact can be fixed before a confirmation gate.",
+    name: "hey_artifact_write",
+    description: "Write a controlling delivery artifact under `.hey/` in the current workspace: research, prd, architecture, uiux, spec, preview, qa, or delivery. Returns missing required sections and placeholder warnings so the artifact can be fixed before a confirmation gate.",
     parameters: {
       artifact: {
         type: "string",
         required: true,
         enum: [...ARTIFACTS],
-        description: "Artifact kind; the file is `.uma/<artifact>.md`."
+        description: "Artifact kind; the file is `.hey/<artifact>.md`."
       },
       content: {
         type: "string",
@@ -116,7 +116,7 @@ export function apply(ctx: WorkflowContext): void {
       },
       owner: {
         type: "string",
-        description: "Artifact owner written to the frontmatter. Defaults to uma-team."
+        description: "Artifact owner written to the frontmatter. Defaults to hey-team."
       }
     },
     output: {
@@ -168,16 +168,16 @@ export function apply(ctx: WorkflowContext): void {
       }]
     },
     async execute(args: WriteArgs, exec: WorkflowExec) {
-      if (exec.agent === void 0) throw new Error("uma_artifact_write requires an agent Session");
-      if (args.content.trim().length === 0) throw new Error("uma_artifact_write requires non-empty content");
+      if (exec.agent === void 0) throw new Error("hey_artifact_write requires an agent Session");
+      if (args.content.trim().length === 0) throw new Error("hey_artifact_write requires non-empty content");
       const status = args.status ?? "draft";
-      const owner = args.owner ?? "uma-team";
+      const owner = args.owner ?? "hey-team";
       const content = compose(args.artifact, status, owner, args.content);
       const policy = ctx.get("sandboxPolicy");
       if (ctx.fs.sandboxMode !== void 0 && policy === void 0) throw new ToolContextUnavailableError("Artifact writes require the mounted filesystem’s sandbox policy service");
       const sandbox = policy?.resolve({ session: exec.agent.session });
       const cwd = await ctx.workingDirectory.ensure(exec.agent, exec.signal);
-      const target = await ctx.fs.resolve(`.uma/${args.artifact}.md`, {
+      const target = await ctx.fs.resolve(`.hey/${args.artifact}.md`, {
         cwd,
         signal: exec.signal
       });
@@ -196,14 +196,14 @@ export function apply(ctx: WorkflowContext): void {
     },
     presentCall: (args: WriteArgs) => ({
       card: "generic",
-      title: `Write .uma/${args.artifact}.md`,
+      title: `Write .hey/${args.artifact}.md`,
       kind: "other",
       rawInput: args
     })
   }));
   ctx.tools.register(defineTool({
-    name: "uma_artifact_read",
-    description: "Read a controlling delivery artifact from `.uma/<artifact>.md` in the current workspace.",
+    name: "hey_artifact_read",
+    description: "Read a controlling delivery artifact from `.hey/<artifact>.md` in the current workspace.",
     parameters: { artifact: {
       type: "string",
       required: true,
@@ -236,9 +236,9 @@ export function apply(ctx: WorkflowContext): void {
       }]
     },
     async execute(args: ReadArgs, exec: WorkflowExec) {
-      if (exec.agent === void 0) throw new Error("uma_artifact_read requires an agent Session");
+      if (exec.agent === void 0) throw new Error("hey_artifact_read requires an agent Session");
       const cwd = await ctx.workingDirectory.ensure(exec.agent, exec.signal);
-      const target = await ctx.fs.resolve(`.uma/${args.artifact}.md`, {
+      const target = await ctx.fs.resolve(`.hey/${args.artifact}.md`, {
         cwd,
         signal: exec.signal
       });
@@ -251,14 +251,14 @@ export function apply(ctx: WorkflowContext): void {
     },
     presentCall: (args: ReadArgs) => ({
       card: "generic",
-      title: `Read .uma/${args.artifact}.md`,
+      title: `Read .hey/${args.artifact}.md`,
       kind: "other",
       rawInput: args
     })
   }));
   ctx.tools.register(defineTool({
-    name: "uma_gate_status",
-    description: "Report the delivery state of the `.uma/` artifacts: which controlling documents exist, their review status, missing sections, placeholder markers, and the exact artifacts that block delivery. Use before a confirmation gate, before reporting completion, or when resuming work.",
+    name: "hey_gate_status",
+    description: "Report the delivery state of the `.hey/` artifacts: which controlling documents exist, their review status, missing sections, placeholder markers, and the exact artifacts that block delivery. Use before a confirmation gate, before reporting completion, or when resuming work.",
     parameters: {
       depth: {
         type: "string",
@@ -336,7 +336,7 @@ export function apply(ctx: WorkflowContext): void {
       render: (_args: GateArgs, value: { exists: boolean; ready: boolean; missing: string[]; blocked: string[]; artifacts: { artifact: ArtifactKind; status: string; ready: boolean; missingSections: string[]; placeholders: string[] }[] }) => [{
         type: "text",
         text: [
-          value.exists ? "Uma delivery state:" : "No .uma directory exists.",
+          value.exists ? "Uma delivery state:" : "No .hey directory exists.",
           "Document checks only; this result does not prove tests, human approval or deployment.",
           value.ready ? "Ready: every required artifact is present and clean." : `Blocked: ${value.blocked.join(", ")}.`,
           ...value.missing.length === 0 ? [] : [`Missing required artifacts: ${value.missing.join(", ")}.`],
@@ -349,11 +349,11 @@ export function apply(ctx: WorkflowContext): void {
       }]
     },
     async execute(args: GateArgs, exec: WorkflowExec) {
-      if (exec.agent === void 0) throw new Error("uma_gate_status requires an agent Session");
+      if (exec.agent === void 0) throw new Error("hey_gate_status requires an agent Session");
       const depth = args.depth ?? "product";
       const phase = args.phase ?? "delivery";
       const cwd = await ctx.workingDirectory.ensure(exec.agent, exec.signal);
-      const directory = await ctx.fs.resolve(".uma", {
+      const directory = await ctx.fs.resolve(".hey", {
         cwd,
         signal: exec.signal
       });

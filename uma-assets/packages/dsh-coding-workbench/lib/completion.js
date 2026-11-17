@@ -11,7 +11,7 @@ const inject = ["systemPrompt"];
 /** The protocol text, registered verbatim as one prompt section. */
 const COMPLETION_PROTOCOL_TEXT = [
 	"## Completion protocol",
-	"For ordinary conversation and simple commands, answer or execute directly. Use resource tools only when their evidence helps the current outcome. Honor requests to work alone. For an end-to-end software build or delivery request, load uma-team and apply its workflow within the current conversation. For focused changes, inspect, implement and verify directly. Look up relevant project Wiki, workspace knowledge and reviewed experience when needed. For a UI change, inspect existing design rules and use design preparation when the change needs design decisions.",
+	"For ordinary conversation and simple commands, answer or execute directly. Use resource tools only when their evidence helps the current outcome. Honor requests to work alone. For an end-to-end software build or delivery request, load hey-team and apply its workflow within the current conversation. For focused changes, inspect, implement and verify directly. Look up relevant project Wiki, workspace knowledge and reviewed experience when needed. For a UI change, inspect existing design rules and use design preparation when the change needs design decisions.",
 	"",
 	"When native Team mode is enabled, record real delegated tasks and dependencies on its task board. Scale delegation to independent work, preserve workspace ownership and inspect actual teammate results. Do not invent teammates or claim review without a separate recorded review. Respect a user-disabled Team mode.",
 	"",

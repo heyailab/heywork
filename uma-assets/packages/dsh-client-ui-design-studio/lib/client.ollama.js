@@ -444,7 +444,7 @@ What makes Ollama distinctive is the combination of SF Pro Rounded (Apple's roun
         box-shadow: var(--focus-ring);
       }
 
-      /* ─── Inputs (pill search / .uma-preview-form fields) ────────────────── */
+      /* ─── Inputs (pill search / .hey-preview-form fields) ────────────────── */
       .field {
         display: flex;
         flex-direction: column;
@@ -825,7 +825,7 @@ What makes Ollama distinctive is the combination of SF Pro Rounded (Apple's roun
             </p>
           </div>
 
-          <div role="group" class="uma-preview-form signup-form">
+          <div role="group" class="hey-preview-form signup-form">
             <div class="signup-row">
               <div class="field">
                 <label for="signup-email" class="body-sm">Email</label>

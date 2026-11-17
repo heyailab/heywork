@@ -62,7 +62,7 @@ JSDoc / 变量名 / 排版、esbuild 的 `//#region` 模块边界标记，以及
 5. `rootOf` 中的 `using observation = await ...` 由 tsc 的 `__addDisposableResource(env, …, false)`
    / `__disposeResources` 变换反推；原对象是否满足 `Symbol.dispose` 契约以观察对象的真实定义为准。
 6. `typert` 描述符里的 `sourceLocation.file` 指向
-   `packages/credentials/uma-task-budget/src/index.ts`，是本包在 DeepSeek 仓库中的原始路径，
+   `packages/credentials/hey-task-budget/src/index.ts`，是本包在 DeepSeek 仓库中的原始路径，
    与本仓库路径无关，按要求原样保留。
 
 ## 样本范围

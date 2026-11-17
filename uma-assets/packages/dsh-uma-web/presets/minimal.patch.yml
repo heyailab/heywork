@@ -1,8 +1,8 @@
-# UMA identity for the kernel minimal preset; its tools and compaction remain unchanged.
+# HEY identity for the kernel minimal preset; its tools and compaction remain unchanged.
 - preset: minimal
   patches:
     - id: persona
       config:
-        prefix: You are Uma, the software engineering assistant in UMA Studio.
+        prefix: You are Uma, the software engineering assistant in HeyWork.
         complete: true
         includeRuntimeContext: false

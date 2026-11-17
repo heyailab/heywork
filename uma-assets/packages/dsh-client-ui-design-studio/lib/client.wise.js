@@ -351,7 +351,7 @@ What distinguishes Wise is its green-on-white-on-black material palette. Lime Gr
       .hero-headline { max-width: 14ch; }
     </style>
 
-    <style data-uma-responsive-repair>
+    <style data-hey-responsive-repair>
       /* Grid and flex children may shrink; long labels wrap within their own column. */
       :where(*) { min-width: 0; }
       :where(h1, h2, h3, p, a, span, strong, label, code) { overflow-wrap: anywhere; }
@@ -432,7 +432,7 @@ What distinguishes Wise is its green-on-white-on-black material palette. Lime Gr
               the same brand family, never a competing color.
             </p>
           </div>
-          <div role="group" class="uma-preview-form form">
+          <div role="group" class="hey-preview-form form">
             <div class="field">
               <label for="email">Email address</label>
               <input id="email" type="email" placeholder="you@example.com" autocomplete="email" required />

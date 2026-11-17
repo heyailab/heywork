@@ -3,7 +3,7 @@
     "id": "ui-skill",
     "config": {
       "hiddenNamePrefixes": [
-        "uma-"
+        "hey-"
       ]
     }
   },
@@ -32,16 +32,16 @@
   {
     "id": "deepseek-account",
     "config": {
-      "product": "uma",
+      "product": "hey",
       "platformOrigin": "https://studio.umayun.com",
       "inferenceOrigin": "https://studio.umayun.com",
       "desktopPlatform": "darwin",
-      "credentialIdPrefix": "uma-studio",
+      "credentialIdPrefix": "heywork",
       "modelProviders": [
-        "uma-messages",
-        "uma-chat-completions",
-        "uma-responses",
-        "uma-gemini",
+        "hey-messages",
+        "hey-chat-completions",
+        "hey-responses",
+        "hey-gemini",
         "deepseek-account"
       ]
     }
@@ -49,7 +49,7 @@
   {
     "id": "llm-deepseek-account",
     "config": {
-      "displayName": "UMA Studio",
+      "displayName": "HeyWork",
       "baseURL": "https://studio.umayun.com",
       "requirePublishedModels": true,
       "retryPolicy": {
@@ -70,10 +70,10 @@
     "id": "session-controller",
     "config": {
       "accountModelProviders": [
-        "uma-messages",
-        "uma-chat-completions",
-        "uma-responses",
-        "uma-gemini",
+        "hey-messages",
+        "hey-chat-completions",
+        "hey-responses",
+        "hey-gemini",
         "deepseek-account"
       ]
     }

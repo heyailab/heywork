@@ -1,5 +1,5 @@
 ---
-description: "为 UMA 会话与委派代理提供自有财务任务预算。"
+description: "为 HEY 会话与委派代理提供自有财务任务预算。"
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-这个 UMA 私有 Host 服务把记录中的根会话及其委派子会话关联到同一个服务端财务预算，提供不含凭据的预算操作，并为托管模型请求准备准入标头。冻结、消费、版本冲突与暂停状态均由服务端裁定。重新打开会话会保留原有额度与累计消费。
+这个 HEY 私有 Host 服务把记录中的根会话及其委派子会话关联到同一个服务端财务预算，提供不含凭据的预算操作，并为托管模型请求准备准入标头。冻结、消费、版本冲突与暂停状态均由服务端裁定。重新打开会话会保留原有额度与累计消费。
 
 ## 目录
 
@@ -23,9 +23,9 @@ kind: "package-reference"
 <a id="use-this-package"></a>
 ## Use this package
 
-UMA base 在 `storageDomain`、`sessionQuery` 和 `typert` 就绪后挂载此服务。可选的登录账号提供 UI 所用的服务端地址。托管原生协议和 Pi-AI 传输通过 UMA 配置开启预算准入；独立配置的供应商保留现有行为。`prepare()` 接收真实本地会话、已经捕获的服务端地址和凭据，以及请求取消信号。预算元数据读取失败会阻止模型请求发出。这个服务及其传输钩子都不会重试推理。
+HEY base 在 `storageDomain`、`sessionQuery` 和 `typert` 就绪后挂载此服务。可选的登录账号提供 UI 所用的服务端地址。托管原生协议和 Pi-AI 传输通过 HEY 配置开启预算准入；独立配置的供应商保留现有行为。`prepare()` 接收真实本地会话、已经捕获的服务端地址和凭据，以及请求取消信号。预算元数据读取失败会阻止模型请求发出。这个服务及其传输钩子都不会重试推理。
 
-生成的 `remote['uma-budget']` 外观提供 `read` 和 `update`。更新必须携带读取到的版本号、CNY 十进制字符串额度或 `null`，以及目标状态。`null` 表示不增加会话消费上限，账号余额和 API 密钥额度仍然生效。暂停预算不会释放已受理请求的冻结金额，这些请求仍可完成结算。
+生成的 `remote['hey-budget']` 外观提供 `read` 和 `update`。更新必须携带读取到的版本号、CNY 十进制字符串额度或 `null`，以及目标状态。`null` 表示不增加会话消费上限，账号余额和 API 密钥额度仍然生效。暂停预算不会释放已受理请求的冻结金额，这些请求仍可完成结算。
 
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
@@ -41,8 +41,8 @@ UMA base 在 `storageDomain`、`sessionQuery` 和 `typert` 就绪后挂载此服
 <a id="further-exploration"></a>
 ## Further Exploration
 
-- [预算 UI](../../client/ui-uma-task-budget/README.zh.md)
-- [服务端预算实现](../../../apps/uma-platform-go/internal/ledger/session_budgets.go)
+- [预算 UI](../../client/ui-hey-task-budget/README.zh.md)
+- [服务端预算实现](../../../apps/hey-platform-go/internal/ledger/session_budgets.go)
 - [原生推理集成](../../llm/llm-deepseek-account/src/managed-request.ts)
 
 <a id="model-experience"></a>
@@ -52,7 +52,7 @@ UMA base 在 `storageDomain`、`sessionQuery` 和 `typert` 就绪后挂载此服
 
 #### 模型所见
 
-预算是独立于编程团队任务编号和模型提示词的财务准入约束。委派代理不能仅通过启动新的子会话获得更多消费能力。`X-UMA-Task-ID` 和凭据属于传输元数据，不会加入模型上下文。
+预算是独立于编程团队任务编号和模型提示词的财务准入约束。委派代理不能仅通过启动新的子会话获得更多消费能力。`X-HEY-Task-ID` 和凭据属于传输元数据，不会加入模型上下文。
 
 #### Token 影响
 

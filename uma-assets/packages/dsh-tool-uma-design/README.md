@@ -32,7 +32,7 @@ Design project writes use the calling Session’s sandbox policy and existing wr
 Mount it beside the tool registry in an agent preset:
 
 ```yaml
-- id: tool-uma-design
+- id: tool-hey-design
   name: '@deepseek-ai/dsh-tool-uma-design'
 ```
 
@@ -59,7 +59,7 @@ Mount it beside the tool registry in an agent preset:
 | `design_project_create` | Scaffold `.design/<project>/` with a contract from a bundled system |
 | `design_project_status` | List design projects or report one project’s contract files |
 | `design_asset_get` | Read `DESIGN.md`, tokens, and optional component markup for one asset |
-| `uma_knowledge_search` | Search role methods, anti-slop rules, quality checklists, templates, and craft references |
+| `hey_knowledge_search` | Search role methods, anti-slop rules, quality checklists, templates, and craft references |
 
 `design_rule_search` reads the installed UI/UX corpus through the local resource store without launching Python or another agent. It uses BM25 and supported Chinese query expansion; an unmatched query returns no recommendation. Stack ids are restricted to installed CSV names. Returned records preserve complete fields and code examples, with record ordinals counting the header as one; these are not physical line numbers for multiline CSV. The corpus is a local reference, not verified current upstream documentation.
 
@@ -67,11 +67,11 @@ Mount it beside the tool registry in an agent preset:
 
 The plugin adds a stable design-workflow system section wherever mounted. Approved branding and existing components take precedence over bundled inspiration. Production changes use the existing framework; single-file HTML requires an explicit prototype request. Visual and interaction acceptance still require actual rendered evidence.
 
-`design_asset_get` accepts only names discovered at load and only the fixed asset file names. Reads are bounded per file and per call; a truncated file is marked in the result. `files[].path` and output headings contain virtual `uma-design://systems/<name>/<file>` or `uma-design://brands/<name>/<file>` references, never the installation directory. Knowledge results use `uma-knowledge://` references. These identifiers are not filesystem paths; retrieve content through the design tools. The model receives guidance to explain style choices without quoting internal identifiers. Project-owned files retain their normal paths.
+`design_asset_get` accepts only names discovered at load and only the fixed asset file names. Reads are bounded per file and per call; a truncated file is marked in the result. `files[].path` and output headings contain virtual `hey-design://systems/<name>/<file>` or `hey-design://brands/<name>/<file>` references, never the installation directory. Knowledge results use `hey-knowledge://` references. These identifiers are not filesystem paths; retrieve content through the design tools. The model receives guidance to explain style choices without quoting internal identifiers. Project-owned files retain their normal paths.
 
 Public catalog reads include a display name, types of files actually read and a truncation flag in presentation metadata. Custom asset roots and internal Markdown references receive no public identity. Project scaffolding writes the project-authored design, tokens and components under `.design/<project>/`.
 
-The shipped standard, PTC and UMA design presets mount `@deepseek-ai/dsh-tool-uma-design/automatic` with automatic intent detection and designer activation disabled. The Agent judges intent and calls `design_begin` to read the workspace and load the applicable craft, brief, mode and review methods. It can call `design_stop` to leave design work. Follow-up choices and the selected project recover from the Session projection. Custom profiles can enable bounded intent detection with `autoDetect`. With detection, `teamDesign` and Team mode enabled, an explicit UI implementation can start one named, read-only design teammate on the current model route; planning mode skips this delegation.
+The shipped standard, PTC and HEY design presets mount `@deepseek-ai/dsh-tool-uma-design/automatic` with automatic intent detection and designer activation disabled. The Agent judges intent and calls `design_begin` to read the workspace and load the applicable craft, brief, mode and review methods. It can call `design_stop` to leave design work. Follow-up choices and the selected project recover from the Session projection. Custom profiles can enable bounded intent detection with `autoDetect`. With detection, `teamDesign` and Team mode enabled, an explicit UI implementation can start one named, read-only design teammate on the current model route; planning mode skips this delegation.
 
 ### Automatic preparation
 
@@ -79,7 +79,7 @@ The shipped standard, PTC and UMA design presets mount `@deepseek-ai/dsh-tool-um
 
 For a new UI or redesign, automatic preparation asks the Agent to apply the selected layout and component patterns and record a visual verdict separately from functional checks. A design teammate's handoff includes composition, content and asset needs, and concrete visual checks.
 
-`uma_resource_read` reads installed skill text through a skill name and relative path. Omit `path` to browse; continue with the returned byte offset for text or entry offset for directories. `resourceMaxBytes` defaults to 32768 and bounds the complete rendered page. Absolute paths, parent traversal, escaping symlinks and non-UTF-8 content are rejected without returning physical installation paths. Configure the same `assetRoot` for the skill provider, these tools and automatic design preparation. Design asset output also counts UTF-8 bytes, including headings and truncation markers, against its total limit.
+`hey_resource_read` reads installed skill text through a skill name and relative path. Omit `path` to browse; continue with the returned byte offset for text or entry offset for directories. `resourceMaxBytes` defaults to 32768 and bounds the complete rendered page. Absolute paths, parent traversal, escaping symlinks and non-UTF-8 content are rejected without returning physical installation paths. Configure the same `assetRoot` for the skill provider, these tools and automatic design preparation. Design asset output also counts UTF-8 bytes, including headings and truncation markers, against its total limit.
 
 <a id="model-experience"></a>
 ## Model Experience
@@ -88,7 +88,7 @@ For a new UI or redesign, automatic preparation asks the Agent to apply the sele
 
 #### What the model sees
 
-The model sees automatic task context when active, the native design-workflow system section, `design_begin`, `design_stop`, `design_preview`, `design_context`, `design_rule_search`, `design_asset_list`, `design_asset_get`, `design_project_create`, `design_project_status`, and `uma_knowledge_search`. The list tool returns system names, categories, purposes, and reference names; the get tool returns the requested DESIGN.md, tokens, and optional component markup; the knowledge tool returns ranked sections from the bundled delivery and design references. Bundled knowledge search prefers a complete phrase or several distinct matching terms over repetitions. It normalizes full-width input and searches Chinese phrases from the local handoff and terminology references.
+The model sees automatic task context when active, the native design-workflow system section, `design_begin`, `design_stop`, `design_preview`, `design_context`, `design_rule_search`, `design_asset_list`, `design_asset_get`, `design_project_create`, `design_project_status`, and `hey_knowledge_search`. The list tool returns system names, categories, purposes, and reference names; the get tool returns the requested DESIGN.md, tokens, and optional component markup; the knowledge tool returns ranked sections from the bundled delivery and design references. Bundled knowledge search prefers a complete phrase or several distinct matching terms over repetitions. It normalizes full-width input and searches Chinese phrases from the local handoff and terminology references.
 
 #### Token effect
 

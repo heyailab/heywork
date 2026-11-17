@@ -5,7 +5,7 @@ import { promises as streamPromises } from 'node:stream';
 import { Service } from '@deepseek-ai/cordis';
 import Schema from '@deepseek-ai/schemastery';
 import { z } from 'zod';
-import { DeepSeekAccount, UMA_PLATFORM_PATHS, installAccountTaskCancellation, mergePlatformCookies, platformClientHeaders, platformWireLocale } from '@deepseek-ai/dsh-deepseek-account';
+import { DeepSeekAccount, HEY_PLATFORM_PATHS, installAccountTaskCancellation, mergePlatformCookies, platformClientHeaders, platformWireLocale } from '@deepseek-ai/dsh-deepseek-account';
 import { credentialKey } from '@deepseek-ai/dsh-credentials';
 import { profile, readAccountDetail, readUnnotifiedBonuses, sendBonusNotified, readLedger } from "./details.js";
 import { revokeAccount } from "./logout.js";
@@ -30,7 +30,7 @@ function profileBinding(stored) {
 }
 /** Validated deployment choices. */
 const platformConfig = Schema.object({
-    product: Schema.const('uma'),
+    product: Schema.const('hey'),
     modelProviders: Schema.array(Schema.string().min(1)).min(1).default(['deepseek-account']),
     credentialIdPrefix: Schema.string(),
     platformOrigin: Schema.string().default('https://platform.deepseek.com'),
@@ -95,7 +95,7 @@ export class PlatformAccount extends DeepSeekAccount {
         this.accountKey = credentialKey('deepseek-account-platform', prefix === undefined ? 'default' : `${prefix}-account`);
         this.deviceKey = credentialKey('deepseek-account-platform', prefix === undefined ? 'device' : `${prefix}-device`);
         this.logoutKey = credentialKey('deepseek-account-platform', prefix === undefined ? 'default-logout' : `${prefix}-logout`);
-        const label = prefix === undefined ? 'DeepSeek' : 'UMA Studio';
+        const label = prefix === undefined ? 'DeepSeek' : 'HeyWork';
         this.embeddedPageDist = resolved.embeddedPageDist;
         this.origin = platformOrigin(resolved.platformOrigin, resolved.allowLoopbackHttp);
         this.logoutJournal = new LogoutJournal(ctx.credentials, this.logoutKey, this.origin, () => { this.blockAccess(); });
@@ -217,11 +217,11 @@ export class PlatformAccount extends DeepSeekAccount {
                         ...failed ? { errorCode: this.revocationStorageFailed ? 'storage' : 'network' } : {},
                     } },
             links: {
-                usageUrl: new URL(this.product === 'uma' ? UMA_PLATFORM_PATHS.usage : '/usage', this.origin).href,
-                topUpUrl: new URL(UMA_PLATFORM_PATHS['top-up'], this.origin).href,
-                ...(this.product === 'uma' ? {
-                    securityUrl: new URL(UMA_PLATFORM_PATHS.security, this.origin).href,
-                    sdkKeysUrl: new URL(UMA_PLATFORM_PATHS['sdk-keys'], this.origin).href,
+                usageUrl: new URL(this.product === 'hey' ? HEY_PLATFORM_PATHS.usage : '/usage', this.origin).href,
+                topUpUrl: new URL(HEY_PLATFORM_PATHS['top-up'], this.origin).href,
+                ...(this.product === 'hey' ? {
+                    securityUrl: new URL(HEY_PLATFORM_PATHS.security, this.origin).href,
+                    sdkKeysUrl: new URL(HEY_PLATFORM_PATHS['sdk-keys'], this.origin).href,
                 } : {}),
             },
         };
@@ -435,7 +435,7 @@ export class PlatformAccount extends DeepSeekAccount {
         if (stored === null || lifetime.signal.aborted || this.isUnavailable())
             return null;
         const state = stored.renewal;
-        if (this.product === 'uma' && state !== undefined && state.expiresAt <= Date.now()) {
+        if (this.product === 'hey' && state !== undefined && state.expiresAt <= Date.now()) {
             const expired = stored;
             try {
                 stored = await this.refreshGrant(expired, state);
@@ -457,7 +457,7 @@ export class PlatformAccount extends DeepSeekAccount {
             userId: this.lastProfile?.binding === profileBinding(stored) ? this.lastProfile.profile.value.id || null : null,
             ...(stored.renewal === undefined ? {} : { sessionId: stored.renewal.id }),
             ...(this.embeddedPageDist ? { embeddedPageDist: this.embeddedPageDist } : {}),
-            ...(this.product === 'uma' ? { authenticatePage: true } : {}),
+            ...(this.product === 'hey' ? { authenticatePage: true } : {}),
             requestHeaders };
     }
     async readCurrentGrant(lifetime) {
@@ -483,7 +483,7 @@ export class PlatformAccount extends DeepSeekAccount {
         const stored = await this.readCurrentGrant(lifetime);
         if (stored === null || this.isUnavailable())
             return null;
-        if (this.product !== 'uma' || stored.renewal === undefined || stored.renewal.refreshAfter > Date.now()) {
+        if (this.product !== 'hey' || stored.renewal === undefined || stored.renewal.refreshAfter > Date.now()) {
             return { lifetime, stored };
         }
         const fresh = await this.refreshGrant(stored, stored.renewal);
@@ -544,7 +544,7 @@ export class PlatformAccount extends DeepSeekAccount {
     }
     scheduleRefresh(stored, retryDelay = 0) {
         const state = stored.renewal;
-        if (this.product !== 'uma' || state === undefined || this.isUnavailable())
+        if (this.product !== 'hey' || state === undefined || this.isUnavailable())
             return;
         clearTimeout(this.refreshTimer);
         const lifetime = this.detailsLifetime;
@@ -583,7 +583,7 @@ export class PlatformAccount extends DeepSeekAccount {
         }
         else if (issuer.origin !== this.origin)
             return undefined;
-        if (this.product === 'uma' && stored.renewal !== undefined && stored.renewal.refreshAfter <= Date.now()) {
+        if (this.product === 'hey' && stored.renewal !== undefined && stored.renewal.refreshAfter <= Date.now()) {
             const fresh = await this.refreshGrant(stored, stored.renewal);
             return this.isUnavailable() ? undefined : fresh?.token;
         }
@@ -906,7 +906,7 @@ export class PlatformAccount extends DeepSeekAccount {
             }, signal, attempt.clientHeaders), { reportInput: true });
             if (!init.success)
                 this.rejectPayload('auth_init', init.error);
-            const authorizeUrl = browserUrl(init.data.authorize_url, this.origin, this.product === 'uma' ? '/uma/authorize' : '/dsh/authorize', this.rewriteBrowserOrigin);
+            const authorizeUrl = browserUrl(init.data.authorize_url, this.origin, this.product === 'hey' ? '/hey/authorize' : '/dsh/authorize', this.rewriteBrowserOrigin);
             authorizeId = init.data.authorize_id;
             signal.throwIfAborted();
             const now = Date.now();
@@ -930,10 +930,10 @@ export class PlatformAccount extends DeepSeekAccount {
             const result = exchange.safeParse(await this.request('auth_exchange', {
                 code: receivedCode, code_verifier: verifier, redirect_uri: redirectUri,
                 device_id: identity.id, device_model: `${platform()}-${arch()}`, os_version: deviceOsVersion(),
-            }, signal, { ...attempt.clientHeaders, ...this.product === 'uma' ? { 'x-uma-token-mode': 'rotate-v1' } : {} }), { reportInput: true });
+            }, signal, { ...attempt.clientHeaders, ...this.product === 'hey' ? { 'x-hey-token-mode': 'rotate-v1' } : {} }), { reportInput: true });
             if (!result.success)
                 this.rejectPayload('auth_exchange', result.error);
-            const completionUrl = new URL(browserUrl(result.data.authorized_url, this.origin, this.product === 'uma' ? '/uma/authorized' : '/dsh/authorized', this.rewriteBrowserOrigin));
+            const completionUrl = new URL(browserUrl(result.data.authorized_url, this.origin, this.product === 'hey' ? '/hey/authorized' : '/dsh/authorized', this.rewriteBrowserOrigin));
             completionUrl.searchParams.set('login_source', attempt.loginSource);
             attempt.completionUrl = completionUrl.href;
             if (Date.now() >= expiresAt)
@@ -950,7 +950,7 @@ export class PlatformAccount extends DeepSeekAccount {
             this.update(attempt, { phase: 'committing' });
             clearTimeout(timer);
             await this.readLogoutJournal();
-            const payload = this.product === 'uma' && result.data.refresh_token !== undefined && result.data.expires_in !== undefined
+            const payload = this.product === 'hey' && result.data.refresh_token !== undefined && result.data.expires_in !== undefined
                 ? renewableGrant(this.origin, result.data.token, result.data.refresh_token, result.data.expires_in)
                 : { version: 1, token: result.data.token, issuer: this.origin };
             try {
@@ -991,7 +991,7 @@ export class PlatformAccount extends DeepSeekAccount {
         this.cancellations.add(cancellation);
     }
     request(method, body, signal, headers) {
-        return requestPlatform(this.origin, method, body, AbortSignal.any([signal, AbortSignal.timeout(this.requestTimeout)]), { ...this.requestHeaders, ...headers }, this.product === 'uma' ? 'uma' : 'dsh');
+        return requestPlatform(this.origin, method, body, AbortSignal.any([signal, AbortSignal.timeout(this.requestTimeout)]), { ...this.requestHeaders, ...headers }, this.product === 'hey' ? 'hey' : 'dsh');
     }
     finishFailedCallback(attempt) {
         if (attempt.loginSource === 'web') {

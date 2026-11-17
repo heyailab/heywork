@@ -1,4 +1,4 @@
-# UMA additions to the kernel ptc preset.
+# HEY additions to the kernel ptc preset.
 - preset: ptc
   patches:
     - insert:
@@ -19,9 +19,9 @@
           name: '@deepseek-ai/dsh-agent-instructions/drift-reminder'
           config:
             everyTurns: 10
-        - id: skill-uma
+        - id: skill-hey
           name: '@deepseek-ai/dsh-skill-uma'
-        - id: tool-uma-design
+        - id: tool-hey-design
           name: '@deepseek-ai/dsh-tool-uma-design'
         - id: automatic-design
           name: '@deepseek-ai/dsh-tool-uma-design/automatic'
@@ -29,7 +29,7 @@
             autoDetect: false
             teamDesign: false
             requestedDesigner: true
-        - id: tool-uma-workflow
+        - id: tool-hey-workflow
           name: '@deepseek-ai/dsh-tool-uma-workflow'
     - id: tool-todo
       config:

@@ -1559,8 +1559,8 @@ export const TYPERT = {
             "kind": "method",
             "name": "ensureGlobalExperience",
             "signature": "ensureGlobalExperience(signal: AbortSignal): void",
-            "summary": "Provision the installation-wide development experience collection on UMA startup.",
-            "jsDoc": "/**\n * Provision the installation-wide development experience collection on UMA startup.\n * @param signal - Consumer lifetime.\n */"
+            "summary": "Provision the installation-wide development experience collection on HEY startup.",
+            "jsDoc": "/**\n * Provision the installation-wide development experience collection on HEY startup.\n * @param signal - Consumer lifetime.\n */"
           },
           {
             "kind": "method",

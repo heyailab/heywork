@@ -1,23 +1,23 @@
 /**
- * Overlay the UMA-branded renderer files onto the upstream apps/desktop/renderer tree.
+ * Overlay the HEY-branded renderer files onto the upstream apps/desktop/renderer tree.
  * Runs in CI before dependency install / packaging; upstream files not present in the
  * overlay set stay untouched, so the shell keeps upstream behaviour elsewhere.
  *
- * Env: UMA_ASSETS_DIR (default: <repo>/uma-assets), UMA_RENDERER_TARGET (default:
+ * Env: HEY_ASSETS_DIR (default: <repo>/uma-assets), HEY_RENDERER_TARGET (default:
  * <repo>/deepseek-harness/apps/desktop/renderer).
  */
 import { copyFileSync, existsSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const repoRoot = process.env.UMA_PORT_ROOT ?? fileURLToPath(new URL('..', import.meta.url))
-const assets = process.env.UMA_ASSETS_DIR ?? join(repoRoot, 'uma-assets')
+const repoRoot = process.env.HEY_ROOT ?? fileURLToPath(new URL('..', import.meta.url))
+const assets = process.env.HEY_ASSETS_DIR ?? join(repoRoot, 'uma-assets')
 const sourceRoot = join(assets, 'renderer')
-const targetRoot = process.env.UMA_RENDERER_TARGET ?? join(repoRoot, 'deepseek-harness', 'apps', 'desktop', 'renderer')
+const targetRoot = process.env.HEY_RENDERER_TARGET ?? join(repoRoot, 'deepseek-harness', 'apps', 'desktop', 'renderer')
 
 // Files whose main-process counterparts still speak upstream dsh-app keep the
-// upstream internal origin; the UMA frame script was already rewritten at asset
-// preparation time (uma-app -> dsh-app).
+// upstream internal origin; the HEY frame script was already rewritten at asset
+// preparation time (hey-app -> dsh-app).
 const overlay = [
   'welcome.css',
   'update-dialog.html',
@@ -26,7 +26,7 @@ const overlay = [
   'mandatory-update-frame.js',
   'assets/welcome-brand.svg',
   'assets/welcome-brand-dark.svg',
-  'assets/uma-studio-mark.svg',
+  'assets/heywork-mark.svg',
 ]
 
 let copied = 0
@@ -38,4 +38,4 @@ for (const name of overlay) {
   copyFileSync(source, target)
   copied++
 }
-console.log(`uma renderer overlay: applied ${copied}/${overlay.length} files onto ${relative(repoRoot, targetRoot)}`)
+console.log(`hey renderer overlay: applied ${copied}/${overlay.length} files onto ${relative(repoRoot, targetRoot)}`)

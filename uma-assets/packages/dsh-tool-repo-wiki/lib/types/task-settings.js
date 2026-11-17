@@ -17,7 +17,7 @@ export function foldWikiTaskSettings(state, event) {
     const text = event.data.content
         .flatMap(part => (part.type === 'text' ? [part.text] : []))
         .join('\n');
-    const record = /^UMA_WIKI_SETTINGS_JSON:(\{[^\r\n]*\})$/mu.exec(text)?.[1];
+    const record = /^HEY_WIKI_SETTINGS_JSON:(\{[^\r\n]*\})$/mu.exec(text)?.[1];
     return record === undefined
         ? state
         : { record: record.length > 16384 ? 'INVALID_OVERSIZED_SETTINGS' : record };

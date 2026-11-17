@@ -99,8 +99,8 @@ interface ExperienceContext {
 }
 
 /** Local experience candidates derived from coding receipts and structured tool failures. */
-/** Shared UMA consumer; it does not write project files or issue model requests. */
-export const name = 'uma-experience-capture'
+/** Shared HEY consumer; it does not write project files or issue model requests. */
+export const name = 'hey-experience-capture'
 
 /** Fact and content owners must be ready before the consumer subscribes. */
 export const inject = [
@@ -136,7 +136,7 @@ const toolPitfalls = new Map<string, { symptom: string; solution: string; applic
 
 /**
  * Capture local experience and opted-in project copies from settled evidence.
- * @param ctx - shared UMA service scope; withdrawing it removes the listener.
+ * @param ctx - shared HEY service scope; withdrawing it removes the listener.
  */
 export function apply(ctx: ExperienceContext): void {
   const lifetime = new AbortController()
@@ -145,7 +145,7 @@ export function apply(ctx: ExperienceContext): void {
   })
   ctx.knowledge.ensureGlobalExperience(lifetime.signal)
   ctx.tools.register(defineTool({
-    name: 'uma_workspace_search',
+    name: 'hey_workspace_search',
     description: 'Find relevant documents in the project knowledge library or reviewed development experience. Use when a project decision needs this evidence.',
     parameters: {
       kind: {
@@ -207,7 +207,7 @@ export function apply(ctx: ExperienceContext): void {
     }
   }))
   ctx.tools.register(defineTool({
-    name: 'uma_experience_record',
+    name: 'hey_experience_record',
     description: 'Save a reusable development pitfall to the local global experience library as a reviewable candidate. Use after an observed failure, workaround, or verified fix. Generalize project-specific details. Omit secrets, raw logs and private paths. Leave unknown fields empty.',
     parameters: {
       title: {

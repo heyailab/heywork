@@ -1,6 +1,6 @@
 {
   "name": "@deepseek-ai/dsh-client-uma-remotes",
-  "description": "UMA client assembly for knowledge, coding and project Wiki services",
+  "description": "HEY client assembly for knowledge, coding and project Wiki services",
   "version": "0.2.2-rc.3",
   "private": true,
   "type": "module",

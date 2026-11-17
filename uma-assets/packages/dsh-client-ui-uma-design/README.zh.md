@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-在会话记录中持续显示设计、知识库、Wiki 和开发经验操作卡片。读取 UMA Design 公开目录时展示风格名称和实际读取的资料类型，私有名称、查询词和资料正文不进入卡片。项目设计、工件和预览卡片保留用户自己的产出及就绪状态。
+在会话记录中持续显示设计、知识库、Wiki 和开发经验操作卡片。读取 HEY Design 公开目录时展示风格名称和实际读取的资料类型，私有名称、查询词和资料正文不进入卡片。项目设计、工件和预览卡片保留用户自己的产出及就绪状态。
 
 ## 目录
 
@@ -28,7 +28,7 @@ kind: "package-reference"
 在 Web 组合中与其他客户端 Tool 视图一起挂载：
 
 ```yaml
-- id: ui-uma-design
+- id: ui-hey-design
   name: '@deepseek-ai/dsh-client-ui-uma-design'
 ```
 
@@ -43,7 +43,7 @@ kind: "package-reference"
 
 #### 模型看到什么
 
-无。卡片渲染已记录的 `design_asset_list`、`design_asset_get`、`uma_artifact_write` 与 `uma_gate_status` 工具结果，不注册工具、提示词段落或 Session 事件。
+无。卡片渲染已记录的 `design_asset_list`、`design_asset_get`、`hey_artifact_write` 与 `hey_gate_status` 工具结果，不注册工具、提示词段落或 Session 事件。
 
 #### Token 影响
 

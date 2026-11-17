@@ -1,11 +1,11 @@
 /**
- * Print what the bundled skill container actually holds, without launching UMA.
+ * Print what the bundled skill container actually holds, without launching HEY.
  *
  * `dsh-skill-uma/resources.umadb` is an AES-256-GCM + Brotli container keyed by
  * sha256('UMA Studio local resource container v1'); the key derivation is the
  * Mac build's and platform-independent, so the Windows package reads the very
  * same bytes that ship on macOS. This script is the acceptance evidence for the
- * "20 bundled skills load through uma_resource_read" criterion.
+ * "20 bundled skills load through hey_resource_read" criterion.
  *
  * Usage:
  *   node --experimental-sqlite scripts/inspect-skill-container.mjs [path-to.umadb]
@@ -16,7 +16,7 @@ import { DatabaseSync } from 'node:sqlite'
 import { existsSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
-const PORT_ROOT = process.env.UMA_PORT_ROOT ?? resolve(import.meta.dirname, '..')
+const PORT_ROOT = process.env.HEY_ROOT ?? resolve(import.meta.dirname, '..')
 const container = resolve(process.argv[2] ?? join(PORT_ROOT, 'uma-assets', 'packages', 'dsh-skill-uma', 'resources.umadb'))
 if (!existsSync(container)) {
   console.error(`inspect-skill-container: not found: ${container}`)

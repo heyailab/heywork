@@ -32,7 +32,7 @@ kind: "package-reference"
 在 Agent 预设中与工具注册表一起挂载：
 
 ```yaml
-- id: tool-uma-design
+- id: tool-hey-design
   name: '@deepseek-ai/dsh-tool-uma-design'
 ```
 
@@ -59,7 +59,7 @@ kind: "package-reference"
 | `design_project_create` | 基于内置系统在 `.design/<project>/` 中生成契约 |
 | `design_project_status` | 列出设计项目或报告某个项目的契约文件 |
 | `design_asset_get` | 读取一个资产的 `DESIGN.md`、令牌与可选组件标记 |
-| `uma_knowledge_search` | 检索角色方法、反模板规则、质量清单、模板与工艺参考 |
+| `hey_knowledge_search` | 检索角色方法、反模板规则、质量清单、模板与工艺参考 |
 
 `design_rule_search` 通过本地资源库读取已安装的 UI/UX 规则，不启动 Python 或另一套 Agent。它采用 BM25 和支持的中文查询扩展，未匹配查询不返回推荐。技术栈标识只允许已安装 CSV 名称。返回记录保留完整字段与代码示例，记录序号把表头计为一；多行 CSV 的记录序号不等于物理行号。资料是本地参考，不是已经验证仍最新的上游文档。
 
@@ -67,11 +67,11 @@ kind: "package-reference"
 
 插件在挂载处加入稳定的设计流程系统提示段。已确认品牌与现有组件优先于内置灵感。正式修改使用现有框架；单文件 HTML 需要明确的原型请求。视觉与交互验收仍要求实际渲染证据。
 
-`design_asset_get` 只接受加载时发现的名称和固定的资产文件名。读取受单文件与单次调用上限约束；被截断的文件会在结果中标注。`files[].path` 和输出标题使用 `uma-design://systems/<名称>/<文件>` 或 `uma-design://brands/<名称>/<文件>` 虚拟引用，不包含安装目录。知识检索结果使用 `uma-knowledge://` 引用。这些标识不是文件系统路径，内容通过设计工具读取。模型指引要求解释风格选择，不引用内部资源标识。用户项目文件保留正常路径。
+`design_asset_get` 只接受加载时发现的名称和固定的资产文件名。读取受单文件与单次调用上限约束；被截断的文件会在结果中标注。`files[].path` 和输出标题使用 `hey-design://systems/<名称>/<文件>` 或 `hey-design://brands/<名称>/<文件>` 虚拟引用，不包含安装目录。知识检索结果使用 `hey-knowledge://` 引用。这些标识不是文件系统路径，内容通过设计工具读取。模型指引要求解释风格选择，不引用内部资源标识。用户项目文件保留正常路径。
 
 公开目录读取的展示元数据包含风格名称、实际读取的文件类型及截断状态。自定义资产根目录及内部 Markdown 参考不提供公开名称。项目设计工具在 `.design/<project>/` 写入为当前项目编写的设计规范、令牌和组件。
 
-内置标准、PTC 与 UMA 设计预设挂载 `@deepseek-ai/dsh-tool-uma-design/automatic`，关闭自动意图检测和设计师调度。Agent 判断意图后调用 `design_begin`，读取工作区并加载适用的工艺、简报、模式和走查方法；调用 `design_stop` 可离开设计工作。后续选择与选定项目通过 Session 投影恢复。自定义配置可通过 `autoDetect` 开启有界意图检测；同时开启检测、`teamDesign` 和团队模式时，明确的 UI 实现请求可在当前模型路由启动一位具名的只读设计成员。计划模式跳过该委派。
+内置标准、PTC 与 HEY 设计预设挂载 `@deepseek-ai/dsh-tool-uma-design/automatic`，关闭自动意图检测和设计师调度。Agent 判断意图后调用 `design_begin`，读取工作区并加载适用的工艺、简报、模式和走查方法；调用 `design_stop` 可离开设计工作。后续选择与选定项目通过 Session 投影恢复。自定义配置可通过 `autoDetect` 开启有界意图检测；同时开启检测、`teamDesign` 和团队模式时，明确的 UI 实现请求可在当前模型路由启动一位具名的只读设计成员。计划模式跳过该委派。
 
 ### 自动准备
 
@@ -79,7 +79,7 @@ kind: "package-reference"
 
 新建或重设计界面时，自动准备要求 Agent 应用选定的布局和组件模式，视觉验收结论与功能检查分开记录。团队设计师交接版式、内容及素材需求，并说明具体需要核查的视觉结果。
 
-`uma_resource_read` 通过技能名称和相对路径读取安装资源。省略 `path` 可浏览目录；文本使用返回的字节偏移量续读，目录使用条目偏移量翻页。`resourceMaxBytes` 默认为 32768，限制完整渲染结果的字节数。绝对路径、上级目录跳转、逃逸符号链接及非 UTF-8 内容会被拒绝，错误不返回实际安装路径。技能提供器、这些工具与自动设计准备应配置相同的 `assetRoot`。设计资源输出的总预算同样按 UTF-8 字节计算，包含标题及截断提示。
+`hey_resource_read` 通过技能名称和相对路径读取安装资源。省略 `path` 可浏览目录；文本使用返回的字节偏移量续读，目录使用条目偏移量翻页。`resourceMaxBytes` 默认为 32768，限制完整渲染结果的字节数。绝对路径、上级目录跳转、逃逸符号链接及非 UTF-8 内容会被拒绝，错误不返回实际安装路径。技能提供器、这些工具与自动设计准备应配置相同的 `assetRoot`。设计资源输出的总预算同样按 UTF-8 字节计算，包含标题及截断提示。
 
 <a id="model-experience"></a>
 ## 模型体验
@@ -88,7 +88,7 @@ kind: "package-reference"
 
 #### 模型看到什么
 
-模型看到启用时的自动任务上下文、原生设计流程系统提示段、`design_begin`、`design_stop`、`design_preview`、`design_context`、`design_rule_search`、`design_asset_list`、`design_asset_get`、`design_project_create`、`design_project_status` 与 `uma_knowledge_search`。列表工具返回系统名称、类别、用途与参考名称；读取工具返回请求的 DESIGN.md、令牌与可选组件标记；知识工具返回内置交付与设计参考中排序后的章节。 内置知识检索优先匹配完整短语和不同的相关词，对重复词只计一次。检索统一全半角字符，可使用中文短语查找本地术语和交接方法。
+模型看到启用时的自动任务上下文、原生设计流程系统提示段、`design_begin`、`design_stop`、`design_preview`、`design_context`、`design_rule_search`、`design_asset_list`、`design_asset_get`、`design_project_create`、`design_project_status` 与 `hey_knowledge_search`。列表工具返回系统名称、类别、用途与参考名称；读取工具返回请求的 DESIGN.md、令牌与可选组件标记；知识工具返回内置交付与设计参考中排序后的章节。 内置知识检索优先匹配完整短语和不同的相关词，对重复词只计一次。检索统一全半角字符，可使用中文短语查找本地术语和交接方法。
 
 #### Token 影响
 

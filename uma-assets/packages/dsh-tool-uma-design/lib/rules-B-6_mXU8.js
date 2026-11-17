@@ -4,7 +4,7 @@ import { join, sep } from "node:path";
 import { closeSync, fstatSync, openSync, readSync, readdirSync, realpathSync, statSync } from "node:fs";
 import Papa from "papaparse";
 //#region lib/types/resources.js
-/** Read-only, virtual references to installed UMA skill resources. */
+/** Read-only, virtual references to installed HEY skill resources. */
 /** Keep a valid UTF-8 prefix without retaining an incomplete final code point.
 * @param bytes - Complete or bounded UTF-8 bytes.
 * @returns Decoded prefix; invalid complete byte sequences are rejected.
@@ -16,19 +16,19 @@ function utf8Prefix(bytes) {
 	}).decode(bytes, { stream: true });
 }
 function resourcePath(root, skill, path) {
-	if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(skill) || path.length > 512 || path.includes("\\") || path.includes(":") || /[\u0000-\u001f\u007f]/u.test(path) || path !== "" && path.split("/").some((part) => part === "" || part === "." || part === "..")) throw new Error("Invalid UMA resource identifier");
+	if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(skill) || path.length > 512 || path.includes("\\") || path.includes(":") || /[\u0000-\u001f\u007f]/u.test(path) || path !== "" && path.split("/").some((part) => part === "" || part === "." || part === "..")) throw new Error("Invalid HEY resource identifier");
 	if (isBundledPath(root)) {
-		if (!resourceExists(join(root, skill, "SKILL.md"))) throw new Error("Unknown UMA skill");
+		if (!resourceExists(join(root, skill, "SKILL.md"))) throw new Error("Unknown HEY skill");
 		const target = join(root, skill, path);
-		if (!resourceExists(target)) throw new Error("Unknown UMA resource");
+		if (!resourceExists(target)) throw new Error("Unknown HEY resource");
 		return target;
 	}
 	const assets = realpathSync(root);
 	const base = realpathSync(join(assets, skill));
-	if (!base.startsWith(assets + sep)) throw new Error("UMA skill leaves the asset root");
-	if (!statSync(join(base, "SKILL.md")).isFile()) throw new Error("Unknown UMA skill");
+	if (!base.startsWith(assets + sep)) throw new Error("HEY skill leaves the asset root");
+	if (!statSync(join(base, "SKILL.md")).isFile()) throw new Error("Unknown HEY skill");
 	const result = realpathSync(join(base, path));
-	if (result !== base && !result.startsWith(base + sep)) throw new Error("UMA resource leaves its skill");
+	if (result !== base && !result.startsWith(base + sep)) throw new Error("HEY resource leaves its skill");
 	return result;
 }
 /** Read a bounded text page while keeping filesystem locations private.
@@ -75,7 +75,7 @@ function readBundledText(root, skill, path, offset, bytes) {
 			closeSync(file);
 		}
 	} catch {
-		throw new Error("UMA resource is unavailable or is not valid UTF-8 text; check its skill, relative path and page offset");
+		throw new Error("HEY resource is unavailable or is not valid UTF-8 text; check its skill, relative path and page offset");
 	}
 }
 /** Resolve a text resource or page its directory without revealing installation paths.
@@ -87,7 +87,7 @@ function readBundledText(root, skill, path, offset, bytes) {
 * @returns Bounded resource content or directory entries and a continuation offset.
 */
 function readBundledResource(root, skill, path, offset, maximum) {
-	const reference = `uma-resource://${skill}/${path}`;
+	const reference = `hey-resource://${skill}/${path}`;
 	try {
 		if (!Number.isSafeInteger(offset) || offset < 0) throw new Error("Invalid offset");
 		const target = resourcePath(root, skill, path);
@@ -114,7 +114,7 @@ function readBundledResource(root, skill, path, offset, maximum) {
 		const page = readBundledText(root, skill, path, offset, maximum - Buffer.byteLength(header) - 128);
 		return `${header}Next byte offset: ${page.nextOffset < page.totalBytes ? String(page.nextOffset) : "complete"}\n\n${page.content}`;
 	} catch {
-		throw new Error("UMA resource could not be read; use the installed skill name and its relative resource path");
+		throw new Error("HEY resource could not be read; use the installed skill name and its relative resource path");
 	}
 }
 //#endregion
@@ -393,7 +393,7 @@ function searchDesignRules(root, request) {
 			score += inverse * (subject.includes(term) ? 2 : 1) * count * 2.2 / (count + 1.2 * (.25 + .75 * record.terms.length / Math.max(averageLength, 1)));
 		}
 		return {
-			source: `uma-design-system/data/${file}`,
+			source: `hey-design-system/data/${file}`,
 			row: record.row,
 			fields: record.fields,
 			score

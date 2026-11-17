@@ -1462,30 +1462,30 @@ const DESKTOP_IPC = {
 	fileDragStart: "dsh-desktop:file-drag-start",
 	fileDragRelease: "dsh-desktop:file-drag-release",
 	deviceInfo: "dsh-desktop:device-info",
-	openOperations: "uma-desktop:open-operations",
-	operationsList: "uma-desktop:operations-list",
-	operationsSave: "uma-desktop:operations-save",
-	operationsRemove: "uma-desktop:operations-remove",
-	operationsConnect: "uma-desktop:operations-connect",
-	operationsTrust: "uma-desktop:operations-trust",
+	openOperations: "hey-desktop:open-operations",
+	operationsList: "hey-desktop:operations-list",
+	operationsSave: "hey-desktop:operations-save",
+	operationsRemove: "hey-desktop:operations-remove",
+	operationsConnect: "hey-desktop:operations-connect",
+	operationsTrust: "hey-desktop:operations-trust",
 	localeBootstrap: "dsh-desktop:locale-bootstrap",
 	localeChanged: "dsh-desktop:locale-changed",
 	updatesChannelGet: "dsh-desktop:updates-channel-get",
 	updatesChannelSet: "dsh-desktop:updates-channel-set",
 	updatesChannelChanged: "dsh-desktop:updates-channel-changed",
 	updatesStatus: "dsh-desktop:updates-status",
-	productVersion: "uma-desktop:product-version",
+	productVersion: "hey-desktop:product-version",
 	updatesOpen: "dsh-desktop:updates-open",
 	updatesPresentation: "dsh-desktop:updates-presentation",
 	nativeThemeSet: "dsh-desktop:native-theme-set",
 	windowFullscreen: "dsh-desktop:window-fullscreen",
 	windowsAppearance: "dsh-desktop:windows-appearance",
 	windowsMenu: "dsh-desktop:windows-menu",
-	trayPublish: "uma-desktop:tray-publish",
-	trayNavigate: "uma-desktop:tray-navigate"
+	trayPublish: "hey-desktop:tray-publish",
+	trayNavigate: "hey-desktop:tray-navigate"
 };
 /** Scheme of Desktop-owned application documents. */
-const SCHEME = "uma-app";
+const SCHEME = "hey-app";
 /**
 * Reject IPC outside the allowed Desktop document origins.
 * @param event - IPC caller whose frame URL supplies the origin.
@@ -1495,7 +1495,7 @@ function assertDesktopSender(event, hostnames) {
 	const senderFrame = event.senderFrame;
 	if (senderFrame === null) throw new Error("dsh desktop: rejected IPC without a sender frame");
 	const url = new URL(senderFrame.url);
-	if (url.protocol !== `uma-app:` || !hostnames.includes(url.hostname)) throw new Error("dsh desktop: rejected IPC from an unowned renderer");
+	if (url.protocol !== `hey-app:` || !hostnames.includes(url.hostname)) throw new Error("dsh desktop: rejected IPC from an unowned renderer");
 }
 //#endregion
 //#region lib/types/duration-env.js
@@ -1735,46 +1735,46 @@ function installFileActions(assertOwner, hostUrl = () => void 0) {
 //#region lib/types/locale.js
 /** Typed shell copy for every shipped language owned by the Electron shell. */
 const en = {
-	updateDevelopmentUnavailable: "This development build does not support in-app updates. Use a published UMA Studio installer to receive updates.",
-	cliCommandMenu: "Manage uma Command…",
+	updateDevelopmentUnavailable: "This development build does not support in-app updates. Use a published HeyWork installer to receive updates.",
+	cliCommandMenu: "Manage hey Command…",
 	macPermissionsMenu: "macOS Permissions",
-	operationsMenu: "UMA Operations",
+	operationsMenu: "HEY Operations",
 	macMicrophonePermission: "Microphone",
 	macAccessibilityPermission: "Accessibility",
 	macScreenRecordingPermission: "Screen & System Audio Recording",
 	macPermissionSettingsUnavailable: "Open System Settings, then Privacy & Security, to manage this permission.",
-	cliCommandTitle: "Manage uma Command",
-	cliCommandLocation: "UMA Studio command: {path}",
-	cliCommandSelected: "Current uma command: {path}",
+	cliCommandTitle: "Manage hey Command",
+	cliCommandLocation: "HeyWork command: {path}",
+	cliCommandSelected: "Current hey command: {path}",
 	cliCommandTarget: "Current launcher target: {path}",
-	cliCommandShadowed: "Another uma takes precedence. Remove or reorder that installation to use the UMA Studio command by default. You can also run the UMA Studio command by its full path.",
-	cliCommandSelectionUnknown: "Your shell command could not be verified. An alias or another uma installation may take precedence.",
-	cliCommandInstalled: "The UMA Studio command is installed.",
-	cliCommandNotInstalled: "Add the UMA Studio command to your terminal.",
-	cliCommandBroken: "The UMA Studio command needs repair.",
+	cliCommandShadowed: "Another hey takes precedence. Remove or reorder that installation to use the HeyWork command by default. You can also run the HeyWork command by its full path.",
+	cliCommandSelectionUnknown: "Your shell command could not be verified. An alias or another hey installation may take precedence.",
+	cliCommandInstalled: "The HeyWork command is installed.",
+	cliCommandNotInstalled: "Add the HeyWork command to your terminal.",
+	cliCommandBroken: "The HeyWork command needs repair.",
 	cliCommandInstall: "Install",
 	cliCommandRepair: "Repair",
 	cliCommandRemove: "Remove",
 	cliCommandClose: "Close",
-	cliCommandSwitch: "Continue with the UMA Studio command?",
+	cliCommandSwitch: "Continue with the HeyWork command?",
 	cliCommandPreserve: "An existing command will be preserved. Other installations and shell startup files will not be changed.",
 	cliCommandContinue: "Continue",
-	cliCommandInstallApp: "Install UMA Studio in your Applications folder before managing the uma command.",
+	cliCommandInstallApp: "Install HeyWork in your Applications folder before managing the hey command.",
 	cliCommandUpdating: "An update is being installed. Manage the command after installation finishes.",
-	cliCommandNewTerminal: "Open a new terminal and run uma --version.",
-	cliCommandRemoved: "UMA Studio command registration removed.",
+	cliCommandNewTerminal: "Open a new terminal and run hey --version.",
+	cliCommandRemoved: "HeyWork command registration removed.",
 	cliCommandPreviousRestored: "The previous launcher has been restored.",
 	cliCommandOtherKept: "Other command installations have been left in place.",
 	cliCommandBackupKept: "A previous launcher is preserved at: {path}",
-	cliCommandChanged: "The command or PATH changed while this dialog was open. Open Manage uma Command again to review the current state.",
+	cliCommandChanged: "The command or PATH changed while this dialog was open. Open Manage hey Command again to review the current state.",
 	cliCommandOwnershipError: "The command registration or backup changed. No unrelated command was removed.",
 	cliCommandFailed: "The command could not be updated. Check that the application is installed and the destination is writable, then retry.",
 	application: "Application",
 	fileMenu: "File",
 	closePage: "Close Page or Window",
-	aboutMenu: "About UMA Studio",
-	aboutProduct: "UMA Studio",
-	aboutDescription: "An AI coding workspace by UMA Studio.",
+	aboutMenu: "About HeyWork",
+	aboutProduct: "HeyWork",
+	aboutDescription: "An AI coding workspace by HeyWork.",
 	aboutUpstream: "Built on the DeepSeek Harness (DSH) open-source kernel.",
 	aboutSource: "Kernel source",
 	aboutVersion: "Product version {version}",
@@ -1789,20 +1789,20 @@ const en = {
 	aboutModified: "Includes local modifications",
 	aboutCopy: "Copy version info",
 	aboutCopied: "Copied",
-	aboutWebsite: "UMA website",
+	aboutWebsite: "HEY website",
 	aboutLicense: "Open-source licenses",
 	aboutFullLicense: "View full license",
-	hideApplication: "Hide UMA Studio",
+	hideApplication: "Hide HeyWork",
 	hideOtherApplications: "Hide Others",
 	showAllApplications: "Show All",
 	substitutionsMenu: "Substitutions",
 	speechMenu: "Speech",
-	quitApplication: "Quit UMA Studio",
-	openApplication: "Open UMA Studio",
+	quitApplication: "Quit HeyWork",
+	openApplication: "Open HeyWork",
 	trayRunning: "Running",
 	trayRecent: "Recent conversations",
 	trayMore: "More",
-	trayTeamWorking: "UMA development team is working",
+	trayTeamWorking: "HEY development team is working",
 	trayRoleWorking: "{roles} working",
 	trayRoles: {
 		pm: "Product manager",
@@ -1819,7 +1819,7 @@ const en = {
 	trayUntitled: "Untitled conversation",
 	quit: "Quit",
 	cancel: "Cancel",
-	quitTitle: "Quit UMA Studio?",
+	quitTitle: "Quit HeyWork?",
 	quitActiveTasks: "Running tasks will be interrupted.",
 	quitScheduledTasks: "Scheduled tasks will not run while the app is closed.",
 	quitActiveAndScheduledTasks: "Running tasks will be interrupted, and scheduled tasks will not run while the app is closed.",
@@ -1834,7 +1834,7 @@ const en = {
 	copy: "Copy",
 	paste: "Paste",
 	selectAll: "Select All",
-	startupFailed: "UMA Studio is unavailable",
+	startupFailed: "HeyWork is unavailable",
 	fatalSummary: "The application could not start or stopped unexpectedly.",
 	startupAddressInUse: "The application port is in use. Close the process using it and try again.",
 	diagnosticTruncated: "… Error details shortened.",
@@ -1849,20 +1849,20 @@ const en = {
 	restartApplication: "Restart",
 	recoveryOperationFailed: "The recovery operation failed",
 	disableThirdPartyPlugins: "Disable third-party plugins, back up profile patch, and restart",
-	welcomeTitle: "UMA Studio",
-	welcomeBrand: "UMA Studio",
+	welcomeTitle: "HeyWork",
+	welcomeBrand: "HeyWork",
 	welcomeIntroTitle: "Build good software faster",
 	welcomeIntroDescription: "Open a local workspace and describe the outcome you want. Uma brings the tools into one conversation.",
 	welcomeIntroDesign: "Explore a design",
 	welcomeIntroCode: "Develop in your project",
 	welcomeIntroDeliver: "Verify and deliver",
 	welcomeModelsTitle: "Choose how to use models",
-	welcomeHostedModels: "UMA hosted models",
-	welcomeHostedDescription: "Sign in with UMA and pay the published rates from your account balance.",
+	welcomeHostedModels: "HEY hosted models",
+	welcomeHostedDescription: "Sign in with HEY and pay the published rates from your account balance.",
 	welcomeCustomModels: "Custom models",
 	welcomeCustomDescription: "Connect your own provider and key in model settings. Usage is billed by that provider.",
-	welcomeLoginTitle: "Sign in to UMA Studio",
-	welcomeLoginDescription: "Use your UMA account to access hosted models and manage your balance.",
+	welcomeLoginTitle: "Sign in to HeyWork",
+	welcomeLoginDescription: "Use your HEY account to access hosted models and manage your balance.",
 	welcomeNext: "Next",
 	welcomePrevious: "Back",
 	welcomeSkipSignIn: "Sign in later",
@@ -1881,7 +1881,7 @@ const en = {
 	welcomeSignIn: "Sign in",
 	welcomeApiKey: "Add API Key",
 	welcomeKeyTitle: "Add an API key to get started",
-	welcomeKeyDescription: "Configure official DeepSeek models to start using UMA Studio",
+	welcomeKeyDescription: "Configure official DeepSeek models to start using HeyWork",
 	welcomeKeyPlaceholder: "Enter API key",
 	welcomeKeySave: "Save and continue",
 	welcomeKeyLater: "Set up later",
@@ -1936,11 +1936,11 @@ const en = {
 	updateStopTasks: "Stop tasks and update",
 	updateTasksChanged: "New tasks have started. Confirm again to stop the tasks and update.",
 	updateTasksUnavailable: "Task status is unavailable. Try updating again when the workspace is ready.",
-	updateInstallLocation: "Move UMA Studio to the Applications folder, reopen it, and try again.",
+	updateInstallLocation: "Move HeyWork to the Applications folder, reopen it, and try again.",
 	updateFullscreenTimeout: "Could not exit fullscreen. Exit fullscreen, then retry the update.",
 	updateStopFailed: "Could not safely stop the tasks. The update has not been installed. Please try again later.",
 	updateTechnicalDetails: "View technical details",
-	updateTitle: "UMA Studio Update",
+	updateTitle: "HeyWork Update",
 	updateAvailable: "New version available: {version}",
 	updateDetail: "Once the download is complete, you can install the update and restart the app.",
 	installAndRestart: "Install and Restart",
@@ -1982,45 +1982,45 @@ const en = {
 const dictionaries = {
 	en,
 	zh: {
-		updateDevelopmentUnavailable: "当前为开发运行版，不支持应用内更新。请使用已发布的 UMA Studio 安装版。",
-		cliCommandMenu: "管理 uma 命令…",
+		updateDevelopmentUnavailable: "当前为开发运行版，不支持应用内更新。请使用已发布的 HeyWork 安装版。",
+		cliCommandMenu: "管理 hey 命令…",
 		macPermissionsMenu: "macOS 权限",
-		operationsMenu: "UMA 运维",
+		operationsMenu: "HEY 运维",
 		macMicrophonePermission: "麦克风",
 		macAccessibilityPermission: "辅助功能",
 		macScreenRecordingPermission: "屏幕与系统音频录制",
 		macPermissionSettingsUnavailable: "请打开「系统设置 → 隐私与安全性」，手动管理此权限。",
-		cliCommandTitle: "管理 uma 命令",
-		cliCommandLocation: "UMA Studio 命令：{path}",
-		cliCommandSelected: "当前 uma 命令：{path}",
+		cliCommandTitle: "管理 hey 命令",
+		cliCommandLocation: "HeyWork 命令：{path}",
+		cliCommandSelected: "当前 hey 命令：{path}",
 		cliCommandTarget: "当前启动器目标：{path}",
-		cliCommandShadowed: "另一个 uma 的优先级更高。请移除或调整该安装的顺序，以默认使用 UMA Studio 命令；也可以通过完整路径运行 UMA Studio 命令。",
-		cliCommandSelectionUnknown: "无法确认 shell 中的命令。别名或另一个 uma 安装可能具有更高优先级。",
-		cliCommandInstalled: "UMA Studio 命令已安装。",
-		cliCommandNotInstalled: "将 UMA Studio 命令添加到终端。",
-		cliCommandBroken: "UMA Studio 命令需要修复。",
+		cliCommandShadowed: "另一个 hey 的优先级更高。请移除或调整该安装的顺序，以默认使用 HeyWork 命令；也可以通过完整路径运行 HeyWork 命令。",
+		cliCommandSelectionUnknown: "无法确认 shell 中的命令。别名或另一个 hey 安装可能具有更高优先级。",
+		cliCommandInstalled: "HeyWork 命令已安装。",
+		cliCommandNotInstalled: "将 HeyWork 命令添加到终端。",
+		cliCommandBroken: "HeyWork 命令需要修复。",
 		cliCommandInstall: "安装",
 		cliCommandRepair: "修复",
 		cliCommandRemove: "移除",
 		cliCommandClose: "关闭",
-		cliCommandSwitch: "继续使用 UMA Studio 命令？",
+		cliCommandSwitch: "继续使用 HeyWork 命令？",
 		cliCommandPreserve: "现有命令会被保留，不会修改其他安装或 shell 启动文件。",
 		cliCommandContinue: "继续",
-		cliCommandInstallApp: "请先将 UMA Studio 安装到“应用程序”文件夹，再管理 uma 命令。",
+		cliCommandInstallApp: "请先将 HeyWork 安装到“应用程序”文件夹，再管理 hey 命令。",
 		cliCommandUpdating: "正在安装更新。请在安装完成后管理命令。",
-		cliCommandNewTerminal: "打开新终端并运行 uma --version。",
-		cliCommandRemoved: "已移除 UMA Studio 命令注册。",
+		cliCommandNewTerminal: "打开新终端并运行 hey --version。",
+		cliCommandRemoved: "已移除 HeyWork 命令注册。",
 		cliCommandPreviousRestored: "已恢复之前的启动器。",
 		cliCommandOtherKept: "其他命令安装保持不变。",
 		cliCommandBackupKept: "之前的启动器保留在：{path}",
-		cliCommandChanged: "对话框打开期间命令或 PATH 已改变。请重新打开“管理 uma 命令”检查当前状态。",
+		cliCommandChanged: "对话框打开期间命令或 PATH 已改变。请重新打开“管理 hey 命令”检查当前状态。",
 		cliCommandOwnershipError: "命令注册或备份已改变，未移除无关命令。",
 		cliCommandFailed: "无法更新命令。请检查应用是否已安装、目标位置是否可写，然后重试。",
 		application: "应用",
 		fileMenu: "文件",
 		closePage: "关闭页面或窗口",
-		aboutMenu: "关于 UMA Studio",
-		aboutProduct: "UMA Studio",
+		aboutMenu: "关于 HeyWork",
+		aboutProduct: "HeyWork",
 		aboutDescription: "专注专业开发的 AI 编程工作台。",
 		aboutUpstream: "基于 DeepSeek Harness（DSH）开源内核构建。",
 		aboutSource: "内核源码",
@@ -2036,20 +2036,20 @@ const dictionaries = {
 		aboutModified: "包含本地修改",
 		aboutCopy: "复制版本信息",
 		aboutCopied: "已复制",
-		aboutWebsite: "UMA 官网",
+		aboutWebsite: "HEY 官网",
 		aboutLicense: "开源许可",
 		aboutFullLicense: "查看完整许可",
-		hideApplication: "隐藏 UMA Studio",
+		hideApplication: "隐藏 HeyWork",
 		hideOtherApplications: "隐藏其他",
 		showAllApplications: "显示全部",
 		substitutionsMenu: "替换",
 		speechMenu: "语音",
-		quitApplication: "退出 UMA Studio",
-		openApplication: "打开 UMA Studio",
+		quitApplication: "退出 HeyWork",
+		openApplication: "打开 HeyWork",
 		trayRunning: "正在运行",
 		trayRecent: "最近会话",
 		trayMore: "更多",
-		trayTeamWorking: "UMA 开发团队正在工作",
+		trayTeamWorking: "HEY 开发团队正在工作",
 		trayRoleWorking: "{roles}正在工作",
 		trayRoles: {
 			pm: "产品经理",
@@ -2066,7 +2066,7 @@ const dictionaries = {
 		trayUntitled: "未命名会话",
 		quit: "退出",
 		cancel: "取消",
-		quitTitle: "退出 UMA Studio？",
+		quitTitle: "退出 HeyWork？",
 		quitActiveTasks: "当前正在运行的任务将会中断",
 		quitScheduledTasks: "应用关闭期间，定时任务不会运行",
 		quitActiveAndScheduledTasks: "当前正在运行的任务将会中断，且应用关闭期间，定时任务不会运行",
@@ -2081,7 +2081,7 @@ const dictionaries = {
 		copy: "复制",
 		paste: "粘贴",
 		selectAll: "全选",
-		startupFailed: "UMA Studio 无法使用",
+		startupFailed: "HeyWork 无法使用",
 		fatalSummary: "应用无法启动或已意外停止。",
 		startupAddressInUse: "应用端口被其他进程占用，请关闭占用该端口的程序后重试。",
 		diagnosticTruncated: "… 错误详情已截短。",
@@ -2096,8 +2096,8 @@ const dictionaries = {
 		restartApplication: "重启",
 		recoveryOperationFailed: "恢复操作失败",
 		disableThirdPartyPlugins: "禁用第三方插件、备份 profile patch 并重启",
-		welcomeTitle: "UMA Studio",
-		welcomeBrand: "UMA Studio",
+		welcomeTitle: "HeyWork",
+		welcomeBrand: "HeyWork",
 		welcomeIntroTitle: "让好的软件更快诞生",
 		welcomeIntroDescription: "打开本地工作区，说出你想完成的事。Uma 会在同一个对话中调用需要的工具。",
 		welcomeIntroDesign: "探索设计方案",
@@ -2105,11 +2105,11 @@ const dictionaries = {
 		welcomeIntroDeliver: "验证并交付成果",
 		welcomeModelsTitle: "两种模型接入方式",
 		welcomeHostedModels: "官方模型",
-		welcomeHostedDescription: "登录 UMA 账号后即可选择，按公布的费率从人民币余额扣费。",
+		welcomeHostedDescription: "登录 HEY 账号后即可选择，按公布的费率从人民币余额扣费。",
 		welcomeCustomModels: "自定义模型",
 		welcomeCustomDescription: "在模型设置接入自己的服务商和密钥，由该服务商计费。",
-		welcomeLoginTitle: "登录 UMA Studio",
-		welcomeLoginDescription: "登录 UMA 账号，使用官方模型并管理账户余额。",
+		welcomeLoginTitle: "登录 HeyWork",
+		welcomeLoginDescription: "登录 HEY 账号，使用官方模型并管理账户余额。",
 		welcomeNext: "下一步",
 		welcomePrevious: "上一步",
 		welcomeSkipSignIn: "稍后登录",
@@ -2183,11 +2183,11 @@ const dictionaries = {
 		updateStopTasks: "停止任务并更新",
 		updateTasksChanged: "有新任务开始运行，请重新确认是否停止任务并更新。",
 		updateTasksUnavailable: "无法确认任务状态，请在工作区就绪后重试更新。",
-		updateInstallLocation: "请将 UMA Studio 移到「应用程序」文件夹，重新打开后再更新",
+		updateInstallLocation: "请将 HeyWork 移到「应用程序」文件夹，重新打开后再更新",
 		updateFullscreenTimeout: "无法退出全屏，请退出全屏后重试更新",
 		updateStopFailed: "未能安全停止任务，更新尚未安装，请稍后重试。",
 		updateTechnicalDetails: "查看技术详情",
-		updateTitle: "UMA Studio 更新",
+		updateTitle: "HeyWork 更新",
 		updateAvailable: "发现新版本 {version}",
 		updateDetail: "下载完成后，可安装并重启应用。",
 		installAndRestart: "安装并重启",
@@ -2227,20 +2227,20 @@ const dictionaries = {
 		mandatoryNotification: "返回应用确认安装并重启。"
 	},
 	ja: {
-		updateDevelopmentUnavailable: "この開発ビルドはアプリ内更新に対応していません。公開済みの UMA Studio インストーラーをご利用ください。",
-		cliCommandMenu: "uma コマンドを管理…",
+		updateDevelopmentUnavailable: "この開発ビルドはアプリ内更新に対応していません。公開済みの HeyWork インストーラーをご利用ください。",
+		cliCommandMenu: "hey コマンドを管理…",
 		macPermissionsMenu: "macOS の権限",
-		operationsMenu: "UMA 運用",
+		operationsMenu: "HEY 運用",
 		macMicrophonePermission: "マイク",
 		macAccessibilityPermission: "アクセシビリティ",
 		macScreenRecordingPermission: "画面とシステムオーディオの録音",
 		macPermissionSettingsUnavailable: "システム設定の「プライバシーとセキュリティ」で権限を設定してください。",
-		cliCommandTitle: "uma コマンドを管理",
+		cliCommandTitle: "hey コマンドを管理",
 		cliCommandLocation: "デスクトップコマンド: {path}",
-		cliCommandSelected: "現在の uma コマンド: {path}",
+		cliCommandSelected: "現在の hey コマンド: {path}",
 		cliCommandTarget: "現在のランチャーターゲット: {path}",
-		cliCommandShadowed: "別の uma が優先されています。デフォルトでデスクトップコマンドを使用するには、そのインストールを削除するか順序を変更してください。デスクトップコマンドはフルパスでも実行できます。",
-		cliCommandSelectionUnknown: "シェルコマンドを確認できませんでした。エイリアスや別の uma インストールが優先されている可能性があります。",
+		cliCommandShadowed: "別の hey が優先されています。デフォルトでデスクトップコマンドを使用するには、そのインストールを削除するか順序を変更してください。デスクトップコマンドはフルパスでも実行できます。",
+		cliCommandSelectionUnknown: "シェルコマンドを確認できませんでした。エイリアスや別の hey インストールが優先されている可能性があります。",
 		cliCommandInstalled: "デスクトップコマンドがインストールされています。",
 		cliCommandNotInstalled: "デスクトップコマンドをターミナルに追加します。",
 		cliCommandBroken: "デスクトップコマンドの修復が必要です。",
@@ -2251,22 +2251,22 @@ const dictionaries = {
 		cliCommandSwitch: "デスクトップコマンドで続行しますか？",
 		cliCommandPreserve: "既存のコマンドは保持されます。他のインストールやシェルの起動ファイルは変更されません。",
 		cliCommandContinue: "続行",
-		cliCommandInstallApp: "uma コマンドを管理する前に、デスクトップをアプリケーションフォルダにインストールしてください。",
+		cliCommandInstallApp: "hey コマンドを管理する前に、デスクトップをアプリケーションフォルダにインストールしてください。",
 		cliCommandUpdating: "アップデートをインストール中です。インストール完了後にコマンドを管理してください。",
-		cliCommandNewTerminal: "新しいターミナルを開いて uma --version を実行してください。",
+		cliCommandNewTerminal: "新しいターミナルを開いて hey --version を実行してください。",
 		cliCommandRemoved: "デスクトップコマンドの登録を削除しました。",
 		cliCommandPreviousRestored: "以前のランチャーを復元しました。",
 		cliCommandOtherKept: "他のコマンドインストールはそのまま残されています。",
 		cliCommandBackupKept: "以前のランチャーは次の場所に保持されています: {path}",
-		cliCommandChanged: "このダイアログを開いている間にコマンドまたは PATH が変更されました。現在の状態を確認するには、uma コマンドを管理を再度開いてください。",
+		cliCommandChanged: "このダイアログを開いている間にコマンドまたは PATH が変更されました。現在の状態を確認するには、hey コマンドを管理を再度開いてください。",
 		cliCommandOwnershipError: "コマンド登録またはバックアップが変更されました。無関係なコマンドは削除されていません。",
 		cliCommandFailed: "コマンドを更新できませんでした。アプリケーションがインストールされ、保存先に書き込み権限があることを確認してから再試行してください。",
 		application: "アプリケーション",
 		fileMenu: "ファイル",
 		closePage: "ページまたはウィンドウを閉じる",
-		aboutMenu: "UMA Studio について",
-		aboutProduct: "UMA Studio",
-		aboutDescription: "UMA Studio の AI コーディングワークスペース。",
+		aboutMenu: "HeyWork について",
+		aboutProduct: "HeyWork",
+		aboutDescription: "HeyWork の AI コーディングワークスペース。",
 		aboutUpstream: "DeepSeek Harness (DSH) のオープンソースカーネルを基盤としています。",
 		aboutSource: "カーネルのソース",
 		aboutVersion: "製品バージョン {version}",
@@ -2281,20 +2281,20 @@ const dictionaries = {
 		aboutModified: "ローカル変更を含む",
 		aboutCopy: "バージョン情報をコピー",
 		aboutCopied: "コピーしました",
-		aboutWebsite: "UMA ウェブサイト",
+		aboutWebsite: "HEY ウェブサイト",
 		aboutLicense: "オープンソースライセンス",
 		aboutFullLicense: "ライセンス全文を表示",
-		hideApplication: "UMA Studio を隠す",
+		hideApplication: "HeyWork を隠す",
 		hideOtherApplications: "ほかを隠す",
 		showAllApplications: "すべて表示",
 		substitutionsMenu: "自動置換",
 		speechMenu: "スピーチ",
-		quitApplication: "UMA Studio を終了",
-		openApplication: "UMA Studio を開く",
+		quitApplication: "HeyWork を終了",
+		openApplication: "HeyWork を開く",
 		trayRunning: "実行中",
 		trayRecent: "最近の会話",
 		trayMore: "その他",
-		trayTeamWorking: "UMA 開発チームが作業中",
+		trayTeamWorking: "HEY 開発チームが作業中",
 		trayRoleWorking: "{roles}が作業中",
 		trayRoles: {
 			pm: "プロダクトマネージャー",
@@ -2311,7 +2311,7 @@ const dictionaries = {
 		trayUntitled: "無題の会話",
 		quit: "終了",
 		cancel: "キャンセル",
-		quitTitle: "UMA Studio を終了しますか？",
+		quitTitle: "HeyWork を終了しますか？",
 		quitActiveTasks: "実行中のタスクは中断されます。",
 		quitScheduledTasks: "アプリの終了中はスケジュールされたタスクが実行されません。",
 		quitActiveAndScheduledTasks: "実行中のタスクは中断され、アプリの終了中はスケジュールされたタスクが実行されません。",
@@ -2326,7 +2326,7 @@ const dictionaries = {
 		copy: "コピー",
 		paste: "貼り付け",
 		selectAll: "すべて選択",
-		startupFailed: "UMA Studio を利用できません",
+		startupFailed: "HeyWork を利用できません",
 		fatalSummary: "アプリケーションを起動できなかったか、予期せず停止しました。",
 		startupAddressInUse: "アプリのポートは使用中です。そのポートを使用しているプロセスを終了して、もう一度お試しください。",
 		diagnosticTruncated: "… エラー詳細は省略されています。",
@@ -2341,20 +2341,20 @@ const dictionaries = {
 		restartApplication: "再起動",
 		recoveryOperationFailed: "復旧操作に失敗しました",
 		disableThirdPartyPlugins: "サードパーティのプラグインを無効化し、プロファイルパッチをバックアップして再起動",
-		welcomeTitle: "UMA Studio",
-		welcomeBrand: "UMA Studio",
+		welcomeTitle: "HeyWork",
+		welcomeBrand: "HeyWork",
 		welcomeIntroTitle: "良いソフトウェアを、もっと早く",
 		welcomeIntroDescription: "ローカルのワークスペースを開き、やりたいことを伝えてください。Uma が必要なツールを同じ会話で使います。",
 		welcomeIntroDesign: "デザインを検討",
 		welcomeIntroCode: "プロジェクトで開発",
 		welcomeIntroDeliver: "検証して納品",
 		welcomeModelsTitle: "モデルの利用方法",
-		welcomeHostedModels: "UMA 提供モデル",
-		welcomeHostedDescription: "UMA アカウントでログインし、公開料金を残高から支払います。",
+		welcomeHostedModels: "HEY 提供モデル",
+		welcomeHostedDescription: "HEY アカウントでログインし、公開料金を残高から支払います。",
 		welcomeCustomModels: "カスタムモデル",
 		welcomeCustomDescription: "設定から独自のプロバイダーとキーを接続します。料金はプロバイダーから請求されます。",
-		welcomeLoginTitle: "UMA Studio にログイン",
-		welcomeLoginDescription: "UMA アカウントでモデルを利用し、残高を管理できます。",
+		welcomeLoginTitle: "HeyWork にログイン",
+		welcomeLoginDescription: "HEY アカウントでモデルを利用し、残高を管理できます。",
 		welcomeNext: "次へ",
 		welcomePrevious: "戻る",
 		welcomeSkipSignIn: "後でログイン",
@@ -2373,7 +2373,7 @@ const dictionaries = {
 		welcomeSignIn: "ログイン",
 		welcomeApiKey: "APIキーを追加",
 		welcomeKeyTitle: "APIキーを追加して開始",
-		welcomeKeyDescription: "公式のDeepSeekモデルを設定してUMA Studioを使い始めましょう",
+		welcomeKeyDescription: "公式のDeepSeekモデルを設定してHeyWorkを使い始めましょう",
 		welcomeKeyPlaceholder: "APIキーを入力",
 		welcomeKeySave: "保存して続行",
 		welcomeKeyLater: "後で設定",
@@ -2428,11 +2428,11 @@ const dictionaries = {
 		updateStopTasks: "タスクを停止してアップデート",
 		updateTasksChanged: "新しいタスクが開始されました。タスクを停止してアップデートするには再度確認してください。",
 		updateTasksUnavailable: "タスクの状態を取得できません。ワークスペースの準備ができてから再度アップデートをお試しください。",
-		updateInstallLocation: "UMA Studio を「アプリケーション」フォルダに移動し、開き直してからアップデートをお試しください。",
+		updateInstallLocation: "HeyWork を「アプリケーション」フォルダに移動し、開き直してからアップデートをお試しください。",
 		updateFullscreenTimeout: "フルスクリーンを終了できませんでした。フルスクリーンを終了してからアップデートを再試行してください。",
 		updateStopFailed: "タスクを安全に停止できませんでした。アップデートはインストールされていません。後でもう一度お試しください。",
 		updateTechnicalDetails: "技術的な詳細を表示",
-		updateTitle: "UMA Studio アップデート",
+		updateTitle: "HeyWork アップデート",
 		updateAvailable: "新しいバージョンがあります: {version}",
 		updateDetail: "ダウンロードが完了したら、アップデートをインストールしてアプリを再起動できます。",
 		installAndRestart: "インストールして再起動",
@@ -2472,20 +2472,20 @@ const dictionaries = {
 		mandatoryNotification: "アプリに戻り、インストールと再起動を確認してください。"
 	},
 	es: {
-		updateDevelopmentUnavailable: "Esta versión de desarrollo no admite actualizaciones desde la aplicación. Usa un instalador publicado de UMA Studio.",
-		cliCommandMenu: "Administrar el comando uma…",
+		updateDevelopmentUnavailable: "Esta versión de desarrollo no admite actualizaciones desde la aplicación. Usa un instalador publicado de HeyWork.",
+		cliCommandMenu: "Administrar el comando hey…",
 		macPermissionsMenu: "Permisos de macOS",
-		operationsMenu: "Operaciones de UMA",
+		operationsMenu: "Operaciones de HEY",
 		macMicrophonePermission: "Micrófono",
 		macAccessibilityPermission: "Accesibilidad",
 		macScreenRecordingPermission: "Grabación de pantalla y audio del sistema",
 		macPermissionSettingsUnavailable: "Abre Ajustes del Sistema y luego Privacidad y seguridad para gestionar este permiso.",
-		cliCommandTitle: "Administrar el comando uma",
+		cliCommandTitle: "Administrar el comando hey",
 		cliCommandLocation: "Comando de escritorio: {path}",
-		cliCommandSelected: "Comando uma actual: {path}",
+		cliCommandSelected: "Comando hey actual: {path}",
 		cliCommandTarget: "Objetivo actual del lanzador: {path}",
-		cliCommandShadowed: "Otro uma tiene prioridad. Elimine o reordene esa instalación para usar el comando Escritorio de forma predeterminada. También puede ejecutar el comando Escritorio por su ruta completa.",
-		cliCommandSelectionUnknown: "No se pudo verificar su comando de shell. Un alias u otra instalación de uma puede tener prioridad.",
+		cliCommandShadowed: "Otro hey tiene prioridad. Elimine o reordene esa instalación para usar el comando Escritorio de forma predeterminada. También puede ejecutar el comando Escritorio por su ruta completa.",
+		cliCommandSelectionUnknown: "No se pudo verificar su comando de shell. Un alias u otra instalación de hey puede tener prioridad.",
 		cliCommandInstalled: "El comando Escritorio está instalado.",
 		cliCommandNotInstalled: "Agregue el comando Escritorio a su terminal.",
 		cliCommandBroken: "El comando de escritorio necesita reparación.",
@@ -2496,22 +2496,22 @@ const dictionaries = {
 		cliCommandSwitch: "¿Continuar con el comando Escritorio?",
 		cliCommandPreserve: "Se conservará un comando existente. Otras instalaciones y archivos de inicio del shell no se modificarán.",
 		cliCommandContinue: "Continuar",
-		cliCommandInstallApp: "Instale UMA Studio en su carpeta de Aplicaciones antes de administrar el comando uma.",
+		cliCommandInstallApp: "Instale HeyWork en su carpeta de Aplicaciones antes de administrar el comando hey.",
 		cliCommandUpdating: "Se está instalando una actualización. Administre el comando una vez finalizada la instalación.",
-		cliCommandNewTerminal: "Abra una nueva terminal y ejecute uma --version.",
+		cliCommandNewTerminal: "Abra una nueva terminal y ejecute hey --version.",
 		cliCommandRemoved: "Se eliminó el registro de comandos de escritorio.",
 		cliCommandPreviousRestored: "El lanzador anterior ha sido restaurado.",
 		cliCommandOtherKept: "Otras instalaciones de mando se han dejado en su lugar.",
 		cliCommandBackupKept: "Se conserva un lanzador anterior en: {path}",
-		cliCommandChanged: "El comando o RUTA cambió mientras este cuadro de diálogo estaba abierto. Abra Administrar comando uma nuevamente para revisar el estado actual.",
+		cliCommandChanged: "El comando o RUTA cambió mientras este cuadro de diálogo estaba abierto. Abra Administrar comando hey nuevamente para revisar el estado actual.",
 		cliCommandOwnershipError: "El registro del comando o la copia de seguridad cambió. No se eliminó ningún comando no relacionado.",
 		cliCommandFailed: "El comando no se pudo actualizar. Verifique que la aplicación esté instalada y que se pueda escribir en el destino, luego vuelva a intentarlo.",
 		application: "Solicitud",
 		fileMenu: "Archivo",
 		closePage: "Cerrar página o ventana",
-		aboutMenu: "Acerca de UMA Studio",
-		aboutProduct: "UMA Studio",
-		aboutDescription: "Un espacio de programación con IA de UMA Studio.",
+		aboutMenu: "Acerca de HeyWork",
+		aboutProduct: "HeyWork",
+		aboutDescription: "Un espacio de programación con IA de HeyWork.",
 		aboutUpstream: "Basado en el núcleo de código abierto DeepSeek Harness (DSH).",
 		aboutSource: "Código del núcleo",
 		aboutVersion: "Versión del producto {version}",
@@ -2526,20 +2526,20 @@ const dictionaries = {
 		aboutModified: "Incluye cambios locales",
 		aboutCopy: "Copiar información de versión",
 		aboutCopied: "Copiado",
-		aboutWebsite: "Sitio web de UMA",
+		aboutWebsite: "Sitio web de HEY",
 		aboutLicense: "Licencias de código abierto",
 		aboutFullLicense: "Ver licencia completa",
-		hideApplication: "Ocultar UMA Studio",
+		hideApplication: "Ocultar HeyWork",
 		hideOtherApplications: "Ocultar otros",
 		showAllApplications: "Mostrar todo",
 		substitutionsMenu: "Sustituciones",
 		speechMenu: "Voz",
-		quitApplication: "Salir de UMA Studio",
-		openApplication: "Abrir UMA Studio",
+		quitApplication: "Salir de HeyWork",
+		openApplication: "Abrir HeyWork",
 		trayRunning: "En ejecución",
 		trayRecent: "Conversaciones recientes",
 		trayMore: "Más",
-		trayTeamWorking: "El equipo UMA está trabajando",
+		trayTeamWorking: "El equipo HEY está trabajando",
 		trayRoleWorking: "{roles} en actividad",
 		trayRoles: {
 			pm: "Gerente de producto",
@@ -2556,7 +2556,7 @@ const dictionaries = {
 		trayUntitled: "Conversación sin título",
 		quit: "Salir",
 		cancel: "Cancelar",
-		quitTitle: "¿Salir de UMA Studio?",
+		quitTitle: "¿Salir de HeyWork?",
 		quitActiveTasks: "Las tareas en ejecución se interrumpirán.",
 		quitScheduledTasks: "Las tareas programadas no se ejecutarán mientras la aplicación esté cerrada.",
 		quitActiveAndScheduledTasks: "Las tareas en ejecución se interrumpirán y las tareas programadas no se ejecutarán mientras la aplicación esté cerrada.",
@@ -2571,7 +2571,7 @@ const dictionaries = {
 		copy: "Copiar",
 		paste: "Pegar",
 		selectAll: "Seleccionar todo",
-		startupFailed: "UMA Studio no está disponible",
+		startupFailed: "HeyWork no está disponible",
 		fatalSummary: "La aplicación no pudo iniciarse o se detuvo inesperadamente.",
 		startupAddressInUse: "El puerto de la aplicación está en uso. Cierra el proceso que lo utiliza e inténtalo de nuevo.",
 		diagnosticTruncated: "… Detalles del error acortados.",
@@ -2586,20 +2586,20 @@ const dictionaries = {
 		restartApplication: "Reiniciar",
 		recoveryOperationFailed: "La operación de recuperación falló",
 		disableThirdPartyPlugins: "Deshabilite los complementos de terceros, haga una copia de seguridad del parche del perfil y reinicie",
-		welcomeTitle: "UMA Studio",
-		welcomeBrand: "UMA Studio",
+		welcomeTitle: "HeyWork",
+		welcomeBrand: "HeyWork",
 		welcomeIntroTitle: "Crea buen software más rápido",
 		welcomeIntroDescription: "Abre un espacio de trabajo local y describe el resultado. Uma usa las herramientas necesarias en una conversación.",
 		welcomeIntroDesign: "Explorar el diseño",
 		welcomeIntroCode: "Desarrollar en tu proyecto",
 		welcomeIntroDeliver: "Verificar y entregar",
 		welcomeModelsTitle: "Elige cómo usar los modelos",
-		welcomeHostedModels: "Modelos de UMA",
+		welcomeHostedModels: "Modelos de HEY",
 		welcomeHostedDescription: "Inicia sesión y paga las tarifas publicadas desde el saldo de tu cuenta.",
 		welcomeCustomModels: "Modelos personalizados",
 		welcomeCustomDescription: "Conecta tu proveedor y tu clave en los ajustes. El proveedor factura el uso.",
-		welcomeLoginTitle: "Inicia sesión en UMA Studio",
-		welcomeLoginDescription: "Usa tu cuenta UMA para acceder a los modelos y gestionar el saldo.",
+		welcomeLoginTitle: "Inicia sesión en HeyWork",
+		welcomeLoginDescription: "Usa tu cuenta HEY para acceder a los modelos y gestionar el saldo.",
 		welcomeNext: "Siguiente",
 		welcomePrevious: "Atrás",
 		welcomeSkipSignIn: "Iniciar sesión más tarde",
@@ -2618,7 +2618,7 @@ const dictionaries = {
 		welcomeSignIn: "Iniciar sesión",
 		welcomeApiKey: "Agregar clave API",
 		welcomeKeyTitle: "Agregue una clave API para comenzar",
-		welcomeKeyDescription: "Configura los modelos oficiales DeepSeek para empezar a utilizar UMA Studio",
+		welcomeKeyDescription: "Configura los modelos oficiales DeepSeek para empezar a utilizar HeyWork",
 		welcomeKeyPlaceholder: "Ingrese la clave API",
 		welcomeKeySave: "Guardar y continuar",
 		welcomeKeyLater: "Configurar más tarde",
@@ -2673,11 +2673,11 @@ const dictionaries = {
 		updateStopTasks: "Detener tareas y actualizar",
 		updateTasksChanged: "Han comenzado nuevas tareas. Confirme nuevamente para detener las tareas y actualizar.",
 		updateTasksUnavailable: "El estado de la tarea no está disponible. Intente actualizar nuevamente cuando el espacio de trabajo esté listo.",
-		updateInstallLocation: "Mueve UMA Studio a la carpeta Aplicaciones, vuelve a abrirlo e inténtalo de nuevo.",
+		updateInstallLocation: "Mueve HeyWork a la carpeta Aplicaciones, vuelve a abrirlo e inténtalo de nuevo.",
 		updateFullscreenTimeout: "No se pudo salir de la pantalla completa. Salga de la pantalla completa y luego vuelva a intentar la actualización.",
 		updateStopFailed: "No se pudieron detener las tareas de forma segura. La actualización no se ha instalado. Inténtelo de nuevo más tarde.",
 		updateTechnicalDetails: "Ver detalles técnicos",
-		updateTitle: "Actualización UMA Studio",
+		updateTitle: "Actualización HeyWork",
 		updateAvailable: "Nueva versión disponible: {version}",
 		updateDetail: "Una vez que se completa la descarga, puede instalar la actualización y reiniciar la aplicación.",
 		installAndRestart: "Instalar y reiniciar",
@@ -2717,20 +2717,20 @@ const dictionaries = {
 		mandatoryNotification: "Regrese a la aplicación para confirmar la instalación y reiniciar."
 	},
 	fr: {
-		updateDevelopmentUnavailable: "Cette version de développement ne prend pas en charge les mises à jour intégrées. Utilisez un programme d’installation publié de UMA Studio.",
-		cliCommandMenu: "Gérer la commande uma…",
+		updateDevelopmentUnavailable: "Cette version de développement ne prend pas en charge les mises à jour intégrées. Utilisez un programme d’installation publié de HeyWork.",
+		cliCommandMenu: "Gérer la commande hey…",
 		macPermissionsMenu: "Autorisations macOS",
-		operationsMenu: "Opérations UMA",
+		operationsMenu: "Opérations HEY",
 		macMicrophonePermission: "Microphone",
 		macAccessibilityPermission: "Accessibilité",
 		macScreenRecordingPermission: "Enregistrement de l’écran et de l’audio système",
 		macPermissionSettingsUnavailable: "Ouvrez Réglages Système, puis Confidentialité et sécurité, pour gérer cette autorisation.",
-		cliCommandTitle: "Gérer la commande uma",
+		cliCommandTitle: "Gérer la commande hey",
 		cliCommandLocation: "Commande de bureau\xA0: {path}",
-		cliCommandSelected: "Commande uma actuelle\xA0: {path}",
+		cliCommandSelected: "Commande hey actuelle\xA0: {path}",
 		cliCommandTarget: "Cible actuelle du lanceur\xA0: {path}",
-		cliCommandShadowed: "Un autre uma est prioritaire. Supprimez ou réorganisez cette installation pour utiliser la commande Bureau par défaut. Vous pouvez également exécuter la commande UMA Studio par son chemin complet.",
-		cliCommandSelectionUnknown: "Votre commande shell n'a pas pu être vérifiée. Un alias ou une autre installation uma peut être prioritaire.",
+		cliCommandShadowed: "Un autre hey est prioritaire. Supprimez ou réorganisez cette installation pour utiliser la commande Bureau par défaut. Vous pouvez également exécuter la commande HeyWork par son chemin complet.",
+		cliCommandSelectionUnknown: "Votre commande shell n'a pas pu être vérifiée. Un alias ou une autre installation hey peut être prioritaire.",
 		cliCommandInstalled: "La commande Bureau est installée.",
 		cliCommandNotInstalled: "Ajoutez la commande Bureau à votre terminal.",
 		cliCommandBroken: "La commande Bureau doit être réparée.",
@@ -2741,22 +2741,22 @@ const dictionaries = {
 		cliCommandSwitch: "Continuer avec la commande Bureau\xA0?",
 		cliCommandPreserve: "Une commande existante sera conservée. Les autres installations et fichiers de démarrage du shell ne seront pas modifiés.",
 		cliCommandContinue: "Continuer",
-		cliCommandInstallApp: "Installez UMA Studio dans votre dossier Applications avant de gérer la commande uma.",
+		cliCommandInstallApp: "Installez HeyWork dans votre dossier Applications avant de gérer la commande hey.",
 		cliCommandUpdating: "Une mise à jour est en cours d'installation. Gérez la commande une fois l'installation terminée.",
-		cliCommandNewTerminal: "Ouvrez un nouveau terminal et exécutez uma --version.",
+		cliCommandNewTerminal: "Ouvrez un nouveau terminal et exécutez hey --version.",
 		cliCommandRemoved: "Enregistrement des commandes de bureau supprimé.",
 		cliCommandPreviousRestored: "Le lanceur précédent a été restauré.",
 		cliCommandOtherKept: "D'autres installations de commandement ont été laissées en place.",
 		cliCommandBackupKept: "Un lanceur précédent est conservé à\xA0: {path}",
-		cliCommandChanged: "La commande ou PATH a changé pendant que cette boîte de dialogue était ouverte. Ouvrez à nouveau la commande Gérer uma pour vérifier l'état actuel.",
+		cliCommandChanged: "La commande ou PATH a changé pendant que cette boîte de dialogue était ouverte. Ouvrez à nouveau la commande Gérer hey pour vérifier l'état actuel.",
 		cliCommandOwnershipError: "L'enregistrement ou la sauvegarde de la commande a été modifiée. Aucune commande sans rapport n'a été supprimée.",
 		cliCommandFailed: "La commande n'a pas pu être mise à jour. Vérifiez que l'application est installée et que la destination est accessible en écriture, puis réessayez.",
 		application: "Application",
 		fileMenu: "Fichier",
 		closePage: "Fermer la page ou la fenêtre",
-		aboutMenu: "À propos de UMA Studio",
-		aboutProduct: "UMA Studio",
-		aboutDescription: "Un espace de programmation avec IA par UMA Studio.",
+		aboutMenu: "À propos de HeyWork",
+		aboutProduct: "HeyWork",
+		aboutDescription: "Un espace de programmation avec IA par HeyWork.",
 		aboutUpstream: "Basé sur le noyau open source DeepSeek Harness (DSH).",
 		aboutSource: "Code source du noyau",
 		aboutVersion: "Version du produit {version}",
@@ -2771,20 +2771,20 @@ const dictionaries = {
 		aboutModified: "Inclut des modifications locales",
 		aboutCopy: "Copier les informations de version",
 		aboutCopied: "Copié",
-		aboutWebsite: "Site UMA",
+		aboutWebsite: "Site HEY",
 		aboutLicense: "Licences open source",
 		aboutFullLicense: "Voir la licence complète",
-		hideApplication: "Masquer UMA Studio",
+		hideApplication: "Masquer HeyWork",
 		hideOtherApplications: "Masquer les autres",
 		showAllApplications: "Afficher tout",
 		substitutionsMenu: "Substitutions",
 		speechMenu: "Parole",
-		quitApplication: "Quitter UMA Studio",
-		openApplication: "Ouvrir UMA Studio",
+		quitApplication: "Quitter HeyWork",
+		openApplication: "Ouvrir HeyWork",
 		trayRunning: "En cours",
 		trayRecent: "Conversations récentes",
 		trayMore: "Plus",
-		trayTeamWorking: "L’équipe UMA travaille",
+		trayTeamWorking: "L’équipe HEY travaille",
 		trayRoleWorking: "{roles} en cours",
 		trayRoles: {
 			pm: "Chef de produit",
@@ -2801,7 +2801,7 @@ const dictionaries = {
 		trayUntitled: "Conversation sans titre",
 		quit: "Quitter",
 		cancel: "Annuler",
-		quitTitle: "Quitter UMA Studio\xA0?",
+		quitTitle: "Quitter HeyWork\xA0?",
 		quitActiveTasks: "Les tâches en cours seront interrompues.",
 		quitScheduledTasks: "Les tâches planifiées ne s'exécuteront pas lorsque l'application est fermée.",
 		quitActiveAndScheduledTasks: "Les tâches en cours d'exécution seront interrompues et les tâches planifiées ne s'exécuteront pas tant que l'application sera fermée.",
@@ -2816,7 +2816,7 @@ const dictionaries = {
 		copy: "Copier",
 		paste: "Coller",
 		selectAll: "Sélectionner tout",
-		startupFailed: "UMA Studio n'est pas disponible",
+		startupFailed: "HeyWork n'est pas disponible",
 		fatalSummary: "L'application n'a pas pu démarrer ou s'est arrêtée de manière inattendue.",
 		startupAddressInUse: "Le port de l’application est utilisé. Fermez le processus qui l’utilise, puis réessayez.",
 		diagnosticTruncated: "… Détails de l’erreur raccourcis.",
@@ -2831,20 +2831,20 @@ const dictionaries = {
 		restartApplication: "Redémarrer",
 		recoveryOperationFailed: "L'opération de récupération a échoué",
 		disableThirdPartyPlugins: "Désactivez les plugins tiers, sauvegardez le correctif de profil et redémarrez",
-		welcomeTitle: "UMA Studio",
-		welcomeBrand: "UMA Studio",
+		welcomeTitle: "HeyWork",
+		welcomeBrand: "HeyWork",
 		welcomeIntroTitle: "Créez de bons logiciels plus vite",
 		welcomeIntroDescription: "Ouvrez un espace de travail local et décrivez le résultat. Uma mobilise les outils nécessaires dans une conversation.",
 		welcomeIntroDesign: "Explorer un design",
 		welcomeIntroCode: "Développer dans votre projet",
 		welcomeIntroDeliver: "Vérifier et livrer",
 		welcomeModelsTitle: "Choisissez vos modèles",
-		welcomeHostedModels: "Modèles hébergés par UMA",
+		welcomeHostedModels: "Modèles hébergés par HEY",
 		welcomeHostedDescription: "Connectez-vous et payez le tarif publié avec le solde de votre compte.",
 		welcomeCustomModels: "Modèles personnalisés",
 		welcomeCustomDescription: "Connectez votre fournisseur et votre clé dans les réglages. Le fournisseur facture les appels.",
-		welcomeLoginTitle: "Connectez-vous à UMA Studio",
-		welcomeLoginDescription: "Utilisez votre compte UMA pour accéder aux modèles et gérer votre solde.",
+		welcomeLoginTitle: "Connectez-vous à HeyWork",
+		welcomeLoginDescription: "Utilisez votre compte HEY pour accéder aux modèles et gérer votre solde.",
 		welcomeNext: "Suivant",
 		welcomePrevious: "Retour",
 		welcomeSkipSignIn: "Se connecter plus tard",
@@ -2863,7 +2863,7 @@ const dictionaries = {
 		welcomeSignIn: "Connectez-vous",
 		welcomeApiKey: "Ajouter une clé API",
 		welcomeKeyTitle: "Ajoutez une clé API pour commencer",
-		welcomeKeyDescription: "Configurez les modèles DeepSeek officiels pour commencer à utiliser UMA Studio",
+		welcomeKeyDescription: "Configurez les modèles DeepSeek officiels pour commencer à utiliser HeyWork",
 		welcomeKeyPlaceholder: "Entrez la clé API",
 		welcomeKeySave: "Enregistrer et continuer",
 		welcomeKeyLater: "Configurer plus tard",
@@ -2918,11 +2918,11 @@ const dictionaries = {
 		updateStopTasks: "Arrêter les tâches et mettre à jour",
 		updateTasksChanged: "De nouvelles tâches ont commencé. Confirmez à nouveau pour arrêter les tâches et mettre à jour.",
 		updateTasksUnavailable: "L'état de la tâche n'est pas disponible. Essayez à nouveau de mettre à jour lorsque l'espace de travail est prêt.",
-		updateInstallLocation: "Déplacez UMA Studio dans le dossier Applications, rouvrez-le et réessayez.",
+		updateInstallLocation: "Déplacez HeyWork dans le dossier Applications, rouvrez-le et réessayez.",
 		updateFullscreenTimeout: "Impossible de quitter le mode plein écran. Quittez le mode plein écran, puis réessayez la mise à jour.",
 		updateStopFailed: "Impossible d'arrêter les tâches en toute sécurité. La mise à jour n'a pas été installée. Veuillez réessayer plus tard.",
 		updateTechnicalDetails: "Voir les détails techniques",
-		updateTitle: "Mise à jour UMA Studio",
+		updateTitle: "Mise à jour HeyWork",
 		updateAvailable: "Nouvelle version disponible : {version}",
 		updateDetail: "Une fois le téléchargement terminé, vous pouvez installer la mise à jour et redémarrer l'application.",
 		installAndRestart: "Installer et redémarrer",
@@ -2962,46 +2962,46 @@ const dictionaries = {
 		mandatoryNotification: "Revenez à l'application pour confirmer l'installation et redémarrer."
 	},
 	de: {
-		updateDevelopmentUnavailable: "Dieser Entwicklungsbuild unterstützt keine In-App-Updates. Verwenden Sie ein veröffentlichtes UMA Studio-Installationspaket.",
-		cliCommandMenu: "uma-Befehl verwalten…",
+		updateDevelopmentUnavailable: "Dieser Entwicklungsbuild unterstützt keine In-App-Updates. Verwenden Sie ein veröffentlichtes HeyWork-Installationspaket.",
+		cliCommandMenu: "hey-Befehl verwalten…",
 		macPermissionsMenu: "macOS-Berechtigungen",
-		operationsMenu: "UMA-Betrieb",
+		operationsMenu: "HEY-Betrieb",
 		macMicrophonePermission: "Mikrofon",
 		macAccessibilityPermission: "Bedienungshilfen",
 		macScreenRecordingPermission: "Bildschirm- und Systemaudioaufnahme",
 		macPermissionSettingsUnavailable: "Öffne die Systemeinstellungen und dann Datenschutz & Sicherheit, um diese Berechtigung zu verwalten.",
-		cliCommandTitle: "uma-Befehl verwalten",
-		cliCommandLocation: "UMA Studio-Befehl: {path}",
-		cliCommandSelected: "Aktueller uma-Befehl: {path}",
+		cliCommandTitle: "hey-Befehl verwalten",
+		cliCommandLocation: "HeyWork-Befehl: {path}",
+		cliCommandSelected: "Aktueller hey-Befehl: {path}",
 		cliCommandTarget: "Aktuelles Launcher-Ziel: {path}",
-		cliCommandShadowed: "Ein anderer uma hat Vorrang. Entfernen Sie diese Installation oder ordnen Sie sie neu an, um standardmäßig den UMA Studio-Befehl zu verwenden. Sie können den UMA Studio-Befehl auch über seinen vollständigen Pfad ausführen.",
-		cliCommandSelectionUnknown: "Ihr Shell-Befehl konnte nicht überprüft werden. Ein Alias oder eine andere uma-Installation kann Vorrang haben.",
-		cliCommandInstalled: "Der UMA Studio-Befehl ist installiert.",
-		cliCommandNotInstalled: "Fügen Sie den UMA Studio-Befehl zu Ihrem Terminal hinzu.",
-		cliCommandBroken: "Der UMA Studio-Befehl muss repariert werden.",
+		cliCommandShadowed: "Ein anderer hey hat Vorrang. Entfernen Sie diese Installation oder ordnen Sie sie neu an, um standardmäßig den HeyWork-Befehl zu verwenden. Sie können den HeyWork-Befehl auch über seinen vollständigen Pfad ausführen.",
+		cliCommandSelectionUnknown: "Ihr Shell-Befehl konnte nicht überprüft werden. Ein Alias oder eine andere hey-Installation kann Vorrang haben.",
+		cliCommandInstalled: "Der HeyWork-Befehl ist installiert.",
+		cliCommandNotInstalled: "Fügen Sie den HeyWork-Befehl zu Ihrem Terminal hinzu.",
+		cliCommandBroken: "Der HeyWork-Befehl muss repariert werden.",
 		cliCommandInstall: "Installieren",
 		cliCommandRepair: "Reparieren",
 		cliCommandRemove: "Entfernen",
 		cliCommandClose: "Schließen",
-		cliCommandSwitch: "Mit dem UMA Studio-Befehl fortfahren?",
+		cliCommandSwitch: "Mit dem HeyWork-Befehl fortfahren?",
 		cliCommandPreserve: "Ein vorhandener Befehl bleibt erhalten. Andere Installationen und Shell-Startdateien werden nicht geändert.",
 		cliCommandContinue: "Weiter",
-		cliCommandInstallApp: "Installieren Sie UMA Studio in Ihrem Anwendungsordner, bevor Sie den Befehl uma verwalten.",
+		cliCommandInstallApp: "Installieren Sie HeyWork in Ihrem Anwendungsordner, bevor Sie den Befehl hey verwalten.",
 		cliCommandUpdating: "Ein Update wird installiert. Verwalten Sie den Befehl nach Abschluss der Installation.",
-		cliCommandNewTerminal: "Öffnen Sie ein neues Terminal und führen Sie uma --version aus.",
-		cliCommandRemoved: "UMA Studio-Befehlsregistrierung entfernt.",
+		cliCommandNewTerminal: "Öffnen Sie ein neues Terminal und führen Sie hey --version aus.",
+		cliCommandRemoved: "HeyWork-Befehlsregistrierung entfernt.",
 		cliCommandPreviousRestored: "Der vorherige Launcher wurde wiederhergestellt.",
 		cliCommandOtherKept: "Andere Befehlsinstallationen wurden beibehalten.",
 		cliCommandBackupKept: "Ein früherer Launcher ist unter folgender Adresse erhalten: {path}",
-		cliCommandChanged: "Der Befehl oder PATH hat sich geändert, während dieses Dialogfeld geöffnet war. Öffnen Sie den Befehl „uma verwalten“ erneut, um den aktuellen Status zu überprüfen.",
+		cliCommandChanged: "Der Befehl oder PATH hat sich geändert, während dieses Dialogfeld geöffnet war. Öffnen Sie den Befehl „hey verwalten“ erneut, um den aktuellen Status zu überprüfen.",
 		cliCommandOwnershipError: "Die Befehlsregistrierung oder Sicherung wurde geändert. Es wurde kein nicht verwandter Befehl entfernt.",
 		cliCommandFailed: "Der Befehl konnte nicht aktualisiert werden. Überprüfen Sie, ob die Anwendung installiert ist und das Ziel beschreibbar ist, und versuchen Sie es dann erneut.",
 		application: "Anwendung",
 		fileMenu: "Datei",
 		closePage: "Seite oder Fenster schließen",
-		aboutMenu: "Über UMA Studio",
-		aboutProduct: "UMA Studio",
-		aboutDescription: "Ein KI-Programmierarbeitsplatz von UMA Studio.",
+		aboutMenu: "Über HeyWork",
+		aboutProduct: "HeyWork",
+		aboutDescription: "Ein KI-Programmierarbeitsplatz von HeyWork.",
 		aboutUpstream: "Basiert auf dem Open-Source-Kern DeepSeek Harness (DSH).",
 		aboutSource: "Kernel-Quellcode",
 		aboutVersion: "Produktversion {version}",
@@ -3016,20 +3016,20 @@ const dictionaries = {
 		aboutModified: "Enthält lokale Änderungen",
 		aboutCopy: "Versionsinformationen kopieren",
 		aboutCopied: "Kopiert",
-		aboutWebsite: "UMA-Website",
+		aboutWebsite: "HEY-Website",
 		aboutLicense: "Open-Source-Lizenzen",
 		aboutFullLicense: "Vollständige Lizenz ansehen",
-		hideApplication: "UMA Studio ausblenden",
+		hideApplication: "HeyWork ausblenden",
 		hideOtherApplications: "Andere ausblenden",
 		showAllApplications: "Alle einblenden",
 		substitutionsMenu: "Ersetzungen",
 		speechMenu: "Sprachausgabe",
-		quitApplication: "UMA Studio beenden",
-		openApplication: "UMA Studio öffnen",
+		quitApplication: "HeyWork beenden",
+		openApplication: "HeyWork öffnen",
 		trayRunning: "Läuft",
 		trayRecent: "Letzte Unterhaltungen",
 		trayMore: "Mehr",
-		trayTeamWorking: "Das UMA-Entwicklungsteam arbeitet",
+		trayTeamWorking: "Das HEY-Entwicklungsteam arbeitet",
 		trayRoleWorking: "{roles} in Arbeit",
 		trayRoles: {
 			pm: "Produktmanagement",
@@ -3046,7 +3046,7 @@ const dictionaries = {
 		trayUntitled: "Unbenannte Unterhaltung",
 		quit: "Beenden",
 		cancel: "Abbrechen",
-		quitTitle: "UMA Studio beenden?",
+		quitTitle: "HeyWork beenden?",
 		quitActiveTasks: "Laufende Aufgaben werden unterbrochen.",
 		quitScheduledTasks: "Geplante Aufgaben werden nicht ausgeführt, während die App geschlossen ist.",
 		quitActiveAndScheduledTasks: "Laufende Aufgaben werden unterbrochen und geplante Aufgaben werden nicht ausgeführt, während die App geschlossen ist.",
@@ -3061,7 +3061,7 @@ const dictionaries = {
 		copy: "Kopieren",
 		paste: "Einfügen",
 		selectAll: "Alles auswählen",
-		startupFailed: "UMA Studio ist nicht verfügbar",
+		startupFailed: "HeyWork ist nicht verfügbar",
 		fatalSummary: "Die Anwendung konnte nicht gestartet werden oder wurde unerwartet gestoppt.",
 		startupAddressInUse: "Der Anwendungsport wird bereits verwendet. Beenden Sie den zugehörigen Prozess und versuchen Sie es erneut.",
 		diagnosticTruncated: "… Fehlerdetails gekürzt.",
@@ -3076,20 +3076,20 @@ const dictionaries = {
 		restartApplication: "Neustart",
 		recoveryOperationFailed: "Der Wiederherstellungsvorgang ist fehlgeschlagen",
 		disableThirdPartyPlugins: "Deaktivieren Sie Plugins von Drittanbietern, sichern Sie den Profil-Patch und starten Sie neu",
-		welcomeTitle: "UMA Studio",
-		welcomeBrand: "UMA Studio",
+		welcomeTitle: "HeyWork",
+		welcomeBrand: "HeyWork",
 		welcomeIntroTitle: "Gute Software schneller entwickeln",
 		welcomeIntroDescription: "Öffne einen lokalen Arbeitsbereich und beschreibe dein Ziel. Uma nutzt die passenden Werkzeuge im selben Gespräch.",
 		welcomeIntroDesign: "Design erkunden",
 		welcomeIntroCode: "Im Projekt entwickeln",
 		welcomeIntroDeliver: "Prüfen und ausliefern",
 		welcomeModelsTitle: "So kannst du Modelle nutzen",
-		welcomeHostedModels: "Von UMA gehostete Modelle",
+		welcomeHostedModels: "Von HEY gehostete Modelle",
 		welcomeHostedDescription: "Melde dich an und bezahle die veröffentlichten Preise aus deinem Guthaben.",
 		welcomeCustomModels: "Eigene Modelle",
 		welcomeCustomDescription: "Verbinde Anbieter und Schlüssel in den Einstellungen. Dein Anbieter rechnet die Nutzung ab.",
-		welcomeLoginTitle: "Bei UMA Studio anmelden",
-		welcomeLoginDescription: "Nutze dein UMA-Konto für gehostete Modelle und zur Verwaltung deines Guthabens.",
+		welcomeLoginTitle: "Bei HeyWork anmelden",
+		welcomeLoginDescription: "Nutze dein HEY-Konto für gehostete Modelle und zur Verwaltung deines Guthabens.",
 		welcomeNext: "Weiter",
 		welcomePrevious: "Zurück",
 		welcomeSkipSignIn: "Später anmelden",
@@ -3108,7 +3108,7 @@ const dictionaries = {
 		welcomeSignIn: "Anmelden",
 		welcomeApiKey: "API-Schlüssel hinzufügen",
 		welcomeKeyTitle: "Fügen Sie einen API-Schlüssel hinzu, um loszulegen",
-		welcomeKeyDescription: "Konfigurieren Sie offizielle DeepSeek-Modelle für die Verwendung von UMA Studio",
+		welcomeKeyDescription: "Konfigurieren Sie offizielle DeepSeek-Modelle für die Verwendung von HeyWork",
 		welcomeKeyPlaceholder: "API-Schlüssel eingeben",
 		welcomeKeySave: "Speichern und fortfahren",
 		welcomeKeyLater: "Später einrichten",
@@ -3163,11 +3163,11 @@ const dictionaries = {
 		updateStopTasks: "Aufgaben beenden und Update installieren",
 		updateTasksChanged: "Neue Aufgaben haben begonnen. Bestätigen Sie erneut, um die Aufgaben zu stoppen und zu aktualisieren.",
 		updateTasksUnavailable: "Der Aufgabenstatus ist nicht verfügbar. Versuchen Sie erneut, die Aktualisierung durchzuführen, wenn der Arbeitsbereich bereit ist.",
-		updateInstallLocation: "Verschieben Sie UMA Studio in den Ordner „Programme“, öffnen Sie es erneut und versuchen Sie es noch einmal.",
+		updateInstallLocation: "Verschieben Sie HeyWork in den Ordner „Programme“, öffnen Sie es erneut und versuchen Sie es noch einmal.",
 		updateFullscreenTimeout: "Der Vollbildmodus konnte nicht beendet werden. Beenden Sie den Vollbildmodus und versuchen Sie dann erneut, das Update durchzuführen.",
 		updateStopFailed: "Die Aufgaben konnten nicht sicher gestoppt werden. Das Update wurde nicht installiert. Bitte versuchen Sie es später noch einmal.",
 		updateTechnicalDetails: "Technische Details anzeigen",
-		updateTitle: "UMA Studio-Update",
+		updateTitle: "HeyWork-Update",
 		updateAvailable: "Neue Version verfügbar: {version}",
 		updateDetail: "Sobald der Download abgeschlossen ist, können Sie das Update installieren und die App neu starten.",
 		installAndRestart: "Installieren und neu starten",
@@ -3207,46 +3207,46 @@ const dictionaries = {
 		mandatoryNotification: "Kehren Sie zur Anwendung zurück, um die Installation zu bestätigen und neu zu starten."
 	},
 	ru: {
-		updateDevelopmentUnavailable: "Эта сборка для разработки не поддерживает обновления в приложении. Используйте опубликованный установщик UMA Studio.",
-		cliCommandMenu: "Управление командой uma…",
+		updateDevelopmentUnavailable: "Эта сборка для разработки не поддерживает обновления в приложении. Используйте опубликованный установщик HeyWork.",
+		cliCommandMenu: "Управление командой hey…",
 		macPermissionsMenu: "Разрешения macOS",
-		operationsMenu: "Управление UMA",
+		operationsMenu: "Управление HEY",
 		macMicrophonePermission: "Микрофон",
 		macAccessibilityPermission: "Универсальный доступ",
 		macScreenRecordingPermission: "Запись экрана и системного аудио",
 		macPermissionSettingsUnavailable: "Откройте «Системные настройки», затем «Конфиденциальность и безопасность», чтобы изменить разрешение.",
-		cliCommandTitle: "Управление командой uma",
-		cliCommandLocation: "Команда UMA Studio: {path}",
-		cliCommandSelected: "Текущая команда uma: {path}.",
+		cliCommandTitle: "Управление командой hey",
+		cliCommandLocation: "Команда HeyWork: {path}",
+		cliCommandSelected: "Текущая команда hey: {path}.",
 		cliCommandTarget: "Текущая цель лаунчера: {path}",
-		cliCommandShadowed: "Другой uma имеет приоритет. Удалите или измените порядок установки, чтобы использовать команду «UMA Studio» по умолчанию. Вы также можете запустить команду «UMA Studio» по ее полному пути.",
-		cliCommandSelectionUnknown: "Не удалось проверить вашу команду оболочки. Псевдоним или другая установка uma может иметь приоритет.",
-		cliCommandInstalled: "Команда «UMA Studio» установлена.",
-		cliCommandNotInstalled: "Добавьте команду «UMA Studio» в свой терминал.",
-		cliCommandBroken: "Команда UMA Studio требует ремонта.",
+		cliCommandShadowed: "Другой hey имеет приоритет. Удалите или измените порядок установки, чтобы использовать команду «HeyWork» по умолчанию. Вы также можете запустить команду «HeyWork» по ее полному пути.",
+		cliCommandSelectionUnknown: "Не удалось проверить вашу команду оболочки. Псевдоним или другая установка hey может иметь приоритет.",
+		cliCommandInstalled: "Команда «HeyWork» установлена.",
+		cliCommandNotInstalled: "Добавьте команду «HeyWork» в свой терминал.",
+		cliCommandBroken: "Команда HeyWork требует ремонта.",
 		cliCommandInstall: "Установить",
 		cliCommandRepair: "Исправить",
 		cliCommandRemove: "Удалить",
 		cliCommandClose: "Закрыть",
-		cliCommandSwitch: "Продолжить команду «UMA Studio»?",
+		cliCommandSwitch: "Продолжить команду «HeyWork»?",
 		cliCommandPreserve: "Существующая команда будет сохранена. Другие установки и файлы запуска оболочки не будут изменены.",
 		cliCommandContinue: "Продолжить",
-		cliCommandInstallApp: "Установите UMA Studio в папку «Приложения», прежде чем управлять командой uma.",
+		cliCommandInstallApp: "Установите HeyWork в папку «Приложения», прежде чем управлять командой hey.",
 		cliCommandUpdating: "Идет установка обновления. Управляйте командой после завершения установки.",
-		cliCommandNewTerminal: "Откройте новый терминал и запустите uma --version.",
-		cliCommandRemoved: "Регистрация команд UMA Studio удалена.",
+		cliCommandNewTerminal: "Откройте новый терминал и запустите hey --version.",
+		cliCommandRemoved: "Регистрация команд HeyWork удалена.",
 		cliCommandPreviousRestored: "Предыдущий лаунчер восстановлен.",
 		cliCommandOtherKept: "Остальные командные установки остались на месте.",
 		cliCommandBackupKept: "Предыдущий лаунчер сохранился по адресу: {path}.",
-		cliCommandChanged: "Команда или PATH изменилась, пока это диалоговое окно было открыто. Откройте команду «Управление uma» еще раз, чтобы просмотреть текущее состояние.",
+		cliCommandChanged: "Команда или PATH изменилась, пока это диалоговое окно было открыто. Откройте команду «Управление hey» еще раз, чтобы просмотреть текущее состояние.",
 		cliCommandOwnershipError: "Регистрация команд или резервное копирование изменены. Ни одна несвязанная команда не была удалена.",
 		cliCommandFailed: "Не удалось обновить команду. Убедитесь, что приложение установлено и место назначения доступно для записи, затем повторите попытку.",
 		application: "Приложение",
 		fileMenu: "Файл",
 		closePage: "Закрыть страницу или окно",
-		aboutMenu: "О UMA Studio",
-		aboutProduct: "UMA Studio",
-		aboutDescription: "Рабочая среда для программирования с ИИ от UMA Studio.",
+		aboutMenu: "О HeyWork",
+		aboutProduct: "HeyWork",
+		aboutDescription: "Рабочая среда для программирования с ИИ от HeyWork.",
 		aboutUpstream: "На основе открытого ядра DeepSeek Harness (DSH).",
 		aboutSource: "Исходный код ядра",
 		aboutVersion: "Версия продукта {version}",
@@ -3261,20 +3261,20 @@ const dictionaries = {
 		aboutModified: "Содержит локальные изменения",
 		aboutCopy: "Копировать сведения о версии",
 		aboutCopied: "Скопировано",
-		aboutWebsite: "Сайт UMA",
+		aboutWebsite: "Сайт HEY",
 		aboutLicense: "Лицензии открытого ПО",
 		aboutFullLicense: "Посмотреть полный текст лицензии",
-		hideApplication: "Скрыть UMA Studio",
+		hideApplication: "Скрыть HeyWork",
 		hideOtherApplications: "Скрыть других",
 		showAllApplications: "Показать все",
 		substitutionsMenu: "Замены",
 		speechMenu: "Речь",
-		quitApplication: "Выйти из UMA Studio",
-		openApplication: "Открыть UMA Studio",
+		quitApplication: "Выйти из HeyWork",
+		openApplication: "Открыть HeyWork",
 		trayRunning: "Выполняется",
 		trayRecent: "Недавние беседы",
 		trayMore: "Ещё",
-		trayTeamWorking: "Команда UMA работает",
+		trayTeamWorking: "Команда HEY работает",
 		trayRoleWorking: "{roles} в работе",
 		trayRoles: {
 			pm: "Менеджер продукта",
@@ -3291,7 +3291,7 @@ const dictionaries = {
 		trayUntitled: "Беседа без названия",
 		quit: "Выйти",
 		cancel: "Отмена",
-		quitTitle: "Выйти из UMA Studio?",
+		quitTitle: "Выйти из HeyWork?",
 		quitActiveTasks: "Выполнение задач будет прервано.",
 		quitScheduledTasks: "Запланированные задачи не будут выполняться, пока приложение закрыто.",
 		quitActiveAndScheduledTasks: "Выполнение задач будет прервано, а запланированные задачи не будут выполняться, пока приложение закрыто.",
@@ -3306,7 +3306,7 @@ const dictionaries = {
 		copy: "Копировать",
 		paste: "Вставить",
 		selectAll: "Выбрать все",
-		startupFailed: "UMA Studio недоступен.",
+		startupFailed: "HeyWork недоступен.",
 		fatalSummary: "Приложение не могло запуститься или неожиданно остановилось.",
 		startupAddressInUse: "Порт приложения занят. Закройте использующий его процесс и повторите попытку.",
 		diagnosticTruncated: "… Подробности об ошибках сокращены.",
@@ -3321,20 +3321,20 @@ const dictionaries = {
 		restartApplication: "Перезапустить",
 		recoveryOperationFailed: "Операция восстановления не удалась",
 		disableThirdPartyPlugins: "Отключите сторонние плагины, создайте резервную копию патча профиля и перезапустите.",
-		welcomeTitle: "UMA Studio",
-		welcomeBrand: "UMA Studio",
+		welcomeTitle: "HeyWork",
+		welcomeBrand: "HeyWork",
 		welcomeIntroTitle: "Создавайте качественное ПО быстрее",
 		welcomeIntroDescription: "Откройте локальную рабочую область и опишите результат. Uma подключит нужные инструменты в одном чате.",
 		welcomeIntroDesign: "Изучить дизайн",
 		welcomeIntroCode: "Разработать в проекте",
 		welcomeIntroDeliver: "Проверить и передать",
 		welcomeModelsTitle: "Как использовать модели",
-		welcomeHostedModels: "Модели UMA",
+		welcomeHostedModels: "Модели HEY",
 		welcomeHostedDescription: "Войдите в аккаунт. Оплата списывается с баланса по опубликованному тарифу.",
 		welcomeCustomModels: "Пользовательские модели",
 		welcomeCustomDescription: "Подключите провайдера и ключ в настройках. Использование оплачивается провайдеру.",
-		welcomeLoginTitle: "Вход в UMA Studio",
-		welcomeLoginDescription: "Войдите в UMA для доступа к моделям и управления балансом.",
+		welcomeLoginTitle: "Вход в HeyWork",
+		welcomeLoginDescription: "Войдите в HEY для доступа к моделям и управления балансом.",
 		welcomeNext: "Далее",
 		welcomePrevious: "Назад",
 		welcomeSkipSignIn: "Войти позже",
@@ -3353,7 +3353,7 @@ const dictionaries = {
 		welcomeSignIn: "Войти",
 		welcomeApiKey: "Добавить ключ API",
 		welcomeKeyTitle: "Добавьте ключ API, чтобы начать работу.",
-		welcomeKeyDescription: "Настройте официальные модели DeepSeek, чтобы начать использовать UMA Studio.",
+		welcomeKeyDescription: "Настройте официальные модели DeepSeek, чтобы начать использовать HeyWork.",
 		welcomeKeyPlaceholder: "Введите ключ API",
 		welcomeKeySave: "Сохранить и продолжить",
 		welcomeKeyLater: "Настроить позже",
@@ -3408,11 +3408,11 @@ const dictionaries = {
 		updateStopTasks: "Остановить задачи и обновить",
 		updateTasksChanged: "Начались новые задачи. Подтвердите еще раз, чтобы остановить выполнение задач и выполнить обновление.",
 		updateTasksUnavailable: "Статус задачи недоступен. Попробуйте обновить еще раз, когда рабочая область будет готова.",
-		updateInstallLocation: "Переместите UMA Studio в папку «Программы», откройте его снова и повторите попытку.",
+		updateInstallLocation: "Переместите HeyWork в папку «Программы», откройте его снова и повторите попытку.",
 		updateFullscreenTimeout: "Не удалось выйти из полноэкранного режима. Выйдите из полноэкранного режима и повторите попытку обновления.",
 		updateStopFailed: "Не удалось безопасно остановить задачи. Обновление не установлено. Пожалуйста, повторите попытку позже.",
 		updateTechnicalDetails: "Посмотреть технические подробности",
-		updateTitle: "UMA Studio Обновление",
+		updateTitle: "HeyWork Обновление",
 		updateAvailable: "Доступна новая версия: {version}.",
 		updateDetail: "После завершения загрузки вы можете установить обновление и перезапустить приложение.",
 		installAndRestart: "Установить и перезапустить",
@@ -3452,46 +3452,46 @@ const dictionaries = {
 		mandatoryNotification: "Вернитесь в приложение, чтобы подтвердить установку и перезапустить."
 	},
 	pt: {
-		updateDevelopmentUnavailable: "Esta versão de desenvolvimento não oferece atualizações no aplicativo. Use um instalador publicado do UMA Studio.",
-		cliCommandMenu: "Gerenciar comando uma…",
+		updateDevelopmentUnavailable: "Esta versão de desenvolvimento não oferece atualizações no aplicativo. Use um instalador publicado do HeyWork.",
+		cliCommandMenu: "Gerenciar comando hey…",
 		macPermissionsMenu: "Permissões do macOS",
-		operationsMenu: "Operações UMA",
+		operationsMenu: "Operações HEY",
 		macMicrophonePermission: "Microfone",
 		macAccessibilityPermission: "Acessibilidade",
 		macScreenRecordingPermission: "Gravação da tela e do áudio do sistema",
 		macPermissionSettingsUnavailable: "Abra Ajustes do Sistema e depois Privacidade e Segurança para gerenciar esta permissão.",
-		cliCommandTitle: "Gerenciar comando uma",
+		cliCommandTitle: "Gerenciar comando hey",
 		cliCommandLocation: "Comando da área de trabalho: {path}",
-		cliCommandSelected: "Comando uma atual: {path}",
+		cliCommandSelected: "Comando hey atual: {path}",
 		cliCommandTarget: "Alvo atual do iniciador: {path}",
-		cliCommandShadowed: "Outro uma tem precedência. Remova ou reordene essa instalação para usar o comando UMA Studio por padrão. Você também pode executar o comando UMA Studio pelo caminho completo.",
-		cliCommandSelectionUnknown: "Seu comando shell não pôde ser verificado. Um alias ou outra instalação do uma pode ter precedência.",
-		cliCommandInstalled: "O comando UMA Studio está instalado.",
-		cliCommandNotInstalled: "Adicione o comando UMA Studio ao seu terminal.",
-		cliCommandBroken: "O comando UMA Studio precisa de reparo.",
+		cliCommandShadowed: "Outro hey tem precedência. Remova ou reordene essa instalação para usar o comando HeyWork por padrão. Você também pode executar o comando HeyWork pelo caminho completo.",
+		cliCommandSelectionUnknown: "Seu comando shell não pôde ser verificado. Um alias ou outra instalação do hey pode ter precedência.",
+		cliCommandInstalled: "O comando HeyWork está instalado.",
+		cliCommandNotInstalled: "Adicione o comando HeyWork ao seu terminal.",
+		cliCommandBroken: "O comando HeyWork precisa de reparo.",
 		cliCommandInstall: "Instalar",
 		cliCommandRepair: "Reparar",
 		cliCommandRemove: "Remover",
 		cliCommandClose: "Fechar",
-		cliCommandSwitch: "Continuar com o comando UMA Studio?",
+		cliCommandSwitch: "Continuar com o comando HeyWork?",
 		cliCommandPreserve: "Um comando existente será preservado. Outras instalações e arquivos de inicialização do shell não serão alterados.",
 		cliCommandContinue: "Continuar",
-		cliCommandInstallApp: "Instale o UMA Studio na pasta Aplicativos antes de gerenciar o comando uma.",
+		cliCommandInstallApp: "Instale o HeyWork na pasta Aplicativos antes de gerenciar o comando hey.",
 		cliCommandUpdating: "Uma atualização está sendo instalada. Gerencie o comando após a conclusão da instalação.",
-		cliCommandNewTerminal: "Abra um novo terminal e execute uma --version.",
+		cliCommandNewTerminal: "Abra um novo terminal e execute hey --version.",
 		cliCommandRemoved: "Registro de comando da área de trabalho removido.",
 		cliCommandPreviousRestored: "O inicializador anterior foi restaurado.",
 		cliCommandOtherKept: "Outras instalações de comando foram mantidas.",
 		cliCommandBackupKept: "Um inicializador anterior é preservado em: {path}",
-		cliCommandChanged: "O comando ou PATH foi alterado enquanto esta caixa de diálogo estava aberta. Abra o comando Gerenciar uma novamente para revisar o estado atual.",
+		cliCommandChanged: "O comando ou PATH foi alterado enquanto esta caixa de diálogo estava aberta. Abra o comando Gerenciar hey novamente para revisar o estado atual.",
 		cliCommandOwnershipError: "O registro ou backup do comando foi alterado. Nenhum comando não relacionado foi removido.",
 		cliCommandFailed: "O comando não pôde ser atualizado. Verifique se o aplicativo está instalado e se o destino é gravável e tente novamente.",
 		application: "Aplicativo",
 		fileMenu: "Arquivo",
 		closePage: "Fechar página ou janela",
-		aboutMenu: "Sobre UMA Studio",
-		aboutProduct: "UMA Studio",
-		aboutDescription: "Um espaço de programação com IA da UMA Studio.",
+		aboutMenu: "Sobre HeyWork",
+		aboutProduct: "HeyWork",
+		aboutDescription: "Um espaço de programação com IA da HeyWork.",
 		aboutUpstream: "Baseado no núcleo de código aberto DeepSeek Harness (DSH).",
 		aboutSource: "Código do núcleo",
 		aboutVersion: "Versão do produto {version}",
@@ -3506,20 +3506,20 @@ const dictionaries = {
 		aboutModified: "Inclui alterações locais",
 		aboutCopy: "Copiar informações da versão",
 		aboutCopied: "Copiado",
-		aboutWebsite: "Site UMA",
+		aboutWebsite: "Site HEY",
 		aboutLicense: "Licenças de código aberto",
 		aboutFullLicense: "Ver licença completa",
-		hideApplication: "Ocultar UMA Studio",
+		hideApplication: "Ocultar HeyWork",
 		hideOtherApplications: "Ocultar outros",
 		showAllApplications: "Mostrar tudo",
 		substitutionsMenu: "Substituições",
 		speechMenu: "Fala",
-		quitApplication: "Sair de UMA Studio",
-		openApplication: "Abra UMA Studio",
+		quitApplication: "Sair de HeyWork",
+		openApplication: "Abra HeyWork",
 		trayRunning: "Em execução",
 		trayRecent: "Conversas recentes",
 		trayMore: "Mais",
-		trayTeamWorking: "A equipe UMA está trabalhando",
+		trayTeamWorking: "A equipe HEY está trabalhando",
 		trayRoleWorking: "{roles} em atividade",
 		trayRoles: {
 			pm: "Gerente de produto",
@@ -3536,7 +3536,7 @@ const dictionaries = {
 		trayUntitled: "Conversa sem título",
 		quit: "Sair",
 		cancel: "Cancelar",
-		quitTitle: "Sair de UMA Studio?",
+		quitTitle: "Sair de HeyWork?",
 		quitActiveTasks: "As tarefas em execução serão interrompidas.",
 		quitScheduledTasks: "As tarefas agendadas não serão executadas enquanto o aplicativo estiver fechado.",
 		quitActiveAndScheduledTasks: "As tarefas em execução serão interrompidas e as tarefas agendadas não serão executadas enquanto o aplicativo estiver fechado.",
@@ -3551,14 +3551,14 @@ const dictionaries = {
 		copy: "Copiar",
 		paste: "Colar",
 		selectAll: "Selecionar tudo",
-		startupFailed: "UMA Studio não está disponível",
+		startupFailed: "HeyWork não está disponível",
 		fatalSummary: "O aplicativo não pôde ser iniciado ou parou inesperadamente.",
 		startupAddressInUse: "A porta do aplicativo está em uso. Feche o processo que a utiliza e tente novamente.",
 		diagnosticTruncated: "… Detalhes do erro reduzidos.",
 		reportWrittenTo: "Relatório de diagnóstico: {path}",
 		getDiagnosticReport: "Obter relatório de diagnóstico",
 		reportPending: "O relatório de diagnóstico ainda está sendo salvo. Selecione Obter relatório de diagnóstico para verificar novamente.",
-		reportUnavailable: "Não foi possível salvar o relatório de diagnóstico. Você pode fornecer uma captura de tela desta caixa de diálogo ao solicitar suporte.",
+		reportUnavailable: "Não foi possível salvar o relatório de diagnóstico. Você pode fornecer hey captura de tela desta caixa de diálogo ao solicitar suporte.",
 		reportShareHint: "O local do relatório foi aberto. Anexe o arquivo selecionado à sua solicitação de suporte.",
 		reportRevealFailed: "Não foi possível abrir o local do relatório. Use o caminho abaixo para encontrar o arquivo.",
 		startupReinstallAdvice: "Se os arquivos do aplicativo estiverem ausentes ou danificados, feche o aplicativo e reinstale-o. Suas tarefas são armazenadas separadamente.",
@@ -3566,20 +3566,20 @@ const dictionaries = {
 		restartApplication: "Reiniciar",
 		recoveryOperationFailed: "A operação de recuperação falhou",
 		disableThirdPartyPlugins: "Desative plug-ins de terceiros, faça backup do patch do perfil e reinicie",
-		welcomeTitle: "UMA Studio",
-		welcomeBrand: "UMA Studio",
+		welcomeTitle: "HeyWork",
+		welcomeBrand: "HeyWork",
 		welcomeIntroTitle: "Crie bons softwares mais rápido",
 		welcomeIntroDescription: "Abra um espaço de trabalho local e descreva o resultado. Uma usa as ferramentas necessárias na mesma conversa.",
 		welcomeIntroDesign: "Explorar um design",
 		welcomeIntroCode: "Desenvolver no projeto",
 		welcomeIntroDeliver: "Verificar e entregar",
 		welcomeModelsTitle: "Escolha como usar modelos",
-		welcomeHostedModels: "Modelos hospedados pela UMA",
+		welcomeHostedModels: "Modelos hospedados pela HEY",
 		welcomeHostedDescription: "Entre na conta e pague as tarifas publicadas usando seu saldo.",
 		welcomeCustomModels: "Modelos personalizados",
 		welcomeCustomDescription: "Conecte seu provedor e sua chave nos ajustes. A cobrança é feita pelo provedor.",
-		welcomeLoginTitle: "Entre no UMA Studio",
-		welcomeLoginDescription: "Use sua conta UMA para acessar os modelos e gerenciar seu saldo.",
+		welcomeLoginTitle: "Entre no HeyWork",
+		welcomeLoginDescription: "Use sua conta HEY para acessar os modelos e gerenciar seu saldo.",
 		welcomeNext: "Avançar",
 		welcomePrevious: "Voltar",
 		welcomeSkipSignIn: "Entrar mais tarde",
@@ -3597,14 +3597,14 @@ const dictionaries = {
 		welcomeAuthRetry: "Faça login novamente",
 		welcomeSignIn: "Faça login",
 		welcomeApiKey: "Adicionar chave API",
-		welcomeKeyTitle: "Adicione uma chave API para começar",
-		welcomeKeyDescription: "Configure modelos DeepSeek oficiais para começar a usar o UMA Studio",
+		welcomeKeyTitle: "Adicione hey chave API para começar",
+		welcomeKeyDescription: "Configure modelos DeepSeek oficiais para começar a usar o HeyWork",
 		welcomeKeyPlaceholder: "Insira a chave de API",
 		welcomeKeySave: "Salvar e continuar",
 		welcomeKeyLater: "Configurar mais tarde",
 		welcomeKeyBack: "Voltar para fazer login",
 		welcomeSessionExpired: "Você saiu da sua conta, faça login novamente.",
-		welcomeKeyBlank: "Insira uma chave API.",
+		welcomeKeyBlank: "Insira hey chave API.",
 		welcomeKeyInvalid: "Insira a própria chave API, sem aspas, espaços ou atribuição de variável de ambiente.",
 		welcomeKeyFailed: "Não foi possível salvar a chave API. Por favor, tente novamente.",
 		welcomeContinueFailed: "Não foi possível abrir o espaço de trabalho. Por favor, tente novamente.",
@@ -3653,11 +3653,11 @@ const dictionaries = {
 		updateStopTasks: "Pare tarefas e atualize",
 		updateTasksChanged: "Novas tarefas foram iniciadas. Confirme novamente para interromper as tarefas e atualizar.",
 		updateTasksUnavailable: "O status da tarefa não está disponível. Tente atualizar novamente quando o espaço de trabalho estiver pronto.",
-		updateInstallLocation: "Mova o UMA Studio para a pasta Aplicativos, abra-o novamente e tente atualizar.",
+		updateInstallLocation: "Mova o HeyWork para a pasta Aplicativos, abra-o novamente e tente atualizar.",
 		updateFullscreenTimeout: "Não foi possível sair da tela cheia. Saia da tela inteira e tente atualizar novamente.",
 		updateStopFailed: "Não foi possível interromper as tarefas com segurança. A atualização não foi instalada. Por favor, tente novamente mais tarde.",
 		updateTechnicalDetails: "Ver detalhes técnicos",
-		updateTitle: "UMA Studio Atualização",
+		updateTitle: "HeyWork Atualização",
 		updateAvailable: "Nova versão disponível: {version}",
 		updateDetail: "Assim que o download for concluído, você pode instalar a atualização e reiniciar o aplicativo.",
 		installAndRestart: "Instalar e reiniciar",
@@ -3667,7 +3667,7 @@ const dictionaries = {
 		mandatoryDetail: "Esta versão não é mais suportada. Atualize para continuar. As tarefas em andamento continuarão em execução até você confirmar a instalação e reiniciar.",
 		mandatoryUnavailable: "Não foi possível verificar os requisitos de atualização. Por favor, tente novamente mais tarde.",
 		policyLoginTitle: "Faça login no ambiente de teste",
-		policyLoginRequired: "Faça login com Feishu para verificar os requisitos de atualização para esta versão de teste. O login não baixará nem instalará uma atualização.",
+		policyLoginRequired: "Faça login com Feishu para verificar os requisitos de atualização para esta versão de teste. O login não baixará nem instalará hey atualização.",
 		policyLogin: "Faça login com Feishu",
 		policyLoginFailed: "O login do Feishu não foi concluído. Por favor, tente novamente.",
 		policyLoginLoading: "Carregando página de login…",
@@ -3746,7 +3746,7 @@ function desktopUpdateReadyConfirmation(messages, version, platform) {
 }
 //#endregion
 //#region lib/types/about.js
-/** UMA product facts and the separate bundled kernel identity shown in About. */
+/** HEY product facts and the separate bundled kernel identity shown in About. */
 /**
 * Build localized product information without account details, local paths or credentials.
 * @param facts - Application version and independently read kernel version.
@@ -3772,7 +3772,7 @@ function desktopAboutContent(facts, messages) {
 		}
 	];
 	const diagnostics = [
-		`UMA Studio ${facts.productVersion}`,
+		`HeyWork ${facts.productVersion}`,
 		`${messages.aboutKernel}: ${kernel}`,
 		`${messages.aboutChannel}: ${channel}`,
 		`${messages.aboutPlatform}: ${system}`,
@@ -3791,7 +3791,7 @@ function desktopAboutContent(facts, messages) {
 			version: formatDesktopMessage(messages.aboutVersion, { version: facts.productVersion }),
 			rows,
 			upstream: messages.aboutUpstream,
-			copyright: "© UMA Studio"
+			copyright: "© HeyWork"
 		},
 		technicalDetails: diagnostics.join("\n"),
 		licenseDetails: "DeepSeek Harness\nMIT License\nCopyright (c) 2026 DeepSeek"
@@ -9706,16 +9706,16 @@ function resolveDesktopPaths(dshHome = resolveDshHome()) {
 	};
 }
 //#endregion
-//#region lib/types/uma-home.js
-/** Independent user data selection for the UMA distribution. */
+//#region lib/types/hey-home.js
+/** Independent user data selection for the HEY distribution. */
 /**
-* Select UMA's own data root without consulting the kernel's DSH_HOME override.
-* @param env - Process environment containing optional UMA_HOME.
+* Select HEY's own data root without consulting the kernel's DSH_HOME override.
+* @param env - Process environment containing optional HEY_HOME.
 * @param userHome - Operating-system account home.
 * @returns Absolute application data root; this function never reads or migrates legacy data.
 */
 function resolveUmaDesktopHome(env = process.env, userHome = homedir()) {
-	return resolveDshHome(env.UMA_HOME?.trim() || join(userHome, ".uma"), {});
+	return resolveDshHome(env.HEY_HOME?.trim() || join(userHome, ".hey"), {});
 }
 //#endregion
 //#region lib/types/core-package-set.js
@@ -13606,41 +13606,41 @@ function sanitizeProfile(binName, profileDir, bundles) {
 }
 Object.freeze({});
 //#endregion
-//#region ../../packages/bundle/uma-base/lib/profiles.js
-/** Ordered UMA profile layers shared by source preparation and the Desktop runtime. */
+//#region ../../packages/bundle/hey-base/lib/profiles.js
+/** Ordered HEY profile layers shared by source preparation and the Desktop runtime. */
 const BASE = "@deepseek-ai/dsh-base";
-const UMA_BASE = "@deepseek-ai/dsh-uma-base";
-/** UMA-owned compositions; ordinary kernel profile templates remain independent. */
+const HEY_BASE = "@deepseek-ai/dsh-uma-base";
+/** HEY-owned compositions; ordinary kernel profile templates remain independent. */
 const UMA_PROFILE_BUNDLES = {
-	"uma-web": [
+	"hey-web": [
 		BASE,
 		"@deepseek-ai/dsh-web-app",
-		UMA_BASE,
+		HEY_BASE,
 		"@deepseek-ai/dsh-uma-web"
 	],
 	desktop: [
 		BASE,
 		"@deepseek-ai/dsh-web-app",
-		UMA_BASE,
+		HEY_BASE,
 		"@deepseek-ai/dsh-uma-web"
 	],
-	"uma-headless": [
+	"hey-headless": [
 		BASE,
 		"@deepseek-ai/dsh-headless",
-		UMA_BASE,
-		"@deepseek-ai/dsh-uma-automation"
+		HEY_BASE,
+		"@deepseek-ai/dsh-hey-automation"
 	],
-	"uma-sdk": [
+	"hey-sdk": [
 		BASE,
 		"@deepseek-ai/dsh-sdk-app",
-		UMA_BASE,
-		"@deepseek-ai/dsh-uma-automation"
+		HEY_BASE,
+		"@deepseek-ai/dsh-hey-automation"
 	]
 };
 /**
-* Insert missing UMA layers after a recognized legacy kernel pair, preserving all existing third-party order.
-* Current UMA tuples remain unchanged. Partial, duplicated or reordered owned layers reject without mutation.
-* @param name - UMA profile whose ordered layers are required.
+* Insert missing HEY layers after a recognized legacy kernel pair, preserving all existing third-party order.
+* Current HEY tuples remain unchanged. Partial, duplicated or reordered owned layers reject without mutation.
+* @param name - HEY profile whose ordered layers are required.
 * @param current - Parsed ordered bundle names from an existing profile.
 * @returns The existing list or a new migrated list; the input is never modified.
 */
@@ -13649,7 +13649,7 @@ function migrateUmaProfileBundles(name, current) {
 	const owned = new Set(Object.values(UMA_PROFILE_BUNDLES).flat());
 	const present = current.filter((bundle) => owned.has(bundle));
 	if (present.length === expected.length && present.every((bundle, index) => bundle === expected[index])) return current;
-	if (present.length !== 2 || present[0] !== expected[0] || present[1] !== expected[1]) throw new Error(`UMA profile ${name}: unrecognized owned bundle order; review the profile before preparing it`);
+	if (present.length !== 2 || present[0] !== expected[0] || present[1] !== expected[1]) throw new Error(`HEY profile ${name}: unrecognized owned bundle order; review the profile before preparing it`);
 	const insertion = current.indexOf(expected[1]) + 1;
 	return [
 		...current.slice(0, insertion),
@@ -13664,9 +13664,9 @@ const CORE_BUILD_PACKAGE = "@deepseek-ai/dsh-subprocess-local";
 const DESKTOP_BUNDLES = UMA_PROFILE_BUNDLES.desktop;
 const WORKSPACE_SETTINGS = "nodeLinker: hoisted\nautoInstallPeers: false\n";
 function readDesktopProfile(projectDir) {
-	const manifest = readProfileManifest("UMA Studio", projectDir);
+	const manifest = readProfileManifest("HeyWork", projectDir);
 	const bundles = manifest.dsh?.profile?.bundles;
-	if (!Array.isArray(bundles) || !bundles.every((bundle) => typeof bundle === "string")) throw new Error("UMA Studio: profile must declare an ordered bundle list; review it before starting");
+	if (!Array.isArray(bundles) || !bundles.every((bundle) => typeof bundle === "string")) throw new Error("HeyWork: profile must declare an ordered bundle list; review it before starting");
 	return {
 		manifest,
 		bundles,
@@ -13758,7 +13758,7 @@ var DesktopProjectManager = class {
 	}
 };
 /**
-* Initialize the UMA Desktop profile or migrate its recognized legacy layers without running a package manager.
+* Initialize the HEY Desktop profile or migrate its recognized legacy layers without running a package manager.
 * Existing dependency declarations and user patches are preserved; unknown owned layer lists reject before writes.
 * @param projectDir - Desktop-owned external plugin profile directory.
 */
@@ -17044,14 +17044,14 @@ function detachDirectoryEntry(entry) {
 }
 //#endregion
 //#region ../../packages/credentials/deepseek-account/lib/index.js
-/** Relative paths admitted for a header-authenticated UMA account view. */
-const UMA_PLATFORM_PATHS = Object.freeze({
+/** Relative paths admitted for a header-authenticated HEY account view. */
+const HEY_PLATFORM_PATHS = Object.freeze({
 	usage: "/account/usage",
 	"top-up": "/top_up",
 	security: "/account/security",
 	"sdk-keys": "/account/api-keys"
 });
-new TextEncoder().encode(": uma-stream-end\n\n");
+new TextEncoder().encode(": hey-stream-end\n\n");
 /** Merge Cookie header pairs by case-sensitive name, retaining unrelated cookies.
 * @param base - existing request cookies.
 * @param override - deployment cookies whose values take precedence.
@@ -17210,7 +17210,7 @@ var DesktopPlatformView = class {
 		if (this.blocked(owner)) throw new Error("Platform view blocked by update prompt");
 		const account = this.account;
 		if (account === null) throw new Error("Platform account unavailable");
-		const path = account.authenticatePage === true ? UMA_PLATFORM_PATHS[page] : page === "usage" ? "/usage" : page === "top-up" ? "/top_up" : void 0;
+		const path = account.authenticatePage === true ? HEY_PLATFORM_PATHS[page] : page === "usage" ? "/usage" : page === "top-up" ? "/top_up" : void 0;
 		if (path === void 0) throw new Error("Platform page unavailable for this account");
 		this.close();
 		if (owner.isDestroyed()) return;
@@ -17306,7 +17306,7 @@ var DesktopPlatformView = class {
 			if (account.authenticatePage !== true) return;
 			if (!URL.canParse(url)) return;
 			const destination = new URL(url);
-			if (destination.protocol === "https:" && !destination.username && !destination.password && !(destination.origin === account.origin && (destination.pathname.startsWith("/sign-in") || destination.pathname.startsWith("/uma/authorize")))) shell.openExternal(destination.href).catch(() => {});
+			if (destination.protocol === "https:" && !destination.username && !destination.password && !(destination.origin === account.origin && (destination.pathname.startsWith("/sign-in") || destination.pathname.startsWith("/hey/authorize")))) shell.openExternal(destination.href).catch(() => {});
 		});
 		view.webContents.on("will-redirect", (event, url) => {
 			if (!allowNavigation(url)) event.preventDefault();
@@ -17747,7 +17747,7 @@ function installDesktopDirectoryPicker(getWindow) {
 function applicationFrame(url) {
 	try {
 		const parsed = new URL(url);
-		return parsed.protocol === "uma-app:" && parsed.hostname === "app";
+		return parsed.protocol === "hey-app:" && parsed.hostname === "app";
 	} catch (_error) {
 		return false;
 	}
@@ -17934,7 +17934,7 @@ var DesktopBackendController = class {
 	}
 };
 //#endregion
-//#region ../../packages/util/uma-delivery/lib/index.js
+//#region ../../packages/util/hey-delivery/lib/index.js
 /** References identify original publishers and terms; source manuals are not bundled. */
 const ENGINEERING_SOURCES = [
 	{
@@ -17972,7 +17972,7 @@ const ENGINEERING_SOURCES = [
 /** Conditional implementation/review obligations, never automatically passing checks. */
 const ENGINEERING_RULES = [
 	{
-		id: "UMA.STD.KEYBOARD_FOCUS",
+		id: "HEY.STD.KEYBOARD_FOCUS",
 		languages: ["frontend", "web"],
 		sourceIds: ["w3c-wcag22"],
 		level: "required-by-project",
@@ -17983,7 +17983,7 @@ const ENGINEERING_RULES = [
 		verification: "test"
 	},
 	{
-		id: "UMA.STD.ACCESSIBLE_ERRORS",
+		id: "HEY.STD.ACCESSIBLE_ERRORS",
 		languages: ["frontend", "web"],
 		sourceIds: ["w3c-wcag22"],
 		level: "required-by-project",
@@ -17994,7 +17994,7 @@ const ENGINEERING_RULES = [
 		verification: "test"
 	},
 	{
-		id: "UMA.STD.TRANSACTION_RETRY",
+		id: "HEY.STD.TRANSACTION_RETRY",
 		languages: ["postgresql", "database"],
 		sourceIds: ["postgres-isolation"],
 		level: "advisory",
@@ -18005,7 +18005,7 @@ const ENGINEERING_RULES = [
 		verification: "test"
 	},
 	{
-		id: "UMA.STD.REVIEW_COUNTEREXAMPLE",
+		id: "HEY.STD.REVIEW_COUNTEREXAMPLE",
 		languages: ["all"],
 		sourceIds: ["google-review"],
 		level: "advisory",
@@ -18016,7 +18016,7 @@ const ENGINEERING_RULES = [
 		verification: "review"
 	},
 	{
-		id: "UMA.STD.ORDER_REPLAY",
+		id: "HEY.STD.ORDER_REPLAY",
 		languages: ["payments", "commerce"],
 		sourceIds: ["microsoft-rest", "postgres-isolation"],
 		level: "advisory",
@@ -18027,7 +18027,7 @@ const ENGINEERING_RULES = [
 		verification: "test"
 	},
 	{
-		id: "UMA.STD.TENANT_SCOPE",
+		id: "HEY.STD.TENANT_SCOPE",
 		languages: [
 			"saas",
 			"backend",
@@ -18042,7 +18042,7 @@ const ENGINEERING_RULES = [
 		verification: "test"
 	}
 ];
-/** Source-informed original summaries and UMA verification examples, not publisher manuals or certifications. */
+/** Source-informed original summaries and HEY verification examples, not publisher manuals or certifications. */
 const ENGINEERING_GUIDES = [
 	{
 		id: "accessible-product-ui",
@@ -18236,7 +18236,7 @@ Object.freeze([
 Object.freeze([
 	...ENGINEERING_RULES.map(freezeRule),
 	freezeRule({
-		id: "UMA.STD.PROJECT_PRECEDENCE",
+		id: "HEY.STD.PROJECT_PRECEDENCE",
 		languages: ["all"],
 		sourceIds: ["python-pep8", "google-ts"],
 		level: "advisory",
@@ -18247,7 +18247,7 @@ Object.freeze([
 		verification: "review"
 	}),
 	freezeRule({
-		id: "UMA.STD.SEMANTIC_NAMES",
+		id: "HEY.STD.SEMANTIC_NAMES",
 		languages: ["all"],
 		sourceIds: [
 			"google-ts",
@@ -18262,7 +18262,7 @@ Object.freeze([
 		verification: "lint"
 	}),
 	freezeRule({
-		id: "UMA.STD.JAVA_LAYERING",
+		id: "HEY.STD.JAVA_LAYERING",
 		languages: ["java"],
 		sourceIds: ["alibaba-p3c"],
 		level: "advisory",
@@ -18273,7 +18273,7 @@ Object.freeze([
 		verification: "review"
 	}),
 	freezeRule({
-		id: "UMA.STD.JAVA_RESOURCE_LIFETIME",
+		id: "HEY.STD.JAVA_RESOURCE_LIFETIME",
 		languages: ["java"],
 		sourceIds: ["alibaba-p3c"],
 		level: "advisory",
@@ -18284,7 +18284,7 @@ Object.freeze([
 		verification: "test"
 	}),
 	freezeRule({
-		id: "UMA.STD.TS_UNTRUSTED_TYPES",
+		id: "HEY.STD.TS_UNTRUSTED_TYPES",
 		languages: ["typescript"],
 		sourceIds: ["google-ts"],
 		level: "advisory",
@@ -18295,7 +18295,7 @@ Object.freeze([
 		verification: "typecheck"
 	}),
 	freezeRule({
-		id: "UMA.STD.TS_MODULE_BOUNDARIES",
+		id: "HEY.STD.TS_MODULE_BOUNDARIES",
 		languages: ["typescript", "javascript"],
 		sourceIds: ["google-ts"],
 		level: "advisory",
@@ -18306,7 +18306,7 @@ Object.freeze([
 		verification: "review"
 	}),
 	freezeRule({
-		id: "UMA.STD.PYTHON_PUBLIC_NAMES",
+		id: "HEY.STD.PYTHON_PUBLIC_NAMES",
 		languages: ["python"],
 		sourceIds: ["python-pep8"],
 		level: "advisory",
@@ -18317,7 +18317,7 @@ Object.freeze([
 		verification: "lint"
 	}),
 	freezeRule({
-		id: "UMA.STD.GO_PACKAGES",
+		id: "HEY.STD.GO_PACKAGES",
 		languages: ["go"],
 		sourceIds: ["go-review", "uber-go"],
 		level: "advisory",
@@ -18328,7 +18328,7 @@ Object.freeze([
 		verification: "review"
 	}),
 	freezeRule({
-		id: "UMA.STD.GO_ERRORS_CONTEXT",
+		id: "HEY.STD.GO_ERRORS_CONTEXT",
 		languages: ["go"],
 		sourceIds: ["go-review", "uber-go"],
 		level: "advisory",
@@ -18339,7 +18339,7 @@ Object.freeze([
 		verification: "review"
 	}),
 	freezeRule({
-		id: "UMA.STD.GO_GOROUTINE_LIFETIME",
+		id: "HEY.STD.GO_GOROUTINE_LIFETIME",
 		languages: ["go"],
 		sourceIds: ["uber-go"],
 		level: "advisory",
@@ -18350,7 +18350,7 @@ Object.freeze([
 		verification: "test"
 	}),
 	freezeRule({
-		id: "UMA.STD.DOTNET_PUBLIC_NAMING",
+		id: "HEY.STD.DOTNET_PUBLIC_NAMING",
 		languages: ["csharp", "dotnet"],
 		sourceIds: ["microsoft-dotnet"],
 		level: "advisory",
@@ -18361,7 +18361,7 @@ Object.freeze([
 		verification: "lint"
 	}),
 	freezeRule({
-		id: "UMA.STD.API_COMPATIBILITY",
+		id: "HEY.STD.API_COMPATIBILITY",
 		languages: ["rest", "http-api"],
 		sourceIds: ["microsoft-rest"],
 		level: "advisory",
@@ -18372,7 +18372,7 @@ Object.freeze([
 		verification: "test"
 	}),
 	freezeRule({
-		id: "UMA.STD.AUTHORIZATION_RESOURCE",
+		id: "HEY.STD.AUTHORIZATION_RESOURCE",
 		languages: [
 			"web",
 			"backend",
@@ -18387,7 +18387,7 @@ Object.freeze([
 		verification: "test"
 	}),
 	freezeRule({
-		id: "UMA.STD.INPUT_PARAMETERIZATION",
+		id: "HEY.STD.INPUT_PARAMETERIZATION",
 		languages: [
 			"web",
 			"backend",
@@ -18402,7 +18402,7 @@ Object.freeze([
 		verification: "test"
 	}),
 	freezeRule({
-		id: "UMA.STD.SECRET_HANDLING",
+		id: "HEY.STD.SECRET_HANDLING",
 		languages: ["all"],
 		sourceIds: ["owasp-asvs5"],
 		level: "required-by-project",
@@ -18413,7 +18413,7 @@ Object.freeze([
 		verification: "lint"
 	}),
 	freezeRule({
-		id: "UMA.STD.FILE_PATH_SCOPE",
+		id: "HEY.STD.FILE_PATH_SCOPE",
 		languages: [
 			"web",
 			"backend",
@@ -18433,7 +18433,7 @@ Object.freeze([
 		verification: "test"
 	}),
 	freezeRule({
-		id: "UMA.STD.OUTBOUND_TARGET_SCOPE",
+		id: "HEY.STD.OUTBOUND_TARGET_SCOPE",
 		languages: [
 			"web",
 			"backend",
@@ -18589,8 +18589,8 @@ Object.freeze([
 		languages: ["all"],
 		sourceIds: ["owasp-asvs5"],
 		body: {
-			zh: "# 验证与评审\n\n以下是 UMA 的验证流程，安全用例参考 ASVS。发现项目已有检查，以行为和失败路径选择合适测试层；边界变化采用真实集成验证。不要用复刻实现的测试、任意覆盖率数字或模型自评代替证据。\n\n执行检查后记录命令、目录、源码指纹和退出状态。失败、取消、来源不完整及过期结果不能作为当前通过。独立评审记录触发条件、后果与源码位置；未解决问题继续阻塞验收。历史通过率和文档勾选都不是当前源码通过或部署成功。",
-			en: "# Verification and review\n\nThis is the UMA verification workflow; ASVS informs applicable security cases. Discover existing checks and select test layers from behavior and failure boundaries. Avoid tests that merely repeat implementation, arbitrary coverage targets and model self-grades.\n\nRetain commands, directories, source fingerprints and exit outcomes. Failed, cancelled, incomplete or stale evidence is not a current pass. Record actionable independent findings. Historical pass rates and document checkboxes do not certify current source or deployment."
+			zh: "# 验证与评审\n\n以下是 HEY 的验证流程，安全用例参考 ASVS。发现项目已有检查，以行为和失败路径选择合适测试层；边界变化采用真实集成验证。不要用复刻实现的测试、任意覆盖率数字或模型自评代替证据。\n\n执行检查后记录命令、目录、源码指纹和退出状态。失败、取消、来源不完整及过期结果不能作为当前通过。独立评审记录触发条件、后果与源码位置；未解决问题继续阻塞验收。历史通过率和文档勾选都不是当前源码通过或部署成功。",
+			en: "# Verification and review\n\nThis is the HEY verification workflow; ASVS informs applicable security cases. Discover existing checks and select test layers from behavior and failure boundaries. Avoid tests that merely repeat implementation, arbitrary coverage targets and model self-grades.\n\nRetain commands, directories, source fingerprints and exit outcomes. Failed, cancelled, incomplete or stale evidence is not a current pass. Record actionable independent findings. Historical pass rates and document checkboxes do not certify current source or deployment."
 		},
 		version: "2026.11.09.1"
 	}),
@@ -18970,7 +18970,7 @@ async function connectSavedOperationsProfile(host, input) {
 		reason: "unavailable"
 	};
 	try {
-		const response = await fetch(new URL("/uma/operations/ssh", origin), {
+		const response = await fetch(new URL("/hey/operations/ssh", origin), {
 			method: "POST",
 			headers: {
 				"content-type": "application/json",
@@ -19065,14 +19065,14 @@ var DesktopInstanceActivation = class {
 	}
 };
 /**
-* Use the canonical UMA instance profile across normal installed and preview launches.
+* Use the canonical HEY instance profile across normal installed and preview launches.
 * @param application - Electron profile directory operations before ready or lock acquisition.
-* @param uma - Whether this is a packaged UMA app or UMA development preview.
+* @param hey - Whether this is a packaged HEY app or HEY development preview.
 * @param isolated - Whether an explicitly selected development data directory requires isolation.
 */
-function configureDesktopInstanceProfile(application, uma, isolated) {
-	if (!uma || isolated) return;
-	const directory = join(application.getPath("appData"), "uma-studio");
+function configureDesktopInstanceProfile(application, hey, isolated) {
+	if (!hey || isolated) return;
+	const directory = join(application.getPath("appData"), "heywork");
 	mkdirSync(directory, { recursive: true });
 	application.setPath("userData", directory);
 }
@@ -19683,7 +19683,7 @@ function object(value) {
 }
 function parseState(value, platform) {
 	if (!object(value) || typeof value.fingerprint !== "string" || !/^[a-f0-9]{64}$/u.test(value.fingerprint) || typeof value.managed !== "boolean" || typeof value.available !== "boolean") throw new Error("Invalid command-manager response.");
-	const destination = platform === "win32" && typeof value.directory === "string" ? join(value.directory, "uma.cmd") : value.destination;
+	const destination = platform === "win32" && typeof value.directory === "string" ? join(value.directory, "hey.cmd") : value.destination;
 	const launcher = platform === "win32" ? destination : value.launcher;
 	if (typeof destination !== "string" || !isAbsolute(destination) || typeof launcher !== "string" || !isAbsolute(launcher)) throw new Error("Invalid command-manager locations.");
 	for (const name of [
@@ -19744,7 +19744,7 @@ function presentCommandManagement(state, messages, platform) {
 async function shellCommand() {
 	const shell = userInfo().shell;
 	if (shell === null) return { selectionUnknown: true };
-	const { stdout } = await promisify(execFile)(shell, ["-ilc", "printf '\\0UMA_COMMAND\\0'; command -v uma; printf '\\0'"], {
+	const { stdout } = await promisify(execFile)(shell, ["-ilc", "printf '\\0UMA_COMMAND\\0'; command -v hey; printf '\\0'"], {
 		timeout: 5e3,
 		maxBuffer: 65536
 	});
@@ -19993,7 +19993,7 @@ const PLUGIN_BUNDLE_PATH = /^\/plugins\//u;
 async function forwardWebRequest(request, host, cookie) {
 	const source = new URL(request.url);
 	const origin = request.headers.get("origin");
-	if (origin !== null && origin !== "uma-app://app") return new Response(null, { status: 403 });
+	if (origin !== null && origin !== "hey-app://app") return new Response(null, { status: 403 });
 	const target = new URL(host);
 	target.pathname = source.pathname;
 	target.search = source.search;
@@ -20816,12 +20816,12 @@ function accountView(value) {
 		topUpUrl: value.links.topUpUrl
 	};
 	const origin = new URL(links.usageUrl).origin;
-	const product = "product" in value && value.product === "uma" ? value.product : void 0;
+	const product = "product" in value && value.product === "hey" ? value.product : void 0;
 	const umaLinks = {};
-	if (product === "uma") for (const key of ["securityUrl", "sdkKeysUrl"]) {
+	if (product === "hey") for (const key of ["securityUrl", "sdkKeysUrl"]) {
 		if (!Object.hasOwn(value.links, key)) continue;
 		const destination = Reflect.get(value.links, key);
-		if (typeof destination !== "string" || new URL(destination).origin !== origin) throw new Error("desktop account: invalid UMA account destination");
+		if (typeof destination !== "string" || new URL(destination).origin !== origin) throw new Error("desktop account: invalid HEY account destination");
 		validateBrowserDestination(destination);
 		umaLinks[key] = destination;
 	}
@@ -21983,7 +21983,7 @@ var DesktopUpdateAttention = class {
 //#endregion
 //#region lib/types/mandatory-update-window.js
 /** Shell-owned modal policy UI; only explicit actions authorize downloads or browser navigation. */
-const page$1 = "uma-app://shell/mandatory-update.html";
+const page$1 = "hey-app://shell/mandatory-update.html";
 /** Shell-owned update presentation inside the native owner; policy and installation approval remain main-owned. */
 var DesktopMandatoryUpdateWindow = class {
 	options;
@@ -22677,7 +22677,7 @@ const UPDATE_DIALOG_IPC = {
 	changed: "dsh-update-dialog:changed",
 	respond: "dsh-update-dialog:respond"
 };
-const page = "uma-app://shell/update-dialog.html";
+const page = "hey-app://shell/update-dialog.html";
 /** One fading backdrop with replaceable confirmation content; aborted checks and mandatory policy cancel ordinary prompts. */
 var DesktopUpdateDialog = class {
 	preload;
@@ -23656,7 +23656,7 @@ function installDesktopShortcuts(getWindow, userData, platform, updateMenu, over
 		closeBinding = close?.issue === null && close.conflicts.length === 0 ? close.binding : null;
 		if (wasEnabled !== (revision !== void 0) || previousAccelerator !== closeAccelerator()) updateMenu();
 		const window = getWindow();
-		if (window !== void 0 && !window.isDestroyed() && window.webContents.mainFrame.url.startsWith("uma-app://app/")) window.webContents.send(DESKTOP_IPC.shortcutsChanged, snapshot);
+		if (window !== void 0 && !window.isDestroyed() && window.webContents.mainFrame.url.startsWith("hey-app://app/")) window.webContents.send(DESKTOP_IPC.shortcutsChanged, snapshot);
 	};
 	const persistence = desktopKeybindings(userData, platform, publish);
 	const assertSender = (event) => {
@@ -24105,8 +24105,8 @@ var DesktopTray = class {
 		this.tray = tray;
 		try {
 			if (missingImage) {
-				tray.setTitle("UMA");
-				console.warn("desktop tray: template image unavailable, showing the UMA label");
+				tray.setTitle("HEY");
+				console.warn("desktop tray: template image unavailable, showing the HEY label");
 			}
 			if (options.template !== true) tray.on("click", () => {
 				options.open();
@@ -24200,13 +24200,13 @@ var DesktopTray = class {
 };
 //#endregion
 //#region lib/types/desktop-origin-migration.js
-/** Preserve UMA's renderer drafts and preferences when its private origin changes. */
-/** Previous UMA renderer scheme, admitted only for the local storage migration document. */
+/** Preserve HEY's renderer drafts and preferences when its private origin changes. */
+/** Previous HEY renderer scheme, admitted only for the local storage migration document. */
 const LEGACY_DESKTOP_SCHEME = "dsh-app";
 const PATH = "/__uma_origin_migration__";
 const OLD_URL = `${LEGACY_DESKTOP_SCHEME}://app${PATH}`;
 const NEW_URL = `${SCHEME}://app${PATH}`;
-const MARKER = "uma-desktop-origin-v1\n";
+const MARKER = "hey-desktop-origin-v1\n";
 /**
 * Serve a scriptless migration document without application bridges or network resources.
 * @param request - Internal protocol request.
@@ -24224,7 +24224,7 @@ function desktopOriginMigrationDocument(request) {
 * Copy missing renderer localStorage keys once, leaving old data and existing new values intact.
 * Protocol handlers must serve desktopOriginMigrationDocument before this call and the product
 * document must not be loaded until it resolves. The application instance lock owns the marker.
-* @param userData - This UMA application's Electron data directory.
+* @param userData - This HEY application's Electron data directory.
 * @returns After storage is flushed and the completion marker is atomically written.
 * @throws When storage cannot be read or copied; no completion marker is written on failure.
 */
@@ -24351,7 +24351,7 @@ var DesktopBackgroundNotice = class {
 //#region lib/types/main.js
 /** Electron shell: desktop project ownership, custom protocol, windows, and lifecycle. */
 const instanceActivation = new DesktopInstanceActivation();
-configureDesktopInstanceProfile(app, app.isPackaged && app.name === "uma-studio" || Boolean(process.env.DSH_DESKTOP_DEV_UMA_PATCH), process.env.DSH_DESKTOP_ISOLATED_INSTANCE === "1");
+configureDesktopInstanceProfile(app, app.isPackaged && app.name === "heywork" || Boolean(process.env.DSH_DESKTOP_DEV_UMA_PATCH), process.env.DSH_DESKTOP_ISOLATED_INSTANCE === "1");
 let focusPrimaryWindow = instanceActivation.request;
 let stopForRecovery = async () => {
 	await stopOperationReports();
@@ -24660,7 +24660,7 @@ function createWindow(preload, show = false, primary = false) {
 	window.webContents.on("will-navigate", (event, url) => {
 		const destination = new URL(url);
 		const current = new URL(window.webContents.getURL());
-		if (destination.protocol !== `uma-app:` && !(destination.protocol === "http:" && destination.origin === current.origin)) {
+		if (destination.protocol !== `hey-app:` && !(destination.protocol === "http:" && destination.origin === current.origin)) {
 			event.preventDefault();
 			if (["http:", "https:"].includes(destination.protocol)) shell.openExternal(url);
 		}
@@ -25269,7 +25269,7 @@ async function main() {
 	});
 	ipcMain.on(DESKTOP_IPC.bootMounted, (event) => {
 		const window = mainWindow;
-		if (window === void 0 || window.isDestroyed() || event.sender !== window.webContents || event.senderFrame !== window.webContents.mainFrame || !event.senderFrame.url.startsWith(`uma-app://app/`)) return;
+		if (window === void 0 || window.isDestroyed() || event.sender !== window.webContents || event.senderFrame !== window.webContents.mainFrame || !event.senderFrame.url.startsWith(`hey-app://app/`)) return;
 		mountedWorkspace = window;
 		if (pendingReveal?.window !== window) return;
 		const reveal = pendingReveal.run;
@@ -25296,7 +25296,7 @@ async function main() {
 			return;
 		}
 		const headers = Object.fromEntries(Object.entries(details.requestHeaders).map(([name, value]) => [name.toLowerCase(), value]));
-		if (headers.origin !== "uma-app://app") {
+		if (headers.origin !== "hey-app://app") {
 			callback({ cancel: true });
 			return;
 		}
@@ -25309,7 +25309,7 @@ async function main() {
 	});
 	const assertMainApplication = (event) => {
 		const owner = mainWindow;
-		if (owner === void 0 || event.sender !== owner.webContents || event.senderFrame !== owner.webContents.mainFrame || !event.senderFrame.url.startsWith("uma-app://app/")) throw new Error("Rejected Platform command");
+		if (owner === void 0 || event.sender !== owner.webContents || event.senderFrame !== owner.webContents.mainFrame || !event.senderFrame.url.startsWith("hey-app://app/")) throw new Error("Rejected Platform command");
 		return owner;
 	};
 	installFileActions(assertMainApplication, () => hostUrl);
@@ -25322,7 +25322,7 @@ async function main() {
 	});
 	ipcMain.handle(PLATFORM_IPC.open, (event, page, bounds) => {
 		const owner = assertMainApplication(event);
-		if (typeof page !== "string" || !Object.hasOwn(UMA_PLATFORM_PATHS, page)) throw new Error("Invalid Platform page");
+		if (typeof page !== "string" || !Object.hasOwn(HEY_PLATFORM_PATHS, page)) throw new Error("Invalid Platform page");
 		return platformView.open(owner, page, platformBounds(bounds));
 	});
 	ipcMain.handle(PLATFORM_IPC.bounds, (event, bounds) => {
@@ -25335,7 +25335,7 @@ async function main() {
 		if (!owner.isDestroyed()) owner.webContents.focus();
 	});
 	ipcMain.on(DESKTOP_IPC.nativeThemeSet, (event, source) => {
-		if (mainWindow === void 0 || event.sender !== mainWindow.webContents || event.senderFrame !== mainWindow.webContents.mainFrame || !event.senderFrame.url.startsWith(`uma-app://app/`)) return;
+		if (mainWindow === void 0 || event.sender !== mainWindow.webContents || event.senderFrame !== mainWindow.webContents.mainFrame || !event.senderFrame.url.startsWith(`hey-app://app/`)) return;
 		if (source !== "light" && source !== "dark" && source !== "system") return;
 		nativeTheme.themeSource = source;
 	});
@@ -25436,7 +25436,7 @@ async function main() {
 	});
 	ipcMain.on(DESKTOP_IPC.onboardingActive, (event, active) => {
 		const window = mainWindow;
-		if (window === void 0 || window.isDestroyed() || event.sender !== window.webContents || event.senderFrame !== window.webContents.mainFrame || !event.senderFrame.url.startsWith(`uma-app://app/`) || typeof active !== "boolean") return;
+		if (window === void 0 || window.isDestroyed() || event.sender !== window.webContents || event.senderFrame !== window.webContents.mainFrame || !event.senderFrame.url.startsWith(`hey-app://app/`) || typeof active !== "boolean") return;
 		window.setMinimumSize(active ? 960 : 520, 600);
 		if (active) {
 			const { width, height } = window.getBounds();
@@ -25957,7 +25957,7 @@ async function main() {
 		});
 		ipcMain.on(DESKTOP_IPC.windowsAppearance, (event, _language, color, symbolColor) => {
 			if (mainWindow === void 0 || event.sender !== mainWindow.webContents || event.senderFrame !== mainWindow.webContents.mainFrame) return;
-			if (!event.senderFrame.url.startsWith(`uma-app://app/`)) return;
+			if (!event.senderFrame.url.startsWith(`hey-app://app/`)) return;
 			const validColor = (value) => typeof value === "string" && /^(?:#[\da-f]{3,8}|rgba?\([\d.,%\s]+\))$/iu.test(value);
 			if (validColor(color) && validColor(symbolColor)) mainWindow.setTitleBarOverlay({
 				color,
@@ -26066,7 +26066,7 @@ async function main() {
 			run: reveal,
 			timer: setTimeout(() => {
 				clearPendingReveal();
-				if (!isQuitting() && !recovery.active && mainWindow === window && !window.isDestroyed()) reportFatal(/* @__PURE__ */ new Error("UMA Studio workspace did not finish loading"), "web-boot");
+				if (!isQuitting() && !recovery.active && mainWindow === window && !window.isDestroyed()) reportFatal(/* @__PURE__ */ new Error("HeyWork workspace did not finish loading"), "web-boot");
 			}, 3e4)
 		};
 	};
@@ -26174,7 +26174,7 @@ async function main() {
 		window.show();
 		window.focus();
 	};
-	if (managedAccount && process.env.DSH_DESKTOP_ISOLATED_INSTANCE !== "1") app.setAsDefaultProtocolClient("uma");
+	if (managedAccount && process.env.DSH_DESKTOP_ISOLATED_INSTANCE !== "1") app.setAsDefaultProtocolClient("hey");
 	app.on("activate", (_event, hasVisibleWindows) => {
 		if (!hasVisibleWindows) focusPrimaryWindow();
 	});
@@ -26324,7 +26324,7 @@ async function main() {
 const ownsDesktopInstance = claimDesktopSingleInstance(app, instanceActivation.request);
 if (ownsDesktopInstance) app.on("open-url", (event, url) => {
 	event.preventDefault();
-	if (url === "uma://open" || url === "uma://open/") instanceActivation.request();
+	if (url === "hey://open" || url === "hey://open/") instanceActivation.request();
 });
 if (ownsDesktopInstance) app.whenReady().then(main).catch(async (error) => {
 	const message = error instanceof Error ? error.message : String(error);

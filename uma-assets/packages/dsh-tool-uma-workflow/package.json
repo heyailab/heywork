@@ -1,6 +1,6 @@
 {
   "name": "@deepseek-ai/dsh-tool-uma-workflow",
-  "description": "Model-facing `.uma/` delivery artifact write and read tools with section and placeholder checks",
+  "description": "Model-facing `.hey/` delivery artifact write and read tools with section and placeholder checks",
   "version": "0.2.2-rc.3",
   "private": true,
   "type": "module",

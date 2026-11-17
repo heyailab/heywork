@@ -1,4 +1,4 @@
 provider: generic
-url: https://studio.umayun.com/uma-studio/feeds/mac-arm64/
+url: https://studio.umayun.com/heywork/feeds/mac-arm64/
 channel: nightly
-updaterCacheDirName: uma-studio-updater
+updaterCacheDirName: heywork-updater

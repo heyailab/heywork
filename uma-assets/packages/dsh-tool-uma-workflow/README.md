@@ -1,5 +1,5 @@
 ---
-description: "Model-facing `.uma/` delivery artifact tools: write and read the controlling documents and report missing sections or placeholder markers."
+description: "Model-facing `.hey/` delivery artifact tools: write and read the controlling documents and report missing sections or placeholder markers."
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Use `uma_artifact_write` and `uma_artifact_read` to maintain research, PRD, architecture, UI/UX, spec, preview, QA, and delivery documents in `.uma/` under the Session’s working directory.
+Use `hey_artifact_write` and `hey_artifact_read` to maintain research, PRD, architecture, UI/UX, spec, preview, QA, and delivery documents in `.hey/` under the Session’s working directory.
 
 Writes use `ctx.fs`, the `fs/write-intent` waterfall, and the calling Session’s sandbox policy: authorized workspace writes succeed, while read-only Sessions remain denied. Permissions never expand. The tools add frontmatter, validate required sections, and report placeholders through `@deepseek-ai/dsh-util-uma-delivery`, sharing readiness checks and blocking rules with the Web Delivery Workbench.
 
@@ -28,7 +28,7 @@ Writes use `ctx.fs`, the `fs/write-intent` waterfall, and the calling Session’
 Mount it beside the tool, filesystem, and working-directory services in an agent preset:
 
 ```yaml
-- id: tool-uma-workflow
+- id: tool-hey-workflow
   name: '@deepseek-ai/dsh-tool-uma-workflow'
 ```
 
@@ -36,11 +36,11 @@ Mount it beside the tool, filesystem, and working-directory services in an agent
 
 | Tool | Purpose |
 |---|---|
-| `uma_artifact_write` | Write `.uma/<artifact>.md` with status, owner, section checks, and placeholder warnings |
-| `uma_artifact_read` | Read one artifact from the current workspace |
-| `uma_gate_status` | Report which required artifacts are missing or not ready and what blocks delivery |
+| `hey_artifact_write` | Write `.hey/<artifact>.md` with status, owner, section checks, and placeholder warnings |
+| `hey_artifact_read` | Read one artifact from the current workspace |
+| `hey_gate_status` | Report which required artifacts are missing or not ready and what blocks delivery |
 
-`uma_gate_status` accepts `depth` (`patch`, `feature`, `product`) and `phase` (`documents`, `delivery`). Omitting both preserves full-product delivery checks. Before reviewing product documents, use `depth: product, phase: documents`; future implementation and QA artifacts do not block that checkpoint. A patch may pass document checks with no `.uma/` directory. This never reports test execution, user approval, or deployment success.
+`hey_gate_status` accepts `depth` (`patch`, `feature`, `product`) and `phase` (`documents`, `delivery`). Omitting both preserves full-product delivery checks. Before reviewing product documents, use `depth: product, phase: documents`; future implementation and QA artifacts do not block that checkpoint. A patch may pass document checks with no `.hey/` directory. This never reports test execution, user approval, or deployment success.
 
 The write result reports `ready: true` only when every required section for that artifact kind is present and no `TODO`, `TBD`, `FIXME`, `XXX`, or `Lorem ipsum` marker remains. A draft may still be written; the model decides whether to resolve the findings before a confirmation gate.
 
@@ -64,7 +64,7 @@ English and common Chinese headings both satisfy the checks.
 
 #### What the model sees
 
-The model sees `uma_artifact_write`, `uma_artifact_read`, and `uma_gate_status`. A write returns a readiness report with missing section checks and placeholder warnings; a read returns the artifact body; the gate tool returns the required artifacts that are missing or not ready.
+The model sees `hey_artifact_write`, `hey_artifact_read`, and `hey_gate_status`. A write returns a readiness report with missing section checks and placeholder warnings; a read returns the artifact body; the gate tool returns the required artifacts that are missing or not ready.
 
 #### Token effect
 

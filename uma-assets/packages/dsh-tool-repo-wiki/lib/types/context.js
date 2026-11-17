@@ -14,7 +14,7 @@ export const inject = ['fs', 'workingDirectory', 'subprocess', 'systemPrompt', '
  */
 export function apply(ctx, config) {
     ctx.tools.register(defineTool({
-        name: 'uma_wiki_lookup',
+        name: 'hey_wiki_lookup',
         description: 'Look up source-verified project Wiki facts for the current task. Use only when the project Wiki can answer a specific question.',
         parameters: {
             query: { type: 'string', required: true, description: 'Specific technical question or keywords about the current project.' },

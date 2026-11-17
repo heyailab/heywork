@@ -386,7 +386,7 @@ The component system uses the \`mds\` (Markdown Design System) prefix, indicatin
       .btn-accent:hover { background: var(--accent-hover); }
       .btn-accent:active { background: var(--accent-active); }
 
-      /* ─── Inputs — dark mode .uma-preview-form fields ─────────────────────── */
+      /* ─── Inputs — dark mode .hey-preview-form fields ─────────────────────── */
       .field { display: flex; flex-direction: column; gap: var(--space-2); }
       .field label {
         font-family: var(--font-body);
@@ -628,7 +628,7 @@ The component system uses the \`mds\` (Markdown Design System) prefix, indicatin
               and .
             </p>
           </div>
-          <div role="group" class="uma-preview-form form">
+          <div role="group" class="hey-preview-form form">
             <div class="field">
               <label for="email">Work email</label>
               <input id="email" type="email" placeholder="you@company.com"

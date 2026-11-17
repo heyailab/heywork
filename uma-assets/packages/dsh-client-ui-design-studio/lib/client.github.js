@@ -355,14 +355,14 @@ Typography uses the **system-ui** stack across the entire product so text render
       .icon { width: 16px; height: 16px; flex-shrink: 0; }
     </style>
 
-    <style data-uma-responsive-repair>
+    <style data-hey-responsive-repair>
       /* Grid and flex children may shrink; long labels wrap within their own column. */
       :where(*) { min-width: 0; }
       :where(h1, h2, h3, p, a, span, strong, label, code) { overflow-wrap: anywhere; }
       :where(input, select, textarea) { max-width: 100%; }
     </style>
-<style data-uma-layout-repair>.uma-preview-form > div { flex-wrap: wrap; } .uma-preview-form button { flex-shrink: 0; max-width: 100%; white-space: normal; }</style>
-<style data-uma-form-layout>.uma-form-layout { display:grid;grid-template-columns:1.2fr 1fr;gap:var(--space-12);align-items:start; } @media (max-width: 1023px) { .uma-form-layout { grid-template-columns: minmax(0, 1fr); } }</style>
+<style data-hey-layout-repair>.hey-preview-form > div { flex-wrap: wrap; } .hey-preview-form button { flex-shrink: 0; max-width: 100%; white-space: normal; }</style>
+<style data-hey-form-layout>.hey-form-layout { display:grid;grid-template-columns:1.2fr 1fr;gap:var(--space-12);align-items:start; } @media (max-width: 1023px) { .hey-form-layout { grid-template-columns: minmax(0, 1fr); } }</style>
 </head>
   <body>
     <main class="container">
@@ -450,7 +450,7 @@ Typography uses the **system-ui** stack across the entire product so text render
 
       <!-- FORM -->
       <section data-od-id="form">
-        <div class="uma-form-layout">
+        <div class="hey-form-layout">
           <div class="stack-4">
             <p class="eyebrow">Form components</p>
             <h2>Primer form inputs.</h2>
@@ -459,7 +459,7 @@ Typography uses the **system-ui** stack across the entire product so text render
               5px 12px padding. 6px radius. Weight 600 label.
             </p>
           </div>
-          <div role="group" class="uma-preview-form" style="display:flex;flex-direction:column;gap:var(--space-4);max-width:400px">
+          <div role="group" class="hey-preview-form" style="display:flex;flex-direction:column;gap:var(--space-4);max-width:400px">
             <div class="field">
               <label for="email">Email address</label>
               <input id="email" type="email" placeholder="you@example.com" />

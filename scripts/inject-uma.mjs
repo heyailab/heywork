@@ -1,7 +1,7 @@
 /**
- * Inject UMA plugin packages into a prepared dsh runtime tree.
+ * Inject HEY plugin packages into a prepared dsh runtime tree.
  *
- * Runs inside the official packaging pipeline via the DSH_DESKTOP_UMA_INJECT hook
+ * Runs inside the official packaging pipeline via the DSH_DESKTOP_HEY_INJECT hook
  * (patched into apps/desktop/scripts/package-target.ts), AFTER prepare:dsh has
  * materialized the target dsh tree and BEFORE electron-builder packs it.
  *
@@ -9,8 +9,8 @@
  *  1. Copies every package in uma-assets/packages/@deepseek-ai/* into
  *     <tree>/node_modules/@deepseek-ai/ (fails if a target already exists).
  *     That directory holds two audited groups:
- *       - the 12 UMA product packages (uma-base/uma-web bundles, tools, clients);
- *       - the 11 first-party packages the UMA desktop layers mount but the public
+ *       - the 12 HEY product packages (hey-base/hey-web bundles, tools, clients);
+ *       - the 11 first-party packages the HEY desktop layers mount but the public
  *         deepseek-harness ref does not publish (knowledge, project wiki, coding
  *         workbench, design studio, worktree, task query). Without them the Host
  *         cannot resolve those entries and the profile fails to start, which the
@@ -24,7 +24,7 @@
  *     verifyDesktopRuntime integrity check passes.
  *
  * Refs: apps/desktop/src/runtime-tree.ts (inventory format),
- *       prepare-dsh.ts (tree materialization), UMA Mac bundle (sharedPackages口径).
+ *       prepare-dsh.ts (tree materialization), HEY Mac bundle (sharedPackages口径).
  */
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
@@ -33,16 +33,16 @@ import { join, relative, sep } from 'node:path'
 
 const CWD = process.cwd()
 // CI runs with cwd = repository root of the port workspace (deepseek-harness's parent).
-const REPO_ROOT = process.env.UMA_PORT_ROOT ?? CWD
-const TARGET = process.env.UMA_DSH_TREE
+const REPO_ROOT = process.env.HEY_ROOT ?? CWD
+const TARGET = process.env.HEY_DSH_TREE
   ?? join(REPO_ROOT, 'deepseek-harness', 'apps', 'desktop', '.desktop-build', 'targets', 'win-x64', 'dsh')
-const ASSETS = process.env.UMA_ASSETS_DIR ?? join(REPO_ROOT, 'uma-assets')
+const ASSETS = process.env.HEY_ASSETS_DIR ?? join(REPO_ROOT, 'uma-assets')
 const PACKAGES_SRC = join(ASSETS, 'packages')
 const DEPS_SRC = join(ASSETS, 'deps')
 
 const DESCRIPTOR = 'desktop-runtime.json'
 
-/** Packages the UMA desktop composition cannot boot without. */
+/** Packages the HEY desktop composition cannot boot without. */
 const REQUIRED_PACKAGES = [
   '@deepseek-ai/dsh-uma-base',
   '@deepseek-ai/dsh-uma-web',
@@ -53,28 +53,28 @@ const REQUIRED_PACKAGES = [
 ]
 
 function fail(message) {
-  console.error(`uma inject: ${message}`)
+  console.error(`hey inject: ${message}`)
   process.exit(1)
 }
 
 if (!existsSync(TARGET)) fail(`dsh tree not found: ${TARGET} (run the packaging pipeline first)`)
-if (!existsSync(PACKAGES_SRC)) fail(`uma packages source not found: ${PACKAGES_SRC}`)
+if (!existsSync(PACKAGES_SRC)) fail(`hey packages source not found: ${PACKAGES_SRC}`)
 
 /** Audited package set: every directory in uma-assets/packages. */
-const UMA_PACKAGES = readdirSync(PACKAGES_SRC, { withFileTypes: true })
+const HEY_PACKAGES = readdirSync(PACKAGES_SRC, { withFileTypes: true })
   .filter(entry => entry.isDirectory())
   .map(entry => `@deepseek-ai/${entry.name}`)
   .sort()
-if (UMA_PACKAGES.length < 12) fail(`expected at least 12 UMA packages, found ${UMA_PACKAGES.length}`)
+if (HEY_PACKAGES.length < 12) fail(`expected at least 12 HEY packages, found ${HEY_PACKAGES.length}`)
 for (const name of REQUIRED_PACKAGES) {
-  if (!UMA_PACKAGES.includes(name)) fail(`required package missing from uma-assets/packages: ${name}`)
+  if (!HEY_PACKAGES.includes(name)) fail(`required package missing from uma-assets/packages: ${name}`)
 }
 
 const modulesDir = join(TARGET, 'node_modules')
 
-// ---- 1. copy UMA plugin packages ----
+// ---- 1. copy HEY plugin packages ----
 let copied = 0
-for (const name of UMA_PACKAGES) {
+for (const name of HEY_PACKAGES) {
   const source = join(PACKAGES_SRC, name.slice('@deepseek-ai/'.length))
   const destination = join(modulesDir, name)
   if (!existsSync(source)) fail(`missing package source: ${source}`)
@@ -82,7 +82,7 @@ for (const name of UMA_PACKAGES) {
   cpSync(source, destination, { recursive: true })
   copied++
 }
-console.log(`uma inject: copied ${copied} UMA plugin packages`)
+console.log(`hey inject: copied ${copied} HEY plugin packages`)
 
 // ---- 2. supply missing external dependency packages (ssh2 closure) ----
 let depsCopied = 0
@@ -92,13 +92,13 @@ for (const entry of readdirSync(DEPS_SRC)) {
   cpSync(join(DEPS_SRC, entry), destination, { recursive: true })
   depsCopied++
 }
-console.log(`uma inject: supplied ${depsCopied} missing dependency packages from deps pool`)
+console.log(`hey inject: supplied ${depsCopied} missing dependency packages from deps pool`)
 
 // ---- 3. register in the tree's package.json dependencies ----
 const treeManifestPath = join(TARGET, 'package.json')
 const treeManifest = JSON.parse(readFileSync(treeManifestPath, 'utf8'))
 treeManifest.dependencies ??= {}
-for (const name of UMA_PACKAGES) {
+for (const name of HEY_PACKAGES) {
   const manifest = JSON.parse(readFileSync(join(modulesDir, name, 'package.json'), 'utf8'))
   treeManifest.dependencies[name] = manifest.version
 }
@@ -109,9 +109,9 @@ const descriptorPath = join(TARGET, DESCRIPTOR)
 const descriptor = JSON.parse(readFileSync(descriptorPath, 'utf8'))
 if (descriptor.schemaVersion !== 1) fail(`unexpected descriptor schemaVersion: ${descriptor.schemaVersion}`)
 
-// sharedPackages: merge UMA packages, sorted by name (same convention as writeDesktopRuntime)
+// sharedPackages: merge HEY packages, sorted by name (same convention as writeDesktopRuntime)
 const shared = new Map(descriptor.sharedPackages.map(entry => [entry.name, entry]))
-for (const name of UMA_PACKAGES) {
+for (const name of HEY_PACKAGES) {
   const manifest = JSON.parse(readFileSync(join(modulesDir, name, 'package.json'), 'utf8'))
   shared.set(name, { name, version: manifest.version, path: `node_modules/${name}` })
 }
@@ -141,19 +141,19 @@ files.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0))
 descriptor.files = files
 
 writeFileSync(descriptorPath, `${JSON.stringify(descriptor, undefined, 2)}\n`)
-console.log(`uma inject: descriptor updated — ${descriptor.sharedPackages.length} shared packages, ${files.length} files inventoried`)
+console.log(`hey inject: descriptor updated — ${descriptor.sharedPackages.length} shared packages, ${files.length} files inventoried`)
 
 // ---- 5. gate the composition while a fix is still cheap ----
 // The prepare-stage runtime smoke runs before injection, so nothing downstream
 // would notice an unresolvable layer entry until a user launched the app.
-if (process.env.UMA_SKIP_VERIFY !== '1') {
-  const verifier = join(REPO_ROOT, 'scripts', 'verify-uma-platform.mjs')
+if (process.env.HEY_SKIP_VERIFY !== '1') {
+  const verifier = join(REPO_ROOT, 'scripts', 'verify-hey-platform.mjs')
   if (!existsSync(verifier)) fail(`composition verifier not found: ${verifier}`)
-  console.log('uma inject: verifying the packaged composition')
+  console.log('hey inject: verifying the packaged composition')
   const result = spawnSync(process.execPath, [verifier, '--tree', TARGET], {
     stdio: 'inherit',
-    env: { ...process.env, UMA_PORT_ROOT: REPO_ROOT, UMA_DSH_ROOT: join(REPO_ROOT, 'deepseek-harness') },
+    env: { ...process.env, HEY_ROOT: REPO_ROOT, HEY_DSH_ROOT: join(REPO_ROOT, 'deepseek-harness') },
   })
   if (result.status !== 0) fail('composition verification failed (see the ::error:: lines above)')
 }
-console.log('uma inject: done')
+console.log('hey inject: done')

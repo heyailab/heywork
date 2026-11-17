@@ -20,7 +20,7 @@ const inject = [
 */
 function apply(ctx, config) {
 	ctx.tools.register(defineTool({
-		name: "uma_wiki_lookup",
+		name: "hey_wiki_lookup",
 		description: "Look up source-verified project Wiki facts for the current task. Use only when the project Wiki can answer a specific question.",
 		parameters: { query: {
 			type: "string",

@@ -468,7 +468,7 @@ What makes Replicate distinctive is its community-powered energy. The model gall
               Border is Replicate Dark (#202020) — heavy, high-contrast containment.
             </p>
           </div>
-          <div role="group" class="uma-preview-form form">
+          <div role="group" class="hey-preview-form form">
             <div class="field">
               <label for="email">Your email</label>
               <input id="email" type="email" placeholder="dev@your.app" autocomplete="email" required />

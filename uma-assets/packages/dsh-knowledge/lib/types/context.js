@@ -8,7 +8,7 @@ export const inject = ['knowledge', 'workspaceRegistry', 'systemPrompt', 'taskQu
 export function apply(ctx) {
     const contexts = new WeakMap();
     ctx.systemPrompt.context({
-        name: 'uma:workspace-knowledge',
+        name: 'hey:workspace-knowledge',
         order: 140,
         interpolate: false,
         text: context => (context.agent === undefined ? '' : (contexts.get(context.agent) ?? '')),

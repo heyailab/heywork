@@ -31,7 +31,7 @@ Consume the library through its workspace package name. `wikiManifestSchema`, `w
 <details>
 <summary>Implementation internals — click to expand</summary>
 
-Records use format version 1 under `.uma/wiki`. Article ids are validated before branding; source paths reject absolute roots, traversal, backslashes and control characters. Source fingerprints describe file content, independently of timestamp metadata. Chinese and English questions use word segmentation for lexical retrieval.
+Records use format version 1 under `.hey/wiki`. Article ids are validated before branding; source paths reject absolute roots, traversal, backslashes and control characters. Source fingerprints describe file content, independently of timestamp metadata. Chinese and English questions use word segmentation for lexical retrieval.
 
 </details>
 

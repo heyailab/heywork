@@ -1,6 +1,6 @@
 //#region lib/types/index.js
-/** UMA-owned lifecycle consumer; the kernel Agent and workspace contracts remain unchanged. */
-const name = "uma-subagent-workspaces";
+/** HEY-owned lifecycle consumer; the kernel Agent and workspace contracts remain unchanged. */
+const name = "hey-subagent-workspaces";
 /** Attachment must finish after both lifecycle and durable membership owners are available. */
 const inject = ["agents", "workspaceRegistry"];
 /**
@@ -8,7 +8,7 @@ const inject = ["agents", "workspaceRegistry"];
 * resolve to the same imported canonical directory as its already accounted parent. No ordinary
 * Session or unimported directory is adopted. Newly attached children are appended so existing
 * ordinary-session order and workspace defaults remain stable.
-* @param ctx - UMA Host composition owning this consumer and its creation listeners.
+* @param ctx - HEY Host composition owning this consumer and its creation listeners.
 */
 function apply(ctx) {
 	const lifetime = new AbortController();
@@ -16,7 +16,7 @@ function apply(ctx) {
 	ctx.effect(() => async () => {
 		lifetime.abort();
 		await Promise.allSettled([...pending]);
-	}, "uma-subagent-workspaces: pending membership");
+	}, "hey-subagent-workspaces: pending membership");
 	ctx.on("agent/created", ({ agent, signal }) => {
 		const operation = (async () => {
 			const header = agent.session.header;

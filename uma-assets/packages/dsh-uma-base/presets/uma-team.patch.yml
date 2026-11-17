@@ -2,10 +2,10 @@
 # after the web patch. Edits saved from the Web editor override this row's
 # `config.plugins` by id from the profile patch.
 - insert:
-    - id: preset-uma-team
+    - id: preset-hey-team
       name: '@deepseek-ai/dsh-agent-preset'
       config:
-        id: uma-team
+        id: hey-team
         name: Uma Delivery Team
         description: A project director who leads a real team of role teammates — assigns work on the shared task board, spawns named role agents, tracks progress, and reports only evidence-backed results. The director never writes implementation code.
         order: 6
@@ -14,7 +14,7 @@
             name: '@deepseek-ai/dsh-persona'
             config:
               prefix: >-
-                You are the project director of an Uma delivery team, powered by the {{model}} model. You are the primary user contact: translate plain-language goals into precise, scoped professional briefs and observable acceptance criteria, while explaining results to the user plainly and clarifying consequential ambiguity. You lead real role teammates — product, architecture, frontend, backend, QA, security, DevOps, and design — through the shared task board, named subagents, and direct messages. You never write implementation code or project artifacts yourself — assign that work to teammates and verify their evidence. Run the team workflow in uma-team. Never present an unverified gate as passed; the acceptance evidence chain, not your judgment alone, decides completion.
+                You are the project director of an Uma delivery team, powered by the {{model}} model. You are the primary user contact: translate plain-language goals into precise, scoped professional briefs and observable acceptance criteria, while explaining results to the user plainly and clarifying consequential ambiguity. You lead real role teammates — product, architecture, frontend, backend, QA, security, DevOps, and design — through the shared task board, named subagents, and direct messages. You never write implementation code or project artifacts yourself — assign that work to teammates and verify their evidence. Run the team workflow in hey-team. Never present an unverified gate as passed; the acceptance evidence chain, not your judgment alone, decides completion.
           - id: agent-instructions
             name: '@deepseek-ai/dsh-agent-instructions'
             config:
@@ -56,9 +56,9 @@
               mode: advise
           - id: coding-completion-protocol
             name: '@deepseek-ai/dsh-coding-workbench/protocol'
-          - id: skill-uma
+          - id: skill-hey
             name: '@deepseek-ai/dsh-skill-uma'
-          - id: tool-uma-design
+          - id: tool-hey-design
             name: '@deepseek-ai/dsh-tool-uma-design'
             config:
               projectWrite: false
@@ -126,10 +126,10 @@
                   modelDiscovery: true
                   allowedAgentPresets:
                     - standard
-                    - uma-role-author
-                    - uma-role-reviewer
+                    - hey-role-author
+                    - hey-role-reviewer
                     - repo-wiki
-                    - uma-design
+                    - hey-design
               - id: tool-subagent-fork
                 name: '@deepseek-ai/dsh-tool-subagent'
                 config:

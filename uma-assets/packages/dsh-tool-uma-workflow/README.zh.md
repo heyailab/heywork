@@ -1,5 +1,5 @@
 ---
-description: "面向模型的 `.uma/` 交付工件工具：写入与读取控制文档，并报告缺失章节或占位符标记。"
+description: "面向模型的 `.hey/` 交付工件工具：写入与读取控制文档，并报告缺失章节或占位符标记。"
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-使用 `uma_artifact_write` 与 `uma_artifact_read`，在 Session 工作目录的 `.uma/` 下维护研究、PRD、架构、UI/UX、规格、预览、QA 和交付文档。
+使用 `hey_artifact_write` 与 `hey_artifact_read`，在 Session 工作目录的 `.hey/` 下维护研究、PRD、架构、UI/UX、规格、预览、QA 和交付文档。
 
 写入使用 `ctx.fs`、`fs/write-intent` waterfall 和调用会话的沙箱策略：允许已授权的工作区写入，只读会话仍被拒绝，权限不会扩大。工具通过 `@deepseek-ai/dsh-util-uma-delivery` 添加 frontmatter、验证必需章节并报告占位符，与 Web 交付工作台共用就绪检查和阻塞规则。
 
@@ -28,7 +28,7 @@ kind: "package-reference"
 在 Agent 预设中与工具、文件系统和工作目录服务一起挂载：
 
 ```yaml
-- id: tool-uma-workflow
+- id: tool-hey-workflow
   name: '@deepseek-ai/dsh-tool-uma-workflow'
 ```
 
@@ -36,11 +36,11 @@ kind: "package-reference"
 
 | 工具 | 用途 |
 |---|---|
-| `uma_artifact_write` | 写入 `.uma/<artifact>.md`，含状态、负责人、章节检查与占位符警告 |
-| `uma_artifact_read` | 读取当前工作区中的一份工件 |
-| `uma_gate_status` | 报告缺失或未就绪的必需工件，以及阻塞交付的原因 |
+| `hey_artifact_write` | 写入 `.hey/<artifact>.md`，含状态、负责人、章节检查与占位符警告 |
+| `hey_artifact_read` | 读取当前工作区中的一份工件 |
+| `hey_gate_status` | 报告缺失或未就绪的必需工件，以及阻塞交付的原因 |
 
-`uma_gate_status` 接受 `depth`（`patch`、`feature`、`product`）和 `phase`（`documents`、`delivery`），省略时保持完整产品交付检查。确认产品文档时使用 `depth: product, phase: documents`，后续实现与 QA 工件不阻塞此阶段。小修复可以在没有 `.uma/` 目录时通过文档检查；这不代表测试执行、用户批准或部署成功。
+`hey_gate_status` 接受 `depth`（`patch`、`feature`、`product`）和 `phase`（`documents`、`delivery`），省略时保持完整产品交付检查。确认产品文档时使用 `depth: product, phase: documents`，后续实现与 QA 工件不阻塞此阶段。小修复可以在没有 `.hey/` 目录时通过文档检查；这不代表测试执行、用户批准或部署成功。
 
 只有当该工件类型的全部必需章节都存在，且不残留 `TODO`、`TBD`、`FIXME`、`XXX` 或 `Lorem ipsum` 标记时，写入结果才报告 `ready: true`。草稿仍可写入；模型决定是否在确认门禁前解决发现的问题。
 
@@ -64,7 +64,7 @@ kind: "package-reference"
 
 #### 模型看到什么
 
-模型看到 `uma_artifact_write`、`uma_artifact_read` 与 `uma_gate_status`。写入返回含缺失章节与占位符警告的就绪报告；读取返回工件正文；门禁工具返回缺失或未就绪的必需工件。
+模型看到 `hey_artifact_write`、`hey_artifact_read` 与 `hey_gate_status`。写入返回含缺失章节与占位符警告的就绪报告；读取返回工件正文；门禁工具返回缺失或未就绪的必需工件。
 
 #### Token 影响
 

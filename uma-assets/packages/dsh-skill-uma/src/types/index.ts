@@ -12,7 +12,7 @@ import { BUNDLED_SKILL_RANK, isSkillName } from '@deepseek-ai/dsh-skill'
 import { parse as parseYaml } from 'yaml'
 import { readResourceFile as readFileSync, listResourceDirectory as readdirSync } from './resources.ts'
 
-/** 默认 web agent preset 挂载的 UMA 设计与交付技能。 */
+/** 默认 web agent preset 挂载的 HEY 设计与交付技能。 */
 
 /** 校验过的资源配置。 */
 export const Config = z.object({
@@ -20,7 +20,7 @@ export const Config = z.object({
 })
 
 /** cordis 插件标识。 */
-export const name = 'skill-uma'
+export const name = 'skill-hey'
 
 /** 内建 provider 使用的注册表名。 */
 export const inject = ['skills']
@@ -79,23 +79,23 @@ interface SkillConfig {
 function strictBoolean(value: unknown, field: string, path: string): boolean | undefined {
   if (value === undefined) return undefined
   if (typeof value === 'boolean') return value
-  throw new Error(`skill-uma: ${path} has a non-boolean ${field}`)
+  throw new Error(`skill-hey: ${path} has a non-boolean ${field}`)
 }
 
 /** 解析 SKILL.md 的 YAML front matter；缺 name/description 直接拒绝。 */
 function parseFrontmatter(raw: string, path: string): ParsedSkill {
   const match = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/u.exec(raw)
-  if (match?.[1] === undefined) throw new Error(`skill-uma: ${path} has no YAML frontmatter`)
+  if (match?.[1] === undefined) throw new Error(`skill-hey: ${path} has no YAML frontmatter`)
   const metadata: unknown = parseYaml(match[1])
-  if (typeof metadata !== 'object' || metadata === null) throw new Error(`skill-uma: ${path} has no metadata object`)
+  if (typeof metadata !== 'object' || metadata === null) throw new Error(`skill-hey: ${path} has no metadata object`)
   const record = metadata as Record<string, unknown>
   const skillName = record.name
   const description = record.description
   if (typeof skillName !== 'string' || !isSkillName(skillName)) {
-    throw new Error(`skill-uma: ${path} has an invalid skill name`)
+    throw new Error(`skill-hey: ${path} has an invalid skill name`)
   }
   if (typeof description !== 'string' || description.length === 0) {
-    throw new Error(`skill-uma: ${path} has no description`)
+    throw new Error(`skill-hey: ${path} has no description`)
   }
   const whenToUse = typeof record.whenToUse === 'string' && record.whenToUse.length > 0 ? record.whenToUse : undefined
   const modelInvocable = strictBoolean(record['disable-model-invocation'], 'disable-model-invocation', path) !== true
@@ -112,19 +112,19 @@ function candidateOf(directory: string, frontmatter: SkillFrontmatter): SkillCan
     description: frontmatter.description,
     ...(frontmatter.whenToUse === undefined ? {} : { whenToUse: frontmatter.whenToUse }),
     invocation: { modelInvocable: frontmatter.modelInvocable, userInvocable: false },
-    provider: 'dsh-uma',
+    provider: 'dsh-hey',
     source: 'bundled',
     rank: BUNDLED_SKILL_RANK,
     resourceBase: {
       kind: 'opaque',
-      description: `UMA-managed resources. Use uma_resource_read with skill "${frontmatter.name}" and the relative path named below; omit path to browse. These are references, not local file paths. Use the native design tools instead of installed Python scripts.`,
+      description: `HEY-managed resources. Use hey_resource_read with skill "${frontmatter.name}" and the relative path named below; omit path to browse. These are references, not local file paths. Use the native design tools instead of installed Python scripts.`,
     },
     locator: join(directory, 'SKILL.md'),
   }
 }
 
 /**
- * 把 UMA 内置技能注册到 skill registry，资源通过容器读取而非磁盘路径。
+ * 把 HEY 内置技能注册到 skill registry，资源通过容器读取而非磁盘路径。
  * @param ctx - 带 skill registry 的 Context。
  * @param config - 打包应用可选的外部 assets 目录。
  */
@@ -140,7 +140,7 @@ export function apply(ctx: SkillContext, config: SkillConfig = {}): void {
       return candidateOf(directory, parseFrontmatter(readFileSync(locator, 'utf8'), locator).frontmatter)
     })
   const provider: SkillProvider = {
-    name: 'dsh-uma',
+    name: 'dsh-hey',
     list: () => Promise.resolve(candidates),
     get: (candidate, options) => Promise.resolve().then(() => {
       options.signal?.throwIfAborted()

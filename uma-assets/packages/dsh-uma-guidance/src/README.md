@@ -32,7 +32,7 @@ sourcemap 或 `.d.ts` 可供逐字校验。
 3. 要用 `tsc` 校验这些文件，需要补齐上游类型包（`@deepseek-ai/dsh-brand` / `dsh-llm` /
    `dsh-tools` / `dsh-util-values` / `schemastery`、`zod` 等）并自行写 `tsconfig`；仓库不提供
    这套配置，因为它不是构建路径。本目录已用仓库自带的
-   `uma-assets/deps/typescript/lib/typescript.js`（TS 6.0.3）`transpileModule`
+   `hey-assets/deps/typescript/lib/typescript.js`（TS 6.0.3）`transpileModule`
    （target ES2022 / module ESNext / reportDiagnostics）做纯语法校验，0 error。
 
 ## 导出面对照（逐项）

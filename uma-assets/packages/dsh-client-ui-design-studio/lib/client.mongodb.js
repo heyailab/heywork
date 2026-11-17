@@ -591,7 +591,7 @@ What makes MongoDB distinctive is its dual-mode design: a dark hero/feature sect
               read as database field names — systematic, structured, classified.
             </p>
           </div>
-          <div role="group" class="uma-preview-form form">
+          <div role="group" class="hey-preview-form form">
             <div class="field">
               <label for="email">Work email</label>
               <input id="email" type="email" placeholder="you@company.com" autocomplete="email" required />

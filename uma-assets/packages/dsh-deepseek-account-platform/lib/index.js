@@ -4,7 +4,7 @@ import { promises } from "node:stream";
 import { Service } from "@deepseek-ai/cordis";
 import Schema from "@deepseek-ai/schemastery";
 import { z } from "zod";
-import { DeepSeekAccount, UMA_PLATFORM_PATHS, installAccountTaskCancellation, mergePlatformCookies, platformClientHeaders, platformWireLocale } from "@deepseek-ai/dsh-deepseek-account";
+import { DeepSeekAccount, HEY_PLATFORM_PATHS, installAccountTaskCancellation, mergePlatformCookies, platformClientHeaders, platformWireLocale } from "@deepseek-ai/dsh-deepseek-account";
 import { credentialKey } from "@deepseek-ai/dsh-credentials";
 import { setTimeout as setTimeout$1 } from "node:timers/promises";
 //#region lib/types/protocol.js
@@ -85,7 +85,7 @@ function platformHeaders(values) {
 		if ([
 			"authorization",
 			"x-dsh-auth-token",
-			"x-uma-token-mode",
+			"x-hey-token-mode",
 			"host",
 			"content-length",
 			"transfer-encoding",
@@ -131,8 +131,8 @@ const rotated = z.object({
 	token_type: z.literal("Bearer")
 });
 /**
-* Rotate one UMA device credential. The same attempt can recover a lost response.
-* @param origin - validated UMA issuer.
+* Rotate one HEY device credential. The same attempt can recover a lost response.
+* @param origin - validated HEY issuer.
 * @param token - current refresh credential.
 * @param attempt - independently generated nonce stored with the credential.
 * @param signal - request deadline and service lifetime.
@@ -140,7 +140,7 @@ const rotated = z.object({
 * @returns new access and refresh credentials with the remaining access lifetime.
 */
 async function refreshAccount(origin, token, attempt, signal, headers) {
-	const data = await requestPlatform(origin, "auth_refresh", { attempt_id: attempt }, signal, accountHeaders(headers, token), "uma");
+	const data = await requestPlatform(origin, "auth_refresh", { attempt_id: attempt }, signal, accountHeaders(headers, token), "hey");
 	const result = rotated.safeParse(data);
 	if (!result.success) throw new PlatformAuthError("protocol");
 	return result.data;
@@ -152,7 +152,7 @@ async function refreshAccount(origin, token, attempt, signal, headers) {
 * @param body - protocol request, never logged.
 * @param signal - attempt cancellation and timeout.
 * @param headers - validated deployment headers for this origin.
-* @param product - owner of the authentication routes; UMA uses its branded API prefix.
+* @param product - owner of the authentication routes; HEY uses its branded API prefix.
 * @returns successful business payload, validated by its caller.
 */
 async function requestPlatform(origin, method, body, signal, headers, product = "dsh") {
@@ -181,7 +181,7 @@ function requestAccount(origin, path, token, signal, headers) {
 	}, signal, "compatibility");
 }
 /**
-* Fetch a native UMA JSON endpoint with the same bounded account transport.
+* Fetch a native HEY JSON endpoint with the same bounded account transport.
 * @param origin - configured and grant-matched origin.
 * @param path - native account endpoint.
 * @param token - captured account grant.
@@ -377,7 +377,7 @@ const user = z.object({
 	id_profile: z.object({
 		name: z.string().nullable(),
 		picture: z.string().nullish(),
-		uma_badge: z.literal("beta-veteran").optional().catch(void 0)
+		hey_badge: z.literal("beta-veteran").optional().catch(void 0)
 	}).nullish()
 });
 const decimal = /^-?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i;
@@ -385,7 +385,7 @@ const wallet = z.object({
 	currency: z.enum([
 		"CNY",
 		"USD",
-		"UMA"
+		"HEY"
 	]),
 	balance: z.string().regex(decimal)
 });
@@ -419,7 +419,7 @@ function projectProfile(value) {
 	return {
 		id: value.id == null ? null : value.id,
 		avatarUrl: identity?.picture || null,
-		...identity?.uma_badge === void 0 ? {} : { umaBadge: identity.uma_badge },
+		...identity?.hey_badge === void 0 ? {} : { umaBadge: identity.hey_badge },
 		name: identity?.name || null,
 		contact: mobile || mobileNumber || email || null
 	};
@@ -802,7 +802,7 @@ function profileBinding(stored) {
 }
 /** Validated deployment choices. */
 const platformConfig = Schema.object({
-	product: Schema.const("uma"),
+	product: Schema.const("hey"),
 	modelProviders: Schema.array(Schema.string().min(1)).min(1).default(["deepseek-account"]),
 	credentialIdPrefix: Schema.string(),
 	platformOrigin: Schema.string().default("https://platform.deepseek.com"),
@@ -871,7 +871,7 @@ var PlatformAccount = class extends DeepSeekAccount {
 		this.accountKey = credentialKey("deepseek-account-platform", prefix === void 0 ? "default" : `${prefix}-account`);
 		this.deviceKey = credentialKey("deepseek-account-platform", prefix === void 0 ? "device" : `${prefix}-device`);
 		this.logoutKey = credentialKey("deepseek-account-platform", prefix === void 0 ? "default-logout" : `${prefix}-logout`);
-		const label = prefix === void 0 ? "DeepSeek" : "UMA Studio";
+		const label = prefix === void 0 ? "DeepSeek" : "HeyWork";
 		this.embeddedPageDist = resolved.embeddedPageDist;
 		this.origin = platformOrigin(resolved.platformOrigin, resolved.allowLoopbackHttp);
 		this.logoutJournal = new LogoutJournal(ctx.credentials, this.logoutKey, this.origin, () => {
@@ -994,11 +994,11 @@ var PlatformAccount = class extends DeepSeekAccount {
 				...failed ? { errorCode: this.revocationStorageFailed ? "storage" : "network" } : {}
 			} },
 			links: {
-				usageUrl: new URL(this.product === "uma" ? UMA_PLATFORM_PATHS.usage : "/usage", this.origin).href,
-				topUpUrl: new URL(UMA_PLATFORM_PATHS["top-up"], this.origin).href,
-				...this.product === "uma" ? {
-					securityUrl: new URL(UMA_PLATFORM_PATHS.security, this.origin).href,
-					sdkKeysUrl: new URL(UMA_PLATFORM_PATHS["sdk-keys"], this.origin).href
+				usageUrl: new URL(this.product === "hey" ? HEY_PLATFORM_PATHS.usage : "/usage", this.origin).href,
+				topUpUrl: new URL(HEY_PLATFORM_PATHS["top-up"], this.origin).href,
+				...this.product === "hey" ? {
+					securityUrl: new URL(HEY_PLATFORM_PATHS.security, this.origin).href,
+					sdkKeysUrl: new URL(HEY_PLATFORM_PATHS["sdk-keys"], this.origin).href
 				} : {}
 			}
 		};
@@ -1186,7 +1186,7 @@ var PlatformAccount = class extends DeepSeekAccount {
 		let stored = await this.readCurrentGrant(lifetime);
 		if (stored === null || lifetime.signal.aborted || this.isUnavailable()) return null;
 		const state = stored.renewal;
-		if (this.product === "uma" && state !== void 0 && state.expiresAt <= Date.now()) {
+		if (this.product === "hey" && state !== void 0 && state.expiresAt <= Date.now()) {
 			const expired = stored;
 			try {
 				stored = await this.refreshGrant(expired, state);
@@ -1204,7 +1204,7 @@ var PlatformAccount = class extends DeepSeekAccount {
 			userId: this.lastProfile?.binding === profileBinding(stored) ? this.lastProfile.profile.value.id || null : null,
 			...stored.renewal === void 0 ? {} : { sessionId: stored.renewal.id },
 			...this.embeddedPageDist ? { embeddedPageDist: this.embeddedPageDist } : {},
-			...this.product === "uma" ? { authenticatePage: true } : {},
+			...this.product === "hey" ? { authenticatePage: true } : {},
 			requestHeaders
 		};
 	}
@@ -1223,7 +1223,7 @@ var PlatformAccount = class extends DeepSeekAccount {
 		const lifetime = this.detailsLifetime;
 		const stored = await this.readCurrentGrant(lifetime);
 		if (stored === null || this.isUnavailable()) return null;
-		if (this.product !== "uma" || stored.renewal === void 0 || stored.renewal.refreshAfter > Date.now()) return {
+		if (this.product !== "hey" || stored.renewal === void 0 || stored.renewal.refreshAfter > Date.now()) return {
 			lifetime,
 			stored
 		};
@@ -1287,7 +1287,7 @@ var PlatformAccount = class extends DeepSeekAccount {
 	}
 	scheduleRefresh(stored, retryDelay = 0) {
 		const state = stored.renewal;
-		if (this.product !== "uma" || state === void 0 || this.isUnavailable()) return;
+		if (this.product !== "hey" || state === void 0 || this.isUnavailable()) return;
 		clearTimeout(this.refreshTimer);
 		const lifetime = this.detailsLifetime;
 		this.refreshTimer = setTimeout(() => {
@@ -1317,7 +1317,7 @@ var PlatformAccount = class extends DeepSeekAccount {
 				"[::1]"
 			].includes(issuer.hostname)) return void 0;
 		} else if (issuer.origin !== this.origin) return void 0;
-		if (this.product === "uma" && stored.renewal !== void 0 && stored.renewal.refreshAfter <= Date.now()) {
+		if (this.product === "hey" && stored.renewal !== void 0 && stored.renewal.refreshAfter <= Date.now()) {
 			const fresh = await this.refreshGrant(stored, stored.renewal);
 			return this.isUnavailable() ? void 0 : fresh?.token;
 		}
@@ -1642,7 +1642,7 @@ var PlatformAccount = class extends DeepSeekAccount {
 				login_source: attempt.loginSource
 			}, signal, attempt.clientHeaders), { reportInput: true });
 			if (!init.success) this.rejectPayload("auth_init", init.error);
-			const authorizeUrl = browserUrl(init.data.authorize_url, this.origin, this.product === "uma" ? "/uma/authorize" : "/dsh/authorize", this.rewriteBrowserOrigin);
+			const authorizeUrl = browserUrl(init.data.authorize_url, this.origin, this.product === "hey" ? "/hey/authorize" : "/dsh/authorize", this.rewriteBrowserOrigin);
 			authorizeId = init.data.authorize_id;
 			signal.throwIfAborted();
 			const now = Date.now();
@@ -1679,10 +1679,10 @@ var PlatformAccount = class extends DeepSeekAccount {
 				os_version: deviceOsVersion()
 			}, signal, {
 				...attempt.clientHeaders,
-				...this.product === "uma" ? { "x-uma-token-mode": "rotate-v1" } : {}
+				...this.product === "hey" ? { "x-hey-token-mode": "rotate-v1" } : {}
 			}), { reportInput: true });
 			if (!result.success) this.rejectPayload("auth_exchange", result.error);
-			const completionUrl = new URL(browserUrl(result.data.authorized_url, this.origin, this.product === "uma" ? "/uma/authorized" : "/dsh/authorized", this.rewriteBrowserOrigin));
+			const completionUrl = new URL(browserUrl(result.data.authorized_url, this.origin, this.product === "hey" ? "/hey/authorized" : "/dsh/authorized", this.rewriteBrowserOrigin));
 			completionUrl.searchParams.set("login_source", attempt.loginSource);
 			attempt.completionUrl = completionUrl.href;
 			if (Date.now() >= expiresAt) deadline.abort();
@@ -1699,7 +1699,7 @@ var PlatformAccount = class extends DeepSeekAccount {
 			this.update(attempt, { phase: "committing" });
 			clearTimeout(timer);
 			await this.readLogoutJournal();
-			const payload = this.product === "uma" && result.data.refresh_token !== void 0 && result.data.expires_in !== void 0 ? renewableGrant(this.origin, result.data.token, result.data.refresh_token, result.data.expires_in) : {
+			const payload = this.product === "hey" && result.data.refresh_token !== void 0 && result.data.expires_in !== void 0 ? renewableGrant(this.origin, result.data.token, result.data.refresh_token, result.data.expires_in) : {
 				version: 1,
 				token: result.data.token,
 				issuer: this.origin
@@ -1746,7 +1746,7 @@ var PlatformAccount = class extends DeepSeekAccount {
 		return requestPlatform(this.origin, method, body, AbortSignal.any([signal, AbortSignal.timeout(this.requestTimeout)]), {
 			...this.requestHeaders,
 			...headers
-		}, this.product === "uma" ? "uma" : "dsh");
+		}, this.product === "hey" ? "hey" : "dsh");
 	}
 	finishFailedCallback(attempt) {
 		if (attempt.loginSource === "web") {

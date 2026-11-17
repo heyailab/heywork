@@ -7,7 +7,7 @@ import { Remote, RemoteError, TypertRemoteService, remoteErrorOf } from "@deepse
 import { SessionId } from "@deepseek-ai/dsh-session";
 import { LlmError } from "@deepseek-ai/dsh-llm";
 //#region lib/types/index.js
-/** Financial-session ownership and authenticated budget operations for UMA. */
+/** Financial-session ownership and authenticated budget operations for HEY. */
 var __runInitializers = function(thisArg, initializers, value) {
 	var useValue = arguments.length > 2;
 	for (var i = 0; i < initializers.length; i++) value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
@@ -115,7 +115,7 @@ const storage = defineDomain({
 });
 const decimal = /^(0|[1-9][0-9]{0,9})(\.[0-9]{1,6})?$/u;
 const uuid = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/iu;
-const remoteFailure = (reason) => new RemoteError("uma-budget/failed", "The session budget operation could not be completed", { reason });
+const remoteFailure = (reason) => new RemoteError("hey-budget/failed", "The session budget operation could not be completed", { reason });
 const wireBudget = z.object({
 	id: z.uuid(),
 	account_id: z.uuid(),
@@ -195,10 +195,10 @@ let UmaTaskBudgets = (() => {
 		* @param config - request and cache bounds.
 		*/
 		constructor(ctx, config = {}) {
-			super(ctx, "umaTaskBudgets", { namespace: "uma-budget" });
+			super(ctx, "umaTaskBudgets", { namespace: "hey-budget" });
 			this.timeoutMs = config.timeoutMs ?? 1e4;
 			this.cacheMs = config.cacheMs ?? 15e3;
-			if (!Number.isSafeInteger(this.timeoutMs) || this.timeoutMs < 100 || this.timeoutMs > 6e4 || !Number.isSafeInteger(this.cacheMs) || this.cacheMs < 0 || this.cacheMs > 6e4) throw new Error("UMA budget resource limits are invalid");
+			if (!Number.isSafeInteger(this.timeoutMs) || this.timeoutMs < 100 || this.timeoutMs > 6e4 || !Number.isSafeInteger(this.cacheMs) || this.cacheMs < 0 || this.cacheMs > 6e4) throw new Error("HEY budget resource limits are invalid");
 			ctx.effect(() => async () => {
 				this.lifetime.abort();
 				this.cache.clear();
@@ -314,7 +314,7 @@ let UmaTaskBudgets = (() => {
 			const budget = await this.api(origin, token, "/v1/session-budgets", "POST", {
 				client_ref: this.installationId,
 				session_ref: reference,
-				purpose: "UMA Studio session",
+				purpose: "HeyWork session",
 				cap: null
 			}, signal);
 			return {
@@ -353,7 +353,7 @@ let UmaTaskBudgets = (() => {
 			return value;
 		}
 		/**
-		* Read the root allowance for a real local session under the current UMA account.
+		* Read the root allowance for a real local session under the current HEY account.
 		* @param request - local session; delegated sessions resolve to their recorded root.
 		* @param signal - view lifetime.
 		* @returns a credential-free current allowance and root identity.
@@ -404,13 +404,13 @@ let UmaTaskBudgets = (() => {
 		*/
 		async prepare(request, signal) {
 			if (typeof request.sessionId !== "string" || request.sessionId.length === 0 || request.sessionId.length > 256) throw LlmError.fromFailure({
-				message: "A real session is required for a UMA task budget",
-				code: "UMA_TASK_BUDGET_UNAVAILABLE"
+				message: "A real session is required for a HEY task budget",
+				code: "HEY_TASK_BUDGET_UNAVAILABLE"
 			});
 			const owned = AbortSignal.any([signal, this.lifetime.signal]);
 			if (request.kind === "device" && !await this.stillCurrent(request.origin, request.token)) throw LlmError.fromFailure({
-				message: "The UMA Studio account changed before budget admission",
-				code: "UMA_TASK_BUDGET_ACCOUNT_CHANGED"
+				message: "The HeyWork account changed before budget admission",
+				code: "HEY_TASK_BUDGET_ACCOUNT_CHANGED"
 			});
 			const root = await this.rootOf(SessionId(request.sessionId), owned);
 			const key = `${request.origin}\0${request.token}\0${root}`;
@@ -430,30 +430,30 @@ let UmaTaskBudgets = (() => {
 				} catch (error) {
 					owned.throwIfAborted();
 					const failure = remoteErrorOf(error);
-					if (failure?.code === "uma-budget/failed" && failure.details.reason === "account-required") throw new LlmError("Sign in to UMA Studio again to read the session budget", "ACCOUNT_TOKEN_INVALID", { status: 401 });
+					if (failure?.code === "hey-budget/failed" && failure.details.reason === "account-required") throw new LlmError("Sign in to HeyWork again to read the session budget", "ACCOUNT_TOKEN_INVALID", { status: 401 });
 					throw LlmError.fromFailure({
-						message: "The UMA session budget could not be read. The model request has not been dispatched.",
-						code: "UMA_TASK_BUDGET_UNAVAILABLE"
+						message: "The HEY session budget could not be read. The model request has not been dispatched.",
+						code: "HEY_TASK_BUDGET_UNAVAILABLE"
 					}, { cause: error });
 				}
 				owned.throwIfAborted();
 				value = this.remember(key, view);
 			}
 			if (request.kind === "device" && !await this.stillCurrent(request.origin, request.token)) throw LlmError.fromFailure({
-				message: "The UMA Studio account changed before dispatch",
-				code: "UMA_TASK_BUDGET_ACCOUNT_CHANGED"
+				message: "The HeyWork account changed before dispatch",
+				code: "HEY_TASK_BUDGET_ACCOUNT_CHANGED"
 			});
 			if (value.value.budget.operatorPaused) throw LlmError.fromFailure({
 				message: "Operations paused this session budget. Open Budget in the session header for the recorded reason.",
-				code: "UMA_TASK_BUDGET_PAUSED"
+				code: "HEY_TASK_BUDGET_PAUSED"
 			});
 			if (value.value.budget.state !== "active") throw LlmError.fromFailure({
 				message: "This session budget is paused or closed. Use Budget in the session header to resume it.",
-				code: "UMA_TASK_BUDGET_PAUSED"
+				code: "HEY_TASK_BUDGET_PAUSED"
 			});
 			if (!uuid.test(value.value.budget.id)) throw LlmError.fromFailure({
-				message: "UMA Studio returned an invalid task budget",
-				code: "UMA_TASK_BUDGET_UNAVAILABLE"
+				message: "HeyWork returned an invalid task budget",
+				code: "HEY_TASK_BUDGET_UNAVAILABLE"
 			});
 			return {
 				taskId: value.value.budget.id,

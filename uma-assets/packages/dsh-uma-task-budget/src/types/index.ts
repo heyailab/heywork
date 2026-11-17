@@ -151,7 +151,7 @@ const storage = defineDomain({
 
 const decimal = /^(0|[1-9][0-9]{0,9})(\.[0-9]{1,6})?$/u
 const uuid = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/iu
-const remoteFailure = (reason: string) => new RemoteError('uma-budget/failed', 'The session budget operation could not be completed', { reason })
+const remoteFailure = (reason: string) => new RemoteError('hey-budget/failed', 'The session budget operation could not be completed', { reason })
 const wireBudget = z.object({
   id: z.uuid(), account_id: z.uuid(), purpose: z.string().max(160),
   cap: z.string().regex(decimal).nullable(), spent: z.string().regex(decimal), reserved: z.string().regex(decimal),
@@ -178,12 +178,12 @@ class UmaTaskBudgets extends TypertRemoteService {
    * @param config - request and cache bounds.
    */
   constructor(ctx: BudgetContext, config: BudgetConfig = {}) {
-    super(ctx, 'umaTaskBudgets', { namespace: 'uma-budget' })
+    super(ctx, 'umaTaskBudgets', { namespace: 'hey-budget' })
     this.timeoutMs = config.timeoutMs ?? 10_000
     this.cacheMs = config.cacheMs ?? 15_000
     if (!Number.isSafeInteger(this.timeoutMs) || this.timeoutMs < 100 || this.timeoutMs > 60_000
       || !Number.isSafeInteger(this.cacheMs) || this.cacheMs < 0 || this.cacheMs > 60_000)
-      throw new Error('UMA budget resource limits are invalid')
+      throw new Error('HEY budget resource limits are invalid')
     ctx.effect(() => async () => {
       this.lifetime.abort()
       this.cache.clear()
@@ -279,7 +279,7 @@ class UmaTaskBudgets extends TypertRemoteService {
     const root = await this.rootOf(id, signal)
     const reference = createHash('sha256').update(this.installationId).update('\0').update(String(root)).digest('hex')
     const budget = await this.api(origin, token, '/v1/session-budgets', 'POST', {
-      client_ref: this.installationId, session_ref: reference, purpose: 'UMA Studio session', cap: null,
+      client_ref: this.installationId, session_ref: reference, purpose: 'HeyWork session', cap: null,
     }, signal)
     return { sessionId: id, rootSessionId: root, shared: id !== root, budget }
   }
@@ -316,7 +316,7 @@ class UmaTaskBudgets extends TypertRemoteService {
   }
 
   /**
-   * Read the root allowance for a real local session under the current UMA account.
+   * Read the root allowance for a real local session under the current HEY account.
    * @param request - local session; delegated sessions resolve to their recorded root.
    * @param signal - view lifetime.
    * @returns a credential-free current allowance and root identity.
@@ -365,10 +365,10 @@ class UmaTaskBudgets extends TypertRemoteService {
    */
   async prepare(request: BudgetRequest, signal: AbortSignal): Promise<PrepareResult> {
     if (typeof request.sessionId !== 'string' || request.sessionId.length === 0 || request.sessionId.length > 256)
-      throw LlmError.fromFailure({ message: 'A real session is required for a UMA task budget', code: 'UMA_TASK_BUDGET_UNAVAILABLE' })
+      throw LlmError.fromFailure({ message: 'A real session is required for a HEY task budget', code: 'HEY_TASK_BUDGET_UNAVAILABLE' })
     const owned = AbortSignal.any([signal, this.lifetime.signal])
     if (request.kind === 'device' && !await this.stillCurrent(request.origin, request.token))
-      throw LlmError.fromFailure({ message: 'The UMA Studio account changed before budget admission', code: 'UMA_TASK_BUDGET_ACCOUNT_CHANGED' })
+      throw LlmError.fromFailure({ message: 'The HeyWork account changed before budget admission', code: 'HEY_TASK_BUDGET_ACCOUNT_CHANGED' })
     const root = await this.rootOf(SessionId(request.sessionId), owned)
     const key = `${request.origin}\0${request.token}\0${root}`
     let value = this.cache.get(key)
@@ -387,21 +387,21 @@ class UmaTaskBudgets extends TypertRemoteService {
       catch (error) {
         owned.throwIfAborted()
         const failure = remoteErrorOf(error)
-        if (failure?.code === 'uma-budget/failed' && failure.details.reason === 'account-required')
-          throw new LlmError('Sign in to UMA Studio again to read the session budget', 'ACCOUNT_TOKEN_INVALID', { status: 401 })
-        throw LlmError.fromFailure({ message: 'The UMA session budget could not be read. The model request has not been dispatched.', code: 'UMA_TASK_BUDGET_UNAVAILABLE' }, { cause: error })
+        if (failure?.code === 'hey-budget/failed' && failure.details.reason === 'account-required')
+          throw new LlmError('Sign in to HeyWork again to read the session budget', 'ACCOUNT_TOKEN_INVALID', { status: 401 })
+        throw LlmError.fromFailure({ message: 'The HEY session budget could not be read. The model request has not been dispatched.', code: 'HEY_TASK_BUDGET_UNAVAILABLE' }, { cause: error })
       }
       owned.throwIfAborted()
       value = this.remember(key, view)
     }
     if (request.kind === 'device' && !await this.stillCurrent(request.origin, request.token))
-      throw LlmError.fromFailure({ message: 'The UMA Studio account changed before dispatch', code: 'UMA_TASK_BUDGET_ACCOUNT_CHANGED' })
+      throw LlmError.fromFailure({ message: 'The HeyWork account changed before dispatch', code: 'HEY_TASK_BUDGET_ACCOUNT_CHANGED' })
     if (value.value.budget.operatorPaused)
-      throw LlmError.fromFailure({ message: 'Operations paused this session budget. Open Budget in the session header for the recorded reason.', code: 'UMA_TASK_BUDGET_PAUSED' })
+      throw LlmError.fromFailure({ message: 'Operations paused this session budget. Open Budget in the session header for the recorded reason.', code: 'HEY_TASK_BUDGET_PAUSED' })
     if (value.value.budget.state !== 'active')
-      throw LlmError.fromFailure({ message: 'This session budget is paused or closed. Use Budget in the session header to resume it.', code: 'UMA_TASK_BUDGET_PAUSED' })
+      throw LlmError.fromFailure({ message: 'This session budget is paused or closed. Use Budget in the session header to resume it.', code: 'HEY_TASK_BUDGET_PAUSED' })
     if (!uuid.test(value.value.budget.id))
-      throw LlmError.fromFailure({ message: 'UMA Studio returned an invalid task budget', code: 'UMA_TASK_BUDGET_UNAVAILABLE' })
+      throw LlmError.fromFailure({ message: 'HeyWork returned an invalid task budget', code: 'HEY_TASK_BUDGET_UNAVAILABLE' })
     return { taskId: value.value.budget.id, protocol: '1' }
   }
 }

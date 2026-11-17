@@ -1,6 +1,6 @@
 {
   "name": "@deepseek-ai/dsh-uma-web",
-  "description": "UMA browser modules, delivery presets and coding preset extensions",
+  "description": "HEY browser modules, delivery presets and coding preset extensions",
   "version": "0.2.2-rc.3",
   "private": true,
   "type": "module",

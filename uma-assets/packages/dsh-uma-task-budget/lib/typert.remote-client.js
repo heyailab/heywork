@@ -65,9 +65,9 @@ const _deepseek_ai_dsh_uma_task_budget_uma_budget_update_parameter_0_strict$sche
 export const TYPERT_REMOTE = createTypertRemoteInfo({
   package: '@deepseek-ai/dsh-uma-task-budget',
   methods: {
-    'uma-budget/read': {
+    'hey-budget/read': {
       service: 'umaTaskBudgets',
-      description: 'Read the root allowance for a real local session under the current UMA account.',
+      description: 'Read the root allowance for a real local session under the current HEY account.',
       invocation: { kind: 'direct' },
       parameters: [
         {
@@ -76,13 +76,13 @@ export const TYPERT_REMOTE = createTypertRemoteInfo({
           source: 'json',
           codec: {
             mode: 'strict',
-            typeSymbol: '@deepseek-ai/dsh-uma-task-budget#uma-budget/read:request',
+            typeSymbol: '@deepseek-ai/dsh-uma-task-budget#hey-budget/read:request',
             create: _deepseek_ai_dsh_uma_task_budget_uma_budget_read_parameter_0$schema,
             jsonSchema: {"type":"object","properties":{"sessionId":{"type":"string"}},"required":["sessionId"],"additionalProperties":true},
           },
           strictCodec: {
             mode: 'strict',
-            typeSymbol: '@deepseek-ai/dsh-uma-task-budget#uma-budget/read:request',
+            typeSymbol: '@deepseek-ai/dsh-uma-task-budget#hey-budget/read:request',
             create: _deepseek_ai_dsh_uma_task_budget_uma_budget_read_parameter_0_strict$schema,
             jsonSchema: {"type":"object","properties":{"sessionId":{"type":"string"}},"required":["sessionId"],"additionalProperties":false},
           },
@@ -96,9 +96,9 @@ export const TYPERT_REMOTE = createTypertRemoteInfo({
         description: 'a credential-free current allowance and root identity.',
         jsonSchema: {"type":"object","properties":{"sessionId":{"type":"string"},"rootSessionId":{"type":"string"},"shared":{"type":"boolean"},"budget":{"type":"object","properties":{"id":{"type":"string"},"purpose":{"type":"string"},"cap":{"oneOf":[{"type":"null","const":null},{"type":"string"}]},"spent":{"type":"string"},"reserved":{"type":"string"},"state":{"type":"string","enum":["active","paused","closed"]},"operatorPaused":{"type":"boolean"},"operatorReason":{"type":"string"},"version":{"type":"number"},"expiresAt":{"type":"string"}},"required":["id","purpose","cap","spent","reserved","state","operatorPaused","operatorReason","version","expiresAt"],"additionalProperties":true}},"required":["sessionId","rootSessionId","shared","budget"],"additionalProperties":true},
       },
-      sourceLocation: {"file":"packages/credentials/uma-task-budget/src/index.ts","line":187,"column":9},
+      sourceLocation: {"file":"packages/credentials/hey-task-budget/src/index.ts","line":187,"column":9},
     },
-    'uma-budget/update': {
+    'hey-budget/update': {
       service: 'umaTaskBudgets',
       description: 'Replace the reviewed root cap/state; accepted calls keep their reservations and can settle.',
       invocation: { kind: 'direct' },
@@ -109,13 +109,13 @@ export const TYPERT_REMOTE = createTypertRemoteInfo({
           source: 'json',
           codec: {
             mode: 'strict',
-            typeSymbol: '@deepseek-ai/dsh-uma-task-budget#uma-budget/update:request',
+            typeSymbol: '@deepseek-ai/dsh-uma-task-budget#hey-budget/update:request',
             create: _deepseek_ai_dsh_uma_task_budget_uma_budget_update_parameter_0$schema,
             jsonSchema: {"type":"object","properties":{"sessionId":{"type":"string"},"expectedVersion":{"type":"number"},"cap":{"oneOf":[{"type":"null","const":null},{"type":"string"}]},"state":{"type":"string","enum":["active","paused","closed"]}},"required":["sessionId","expectedVersion","cap","state"],"additionalProperties":true},
           },
           strictCodec: {
             mode: 'strict',
-            typeSymbol: '@deepseek-ai/dsh-uma-task-budget#uma-budget/update:request',
+            typeSymbol: '@deepseek-ai/dsh-uma-task-budget#hey-budget/update:request',
             create: _deepseek_ai_dsh_uma_task_budget_uma_budget_update_parameter_0_strict$schema,
             jsonSchema: {"type":"object","properties":{"sessionId":{"type":"string"},"expectedVersion":{"type":"number"},"cap":{"oneOf":[{"type":"null","const":null},{"type":"string"}]},"state":{"type":"string","enum":["active","paused","closed"]}},"required":["sessionId","expectedVersion","cap","state"],"additionalProperties":false},
           },
@@ -129,7 +129,7 @@ export const TYPERT_REMOTE = createTypertRemoteInfo({
         description: 'the committed allowance, or an explicit conflict requiring a fresh read.',
         jsonSchema: {"type":"object","properties":{"sessionId":{"type":"string"},"rootSessionId":{"type":"string"},"shared":{"type":"boolean"},"budget":{"type":"object","properties":{"id":{"type":"string"},"purpose":{"type":"string"},"cap":{"oneOf":[{"type":"null","const":null},{"type":"string"}]},"spent":{"type":"string"},"reserved":{"type":"string"},"state":{"type":"string","enum":["active","paused","closed"]},"operatorPaused":{"type":"boolean"},"operatorReason":{"type":"string"},"version":{"type":"number"},"expiresAt":{"type":"string"}},"required":["id","purpose","cap","spent","reserved","state","operatorPaused","operatorReason","version","expiresAt"],"additionalProperties":true}},"required":["sessionId","rootSessionId","shared","budget"],"additionalProperties":true},
       },
-      sourceLocation: {"file":"packages/credentials/uma-task-budget/src/index.ts","line":203,"column":9},
+      sourceLocation: {"file":"packages/credentials/hey-task-budget/src/index.ts","line":203,"column":9},
     },
   },
 }, z)

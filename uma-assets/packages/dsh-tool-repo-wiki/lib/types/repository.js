@@ -544,7 +544,7 @@ export class WikiRepository {
     }
     owned(path) {
         if (!path.startsWith(`${WIKI_ROOT}/`))
-            throw new WikiError('wiki/outside-workspace', 'Expected a .uma/wiki path');
+            throw new WikiError('wiki/outside-workspace', 'Expected a .hey/wiki path');
     }
     async immutable(path, text) {
         const before = await this.files.read(path, this.config.maxRecordBytes);

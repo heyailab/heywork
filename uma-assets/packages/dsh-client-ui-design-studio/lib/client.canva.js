@@ -441,7 +441,7 @@ The shape system is ultra-soft: 12px on most cards, 16–20px on larger panels, 
         gap: var(--space-3);
       }
     </style>
-  <style data-uma-responsive-repair>
+  <style data-hey-responsive-repair>
       /* Grid and flex children may shrink; long labels wrap within their own column. */
       :where(*) { min-width: 0; }
       :where(h1, h2, h3, p, a, span, strong, label, code) { overflow-wrap: anywhere; }
@@ -533,7 +533,7 @@ The shape system is ultra-soft: 12px on most cards, 16–20px on larger panels, 
               brand kit, folders, and approvals included. No credit card needed.
             </p>
           </div>
-          <div role="group" class="uma-preview-form form">
+          <div role="group" class="hey-preview-form form">
             <div class="field">
               <label for="email">Work email</label>
               <input id="email" type="email" placeholder="you@yourcompany.com" autocomplete="email" required />

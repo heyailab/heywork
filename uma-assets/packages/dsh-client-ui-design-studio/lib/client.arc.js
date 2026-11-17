@@ -494,7 +494,7 @@ Shapes are squircle-soft: 12–16px radii on cards, 8px on tabs, 9999px pills fo
               halo on focus — extends straight into the form layer. One language, one mood.
             </p>
           </div>
-          <div role="group" class="uma-preview-form form">
+          <div role="group" class="hey-preview-form form">
             <div class="field">
               <label for="email">Where should we send your invite?</label>
               <input id="email" type="email" placeholder="you@thebrowser.company" autocomplete="email" required />

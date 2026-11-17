@@ -4,7 +4,7 @@ import { z } from "zod";
 /** Supported independently stored Wiki languages. */
 const WIKI_LANGUAGES = ["zh", "en"];
 /** One repository-relative Wiki storage root. */
-const WIKI_ROOT = ".uma/wiki";
+const WIKI_ROOT = ".hey/wiki";
 /** Portable-record ceiling; deployments can choose a lower generation budget. */
 const MAX_WIKI_PAGES = 1e3;
 /** Portable-record ceiling for evidence-bearing knowledge cards. */

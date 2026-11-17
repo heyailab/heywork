@@ -4,7 +4,7 @@ import picomatch from 'picomatch';
 import { z } from 'zod';
 import { manifestSchema } from "./schema.js";
 import { runCommand } from "./process.js";
-const CHECK_MANIFESTS = ['.uma/coding.json', 'package.json', 'pyproject.toml', 'pom.xml'];
+const CHECK_MANIFESTS = ['.hey/coding.json', 'package.json', 'pyproject.toml', 'pom.xml'];
 /**
  * Reject traversal and references outside a registered workspace, including symbolic links.
  * @param ctx - filesystem provider.
@@ -63,7 +63,7 @@ export async function scanSources(ctx, config, cwd, signal) {
     let reason = null;
     const excluded = new Set(config.excludedDirectories);
     const secrets = new Set(['.ssh', '.aws', '.azure', '.dsh-home', '.dsh-storages', '.credentials.yaml', '.npmrc', '.pypirc', '.netrc', '.git-credentials']);
-    const allowed = (path) => !path.replaceAll('\\', '/').split('/').some(part => part === '.git' || part === '.uma' || secrets.has(part) || excluded.has(part) || /^\.env(?:\.|$)/u.test(part));
+    const allowed = (path) => !path.replaceAll('\\', '/').split('/').some(part => part === '.git' || part === '.hey' || secrets.has(part) || excluded.has(part) || /^\.env(?:\.|$)/u.test(part));
     let git = false;
     try {
         const result = await runCommand(ctx, config, { ...ctx.sandboxPolicy.resolve(), workspaceRoot: cwd, mode: 'read-only' }, cwd, ['git', 'ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', '.'], signal);
@@ -168,7 +168,7 @@ export function checkDefinitions(files) {
  */
 export async function discoverChecks(ctx, cwd, config, signal) {
     const result = [];
-    const manifest = await readSource(ctx, cwd, '.uma/coding.json', config.maxFileBytes, signal);
+    const manifest = await readSource(ctx, cwd, '.hey/coding.json', config.maxFileBytes, signal);
     if (manifest !== undefined)
         result.push(...manifestSchema.parse(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(manifest.bytes))).checks);
     const pkg = await readSource(ctx, cwd, 'package.json', config.maxFileBytes, signal);
@@ -257,7 +257,7 @@ export async function changedFiles(ctx, config, cwd, signal) {
  * Match one workspace-relative path against one coverage glob with maintained glob semantics:
  * `*` stays inside a path segment, `**` crosses segments, dotfiles are included.
  * @param path - workspace-relative path.
- * @param glob - coverage pattern authored in `.uma/coding.json`.
+ * @param glob - coverage pattern authored in `.hey/coding.json`.
  * @returns whether the path is inside the pattern's scope.
  */
 export function pathMatchesGlob(path, glob) {

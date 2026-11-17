@@ -55,8 +55,8 @@ interface FeedbackContext {
   deepseekAccount: FeedbackAccount
 }
 
-/** Deliver explicit text feedback to the signed-in UMA account's support service. */
-/** UMA-owned feedback command provider. */
+/** Deliver explicit text feedback to the signed-in HEY account's support service. */
+/** HEY-owned feedback command provider. */
 export const name = 'uma-feedback'
 
 /** Command dispatch and the Host-only signed-in account grant. */
@@ -72,7 +72,7 @@ export const Config = z.object({
 function platformOrigin(config: FeedbackConfig): string {
   const origin = new URL(config.origin)
   const loopback = config.allowLoopbackHttp && origin.protocol === 'http:' && origin.hostname === '127.0.0.1'
-  if (origin.origin !== config.origin || origin.protocol !== 'https:' && !loopback || /(?:^|\.)deepseek\.com\.?$/iu.test(origin.hostname)) throw new Error('UMA feedback requires its own canonical HTTPS platform origin or an enabled loopback test origin')
+  if (origin.origin !== config.origin || origin.protocol !== 'https:' && !loopback || /(?:^|\.)deepseek\.com\.?$/iu.test(origin.hostname)) throw new Error('HEY feedback requires its own canonical HTTPS platform origin or an enabled loopback test origin')
   return origin.origin
 }
 
@@ -81,7 +81,7 @@ function platformOrigin(config: FeedbackConfig): string {
  * @param account - Host account operations; credentials remain inside this function.
  * @param invocation - One explicit feedback command, with its durable pairing ID and cancellation.
  * @param config - Validated destination and request budget.
- * @returns A confirmed UMA ticket link or a visible error; network failures report an unknown outcome.
+ * @returns A confirmed HEY ticket link or a visible error; network failures report an unknown outcome.
  */
 export async function submitUmaFeedback(account: FeedbackAccount, invocation: FeedbackInvocation, config: FeedbackConfig): Promise<FeedbackResult> {
   const origin = platformOrigin(config)
@@ -107,12 +107,12 @@ export async function submitUmaFeedback(account: FeedbackAccount, invocation: Fe
   catch (_error) {
     return {
       kind: 'error',
-      text: '无法读取 UMA 登录状态，反馈尚未发送，请检查账号状态后重试。'
+      text: '无法读取 HEY 登录状态，反馈尚未发送，请检查账号状态后重试。'
     }
   }
   if (session === null || session.origin !== origin || session.authenticatePage !== true) return {
     kind: 'error',
-    text: '请先登录对应的 UMA Studio 账号，再提交反馈。'
+    text: '请先登录对应的 HeyWork 账号，再提交反馈。'
   }
   const support = `${origin}/account/support`
   try {
@@ -132,14 +132,14 @@ export async function submitUmaFeedback(account: FeedbackAccount, invocation: Fe
       await response.body?.cancel()
       return {
         kind: 'error',
-        text: 'UMA 反馈提交未获授权，请重新登录或在帮助与工单中核对账号状态。'
+        text: 'HEY 反馈提交未获授权，请重新登录或在帮助与工单中核对账号状态。'
       }
     }
     if (response.status >= 400 && response.status < 500) {
       await response.body?.cancel()
       return {
         kind: 'error',
-        text: `UMA 反馈未被接受（HTTP ${String(response.status)}），请检查内容后重试。`
+        text: `HEY 反馈未被接受（HTTP ${String(response.status)}），请检查内容后重试。`
       }
     }
     if (!response.ok) {
@@ -150,28 +150,28 @@ export async function submitUmaFeedback(account: FeedbackAccount, invocation: Fe
     if (typeof receipt !== 'object' || receipt === null || !('id' in receipt) || typeof receipt.id !== 'string' || !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/iu.test(receipt.id)) throw new Error('submission receipt unavailable')
     return {
       kind: 'success',
-      text: `反馈已提交至 UMA Studio。\n工单：${support}/${receipt.id}\n仅提交了你输入的文字，未附带会话日志。`
+      text: `反馈已提交至 HeyWork。\n工单：${support}/${receipt.id}\n仅提交了你输入的文字，未附带会话日志。`
     }
   }
   catch (_error) {
     return {
       kind: 'error',
-      text: `暂时无法确认反馈是否提交成功，请先到 UMA 帮助与工单核对，避免重复提交：${support}`
+      text: `暂时无法确认反馈是否提交成功，请先到 HEY 帮助与工单核对，避免重复提交：${support}`
     }
   }
 }
 
 /**
- * Replace the disabled kernel feedback command with the UMA support submission.
- * @param ctx - Scoped UMA composition context.
- * @param config - Validated UMA deployment choices.
+ * Replace the disabled kernel feedback command with the HEY support submission.
+ * @param ctx - Scoped HEY composition context.
+ * @param config - Validated HEY deployment choices.
  */
 export function apply(ctx: FeedbackContext, config: FeedbackConfig): void {
   platformOrigin(config)
   ctx.effect(() => ctx.commands.register({
     definitionId: CommandDefinitionId('@deepseek-ai/dsh-command-feedback'),
     name: 'feedback',
-    description: 'Submit text feedback to UMA Studio support',
+    description: 'Submit text feedback to HeyWork support',
     input: { hint: '<text>' },
     recordInput: false,
     async handler(invocation) {

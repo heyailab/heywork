@@ -552,7 +552,7 @@ The color system is deliberately minimal. The primary palette consists of just t
             warm borders, and a 2px Apple blue focus ring.
           </p>
         </div>
-        <div role="group" class="uma-preview-form form" style="margin-block-start: var(--space-8);">
+        <div role="group" class="hey-preview-form form" style="margin-block-start: var(--space-8);">
           <div class="field">
             <label for="anthropic-key">ANTHROPIC_API_KEY</label>
             <input id="anthropic-key" type="text" placeholder="sk-ant-api03-..." autocomplete="off" />

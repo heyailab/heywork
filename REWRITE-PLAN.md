@@ -1,4 +1,4 @@
-# UMA Windows 版：从「整合移植」转向「理解后 1:1 重写」
+# HEY Windows 版：从「整合移植」转向「理解后 1:1 重写」
 
 > 决策时间：2026-11-17
 > 取代关系：本文件定义**新方向**。`PLAN.md` / `WINDOWS-DEV.md` 保留为「整合移植」路线的完整记录与回滚基线；
@@ -31,22 +31,22 @@
 | `brand/` | 图标 ico/png/tray | 直接用 |
 | `renderer/` | 欢迎页 / 更新页 / 强制更新帧覆盖 | 直接用（若确认保留品牌壳） |
 | locale 8 语 | 20 包 × 8 语言 | 文案直接复用，键集合纳入回归门禁 |
-| `uma-platform.patch.mac.yml` | 22 开关原文 | 作为行为规格，win32 覆写保留 |
+| `hey-platform.patch.mac.yml` | 22 开关原文 | 作为行为规格，win32 覆写保留 |
 
 **注意**：umadb 里的 18 个 `.py` 是构建期资产，运行期不执行；重写时保持「只读虚拟路径」语义即可。
 
 ### 1.2 B 类：官方 dsh 已有，直接复用或薄适配（不重写）
 
-这些在官方 `39163dd` 里已存在，UMA 只是换配置或加了一层：
+这些在官方 `39163dd` 里已存在，HEY 只是换配置或加了一层：
 
 | 官方包 | 用途 | 我们的动作 |
 |---|---|---|
-| `team/agent-team` + `tool-agent-team` | 团队板原语 | 直接用，只保留 UMA preset 与总监提示词（A 类数据） |
-| `experimental/worktree` + `tool-worktree` | git worktree | UMA 版 `dsh-worktree` 有 `uma-` namePrefix 等定制；**先评估差异**再决定薄适配还是重写（见 Phase 1） |
+| `team/agent-team` + `tool-agent-team` | 团队板原语 | 直接用，只保留 HEY preset 与总监提示词（A 类数据） |
+| `experimental/worktree` + `tool-worktree` | git worktree | HEY 版 `dsh-worktree` 有 `hey-` namePrefix 等定制；**先评估差异**再决定薄适配还是重写（见 Phase 1） |
 | `sandbox/*` | Windows ACL / bash / pwsh 沙箱 | 直接用，重写包只调用公开 API |
 | `subprocess` / `sandbox-ssh` / `ssh` | 子进程与 SSH 底层 | 直接用；SSH 工具若做，复用这里的 `resolveExecutable` 与 confinement |
 | `typert` / `boot/plugin-manager` / `skill` / `session` | 协议与服务注册 | 直接用，重写包按公开 API 接入 |
-| `feedback` | 反馈通道 | UMA 的 `uma-feedback` 只是配置（origin/超时），大概率不需重写 |
+| `feedback` | 反馈通道 | HEY 的 `uma-feedback` 只是配置（origin/超时），大概率不需重写 |
 
 ### 1.3 C 类：必须自己重写（DeepSeek 私有、官方无对应）
 
@@ -54,15 +54,15 @@
 
 | 组 | 包 | 工具/能力 | 还原件规模 | 优先级 |
 |---|---|---|---|---|
-| **C1 数据底座** | `dsh-skill-uma`（重写容器读取层） | `uma_resource_read` + 技能注册 | 357 行 | P0（所有人依赖它） |
-| | `dsh-tool-uma-design` | 11 个 `design_*` + `uma_knowledge_search` | 2,376 行 | P0 |
-| **C2 交付与团队** | `dsh-tool-uma-workflow` | `uma_artifact_write/read` + gate | 417 行 | P0 |
+| **C1 数据底座** | `dsh-skill-uma`（重写容器读取层） | `hey_resource_read` + 技能注册 | 357 行 | P0（所有人依赖它） |
+| | `dsh-tool-uma-design` | 11 个 `design_*` + `hey_knowledge_search` | 2,376 行 | P0 |
+| **C2 交付与团队** | `dsh-tool-uma-workflow` | `hey_artifact_write/read` + gate | 417 行 | P0 |
 | | `dsh-util-uma-delivery` | 工件分级 / 脱敏 / SSH target 解析 | 1,158 行 | P0 |
 | | `dsh-uma-task-budget` | `uma_session_budgets`（typert） | 832 行 | P1 |
 | | `dsh-uma-guidance` | `uma_guidance`（默认禁用） | 635 行 | P2 |
-| | `dsh-uma-base`（非 SSH 部分） | `uma_workspace_search` / `uma_project_memory` / `uma_experience_record` / `uma_weknora_search` | 约 800 行 | P1 |
+| | `dsh-uma-base`（非 SSH 部分） | `hey_workspace_search` / `hey_project_memory` / `hey_experience_record` / `hey_weknora_search` | 约 800 行 | P1 |
 | **C3 一等包缺失能力** | `dsh-knowledge` | embedding / PDF / node:sqlite | 8,975 行 lib | P1，需拆细 |
-| | `dsh-tool-repo-wiki` + `dsh-util-repo-wiki` | `uma_wiki_lookup` + 10 个 `wiki_*` | 5,430 行 lib | P1 |
+| | `dsh-tool-repo-wiki` + `dsh-util-repo-wiki` | `hey_wiki_lookup` + 10 个 `wiki_*` | 5,430 行 lib | P1 |
 | | `dsh-coding-workbench` | 7 个 `coding_*` | 12,737 行 lib | P1，需拆细 |
 | | `dsh-task-query` / 账号适配 2 个 / UI 3 个 | 服务与面板 | 视验收需要 | P2 |
 | **C4 UI 面板** | 7 个客户端包 | 6 处 UI（品牌 / 设计工作室 / 知识库 / wiki / 任务预算 / remotes） | 压缩 bundle，无还原件 | P2，**按界面稿重写** |
@@ -79,10 +79,10 @@
 | 工作 | 在哪做 | 原因 |
 |---|---|---|
 | 读还原件写 `specs/` / 写重写代码 / 单元测试 / golden 回放 | **Mac（本机）** | 纯 TS，跨平台；还原件、数据、官方文档全在本机 |
-| 录 golden 基线（对照行为） | **Mac（本机）** | 本机就装着真实 UMA `1.0.0-beta4`（`/Applications/UMA Studio.app`），这是**比整合版更权威的黄金对照**——直接跑它取真实输入输出，不必等 Windows 出包 |
+| 录 golden 基线（对照行为） | **Mac（本机）** | 本机就装着真实 HEY `1.0.0-beta4`（`/Applications/HeyWork.app`），这是**比整合版更权威的黄金对照**——直接跑它取真实输入输出，不必等 Windows 出包 |
 | 容器格式兼容测试（旧 umadb 可读） | **Mac（本机）** | Node 22.22 实测 `node:sqlite` 免 flag 可用，加解密与 brotli 全在 Node 层，与平台无关 |
-| 22 开关 / 层配置 / 工具在册门禁 | **Mac（本机）** | `verify-uma-platform.mjs` 是纯文本/JSON 分析 |
-| **① Windows 平台行为验证** | **必须 Windows** | 沙箱 ACL（restricted token）、`PATHEXT` 可执行解析、`~/.uma` 路径、长路径、`uma://` 协议注册、SmartScreen —— 这些在 Mac 上**无法证伪** |
+| 22 开关 / 层配置 / 工具在册门禁 | **Mac（本机）** | `verify-hey-platform.mjs` 是纯文本/JSON 分析 |
+| **① Windows 平台行为验证** | **必须 Windows** | 沙箱 ACL（restricted token）、`PATHEXT` 可执行解析、`~/.hey` 路径、长路径、`hey://` 协议注册、SmartScreen —— 这些在 Mac 上**无法证伪** |
 | **② 最终真机出包 + 9 步验收** | **必须 Windows** | 交付物是 Windows 安装包；真实 UI 挂载与登录链只能装包验 |
 
 **本机环境现状（2026-11-17 实测）**：Node v22.22.2（内置 sqlite 可用）、pnpm 未启用
@@ -90,7 +90,7 @@
 （需先 `pnpm install && pnpm build`）。也就是说：
 
 - **录 golden 有两条路**：
-  1. **最准**：直接用本机 `/Applications/UMA Studio.app`（真实 beta4）跑工具调用，取真实返回；
+  1. **最准**：直接用本机 `/Applications/HeyWork.app`（真实 beta4）跑工具调用，取真实返回；
   2. **最快**：本地 dsh 树 `pnpm install && pnpm build` 后 headless 调包（一次性成本，之后每次回放秒级）。
   建议 M1 用 ① 定基线、② 做日常回放，两者结果应一致。
 - **重写代码本身不需要 pnpm / 不需要 dsh build**：自研包是独立 TS 文件，
@@ -125,7 +125,7 @@
 2. **错误与提示文本**：逐字列出所有错误码、`reason`、给用户看的说明文案
    —— 来源：`notes/parity-gap-review.md` 已验过 1,393 个唯一运行时字符串。
 3. **副作用与边界**：写哪些文件、路径怎么算、超时/截断/并发/权限如何
-   —— 来源：还原件 README 里登记的「可疑但逐字保留」点（如 `design_project_create` 的 `system='UMA'`、
+   —— 来源：还原件 README 里登记的「可疑但逐字保留」点（如 `design_project_create` 的 `system='HEY'`、
    `redactDevelopmentText` 只是 best-effort、`evaluateArtifact` 用原始 content）。
 
 规格文件放进 `specs/<包名>.md`，每个工具一节，格式固定：
@@ -142,7 +142,7 @@
 **这条是整个计划的安全带**：重写后拿同样输入跑，输出必须逐字段一致。
 没有 golden，所谓「1:1」只是主观判断。
 
-> 注意：`uma_resource_read` 的 golden 要直接从 `resources.umadb` 取真实数据跑，
+> 注意：`hey_resource_read` 的 golden 要直接从 `resources.umadb` 取真实数据跑，
 > 因为 A 类数据是原样复用的，它天然就是对照组。
 
 ### 2.3 第三步：逐个替换，一次一个包
@@ -153,14 +153,14 @@
 写 specs → 录 golden → 自己实现 → 跑 golden 对比 → 过门禁 → 提交
 ```
 
-每完成一个包，就用自研包**替换**注入清单里的旧包，跑 `verify-uma-platform.mjs`（扩展后含 golden 校验）。
+每完成一个包，就用自研包**替换**注入清单里的旧包，跑 `verify-hey-platform.mjs`（扩展后含 golden 校验）。
 任何一个包失败就停，不叠加。
 
 ### 2.4 重写的技术约定
 
 - 用 TypeScript 写，遵循官方 cordis 插件模型（`defineTool` / `dsh.client` / ctx 服务），
   与官方包同构——这样 22 开关、层配置、profile 机制全部不动。
-- 对外接口（工具名、schema、错误文本、容器格式、`.uma/` 文件布局）**逐字一致**；
+- 对外接口（工具名、schema、错误文本、容器格式、`.hey/` 文件布局）**逐字一致**；
   内部实现（数据结构、算法、模块拆分、类型命名）自由。
 - 依赖只用官方公开 API + Node 标准库；A 类数据通过重写后的容器读取层访问。
 - 每个重写包自带单元测试 + golden 回放测试，不依赖整包出包。
@@ -173,8 +173,8 @@
 
 | 里程碑 | 范围 | 完成标志 |
 |---|---|---|
-| **M1 数据底座闭环** | C1（`dsh-skill-uma` 容器层 + `dsh-tool-uma-design` 11 工具）+ A 类数据 | 20 技能可读、507 设计系统可检索、`uma_resource_read` golden 全过；**不依赖任何私有一等包** |
-| **M2 交付流水线闭环** | C2 的 workflow + delivery + budget + base（非 SSH） | `uma_artifact_write/read` + `uma_gate_status` + 预算 golden 全过；团队 preset 可用 |
+| **M1 数据底座闭环** | C1（`dsh-skill-uma` 容器层 + `dsh-tool-uma-design` 11 工具）+ A 类数据 | 20 技能可读、507 设计系统可检索、`hey_resource_read` golden 全过；**不依赖任何私有一等包** |
+| **M2 交付流水线闭环** | C2 的 workflow + delivery + budget + base（非 SSH） | `hey_artifact_write/read` + `hey_gate_status` + 预算 golden 全过；团队 preset 可用 |
 | **M3 一等包与 UI** | C3 的 knowledge / wiki / coding-workbench + C4 的 7 个 UI | 40 工具 golden 全过、6 处 UI 出现、切语言正常 |
 
 **M1 是最关键的验证点**：如果数据底座能在完全自研代码上跑通，就证明了方向可行；
@@ -192,7 +192,7 @@ M2/M3 只是同一模式的复制。建议在 M1 完成后就做一次阶段评�
 
 - [ ] 每个重写包有 `specs/<包>.md` 行为规格，覆盖全部工具
 - [ ] 每个工具有 golden 样例，重写后逐字段一致（含错误文本与副作用）
-- [ ] 40 个工具的在册检查继续保留（`verify-uma-platform.mjs` 不退化）
+- [ ] 40 个工具的在册检查继续保留（`verify-hey-platform.mjs` 不退化）
 - [ ] 22 开关、8 语 locale、7 个 UI entry、21 个 inject 目标继续保留在门禁里
 - [ ] `resources.umadb` 格式兼容：重写后的读取层能读旧容器，反之亦然
 - [ ] 真机 Windows 验收（沿用 `notes/parity-gap-review.md` §5 的 4 项 + 原 9 步）
@@ -215,7 +215,7 @@ M2/M3 只是同一模式的复制。建议在 M1 完成后就做一次阶段评�
 
 1. **建 `specs/` 与 `golden/` 骨架**，把 M1 两个包（`dsh-skill-uma` / `dsh-tool-uma-design`）
    的行为规格从还原件里抽出来 —— 这是纯分析，不改任何运行时代码。
-2. **录第一轮 golden**：用当前整合版跑 `uma_resource_read` + 11 个 `design_*`，存样例。
+2. **录第一轮 golden**：用当前整合版跑 `hey_resource_read` + 11 个 `design_*`，存样例。
 3. **M1 重写**：先写 `dsh-skill-uma` 的容器读取层（最底层的依赖），golden 过后再做 design 工具族。
 4. M1 完成后阶段评审。
 

@@ -1,21 +1,21 @@
-# Agent preset uma-role-author: spawn-only role composition for authoring
+# Agent preset hey-role-author: spawn-only role composition for authoring
 # teammates (product, architecture, design). Documents flow through the
 # artifact workflow; there is no code-execution or file-mutation surface.
-# Spawn-only: referenced by the uma-team director recipes, not meant as a
+# Spawn-only: referenced by the hey-team director recipes, not meant as a
 # session mode.
 - insert:
-    - id: preset-uma-role-author
+    - id: preset-hey-role-author
       name: '@deepseek-ai/dsh-agent-preset'
       config:
-        id: uma-role-author
-        name: UMA role — author
+        id: hey-role-author
+        name: HEY role — author
         description: Authoring teammate for the delivery team — product, architecture, or design artifacts through the artifact workflow, with read-only code access.
         order: 90
         plugins:
           - id: persona
             name: '@deepseek-ai/dsh-persona'
             config:
-              prefix: You are a UMA delivery-team teammate. Your role brief comes from your spawn description; the uma-team workflow defines how you deliver. You write documents through the artifact workflow, never through file-mutation tools — you have none.
+              prefix: You are a HEY delivery-team teammate. Your role brief comes from your spawn description; the hey-team workflow defines how you deliver. You write documents through the artifact workflow, never through file-mutation tools — you have none.
           - id: agent-instructions
             name: '@deepseek-ai/dsh-agent-instructions'
             config:
@@ -50,11 +50,11 @@
             name: '@deepseek-ai/dsh-coding-workbench/tools'
             config:
               mode: read-only
-          - id: skill-uma
+          - id: skill-hey
             name: '@deepseek-ai/dsh-skill-uma'
-          - id: tool-uma-workflow
+          - id: tool-hey-workflow
             name: '@deepseek-ai/dsh-tool-uma-workflow'
-          - id: tool-uma-design
+          - id: tool-hey-design
             name: '@deepseek-ai/dsh-tool-uma-design'
             config:
               projectWrite: false

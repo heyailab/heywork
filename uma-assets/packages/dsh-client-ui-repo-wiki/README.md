@@ -86,7 +86,7 @@ Prompts use the normal Session pipeline; this page does not assemble provider re
 
 - Interface copy is Chinese and English, with English fallback for other application locales.
 - Automatic scheduling belongs to the running client; it is not a durable Host queue or a reservation shared by multiple application windows.
-- Import accepts a portable JSON bundle already placed under `.uma/wiki/`; cloud team-account synchronization is separate.
+- Import accepts a portable JSON bundle already placed under `.hey/wiki/`; cloud team-account synchronization is separate.
 - Source previews show up to 500 lines from the exact cited revision. Update the Wiki to preview a new citation when the cited revision is unavailable.
 
 <a id="dev-note"></a>

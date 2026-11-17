@@ -555,7 +555,7 @@ Chat message entry: fade-in + slight slide up, 200ms.
               </p>
             </div>
           </div>
-          <div role="group" class="uma-preview-form form">
+          <div role="group" class="hey-preview-form form">
             <div class="field">
               <label for="wxid">微信号 · WeChat ID</label>
               <input id="wxid" type="text" placeholder="wxid_xxxxxxxx" autocomplete="username" required />

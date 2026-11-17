@@ -1,4 +1,4 @@
-/** Parsing and relevance matching for the team experience ledger (`.uma/experience.md`). */
+/** Parsing and relevance matching for the team experience ledger (`.hey/experience.md`). */
 import { createHash } from 'node:crypto';
 import { redactArgv, redactOutput } from "./process.js";
 const TERM_LIMIT = 64;

@@ -1,4 +1,4 @@
-# UMA browser modules over the shared Host services and kernel Web application.
+# HEY browser modules over the shared Host services and kernel Web application.
 
 - id: workspace-controller
   config:
@@ -6,19 +6,19 @@
 
 - id: deepseek-account
   config:
-    product: uma
-    platformOrigin: !!js "ctx.get('launchEnvironment')?.get('UMA_STUDIO_API_ORIGIN')?.value ?? 'https://studio.umayun.com'"
-    inferenceOrigin: !!js "ctx.get('launchEnvironment')?.get('UMA_STUDIO_API_ORIGIN')?.value ?? 'https://studio.umayun.com'"
+    product: hey
+    platformOrigin: !!js "ctx.get('launchEnvironment')?.get('HEY_STUDIO_API_ORIGIN')?.value ?? 'https://studio.umayun.com'"
+    inferenceOrigin: !!js "ctx.get('launchEnvironment')?.get('HEY_STUDIO_API_ORIGIN')?.value ?? 'https://studio.umayun.com'"
     desktopPlatform: !!js "ctx.get('profileContext')?.name === 'desktop' && ['darwin', 'win32'].includes(process.platform) ? process.platform : null"
-    allowLoopbackHttp: !!js "ctx.get('launchEnvironment')?.get('UMA_STUDIO_ALLOW_LOOPBACK_HTTP')?.value === '1'"
-    credentialIdPrefix: uma-studio
-    modelProviders: [uma-messages, uma-chat-completions, uma-responses, uma-gemini, deepseek-account]
+    allowLoopbackHttp: !!js "ctx.get('launchEnvironment')?.get('HEY_STUDIO_ALLOW_LOOPBACK_HTTP')?.value === '1'"
+    credentialIdPrefix: heywork
+    modelProviders: [hey-messages, hey-chat-completions, hey-responses, hey-gemini, deepseek-account]
 
 - id: llm-deepseek-account
   config:
-    displayName: UMA Studio
+    displayName: HeyWork
     baseURL: https://studio.umayun.com
-    baseURLEnv: UMA_STUDIO_API_ORIGIN
+    baseURLEnv: HEY_STUDIO_API_ORIGIN
     requirePublishedModels: true
     requireTaskBudgets: true
     retryPolicy: {mode: normal, maxRetries: 0}
@@ -26,7 +26,7 @@
 - id: llm-pi-ai
   config:
     managedAccountTaskBudgets: true
-    managedAccountOrigin: !!js "ctx.get('launchEnvironment')?.get('UMA_STUDIO_API_ORIGIN')?.value ?? 'https://studio.umayun.com'"
+    managedAccountOrigin: !!js "ctx.get('launchEnvironment')?.get('HEY_STUDIO_API_ORIGIN')?.value ?? 'https://studio.umayun.com'"
     providers: {}
 
 - id: agent-default-model
@@ -36,7 +36,7 @@
 
 - id: session-controller
   config:
-    accountModelProviders: [uma-messages, uma-chat-completions, uma-responses, uma-gemini, deepseek-account]
+    accountModelProviders: [hey-messages, hey-chat-completions, hey-responses, hey-gemini, deepseek-account]
 
 - id: web
   config:
@@ -79,10 +79,10 @@
     conversationCard: true
 
 - insert:
-    - id: ui-uma-task-budget
+    - id: ui-hey-task-budget
       name: '@deepseek-ai/dsh-client-ui-uma-task-budget'
 
-    - id: uma-remotes
+    - id: hey-remotes
       name: '@deepseek-ai/dsh-client-uma-remotes'
 
     - id: ui-knowledge
@@ -96,13 +96,13 @@
     - id: ui-repo-wiki
       name: '@deepseek-ai/dsh-client-ui-repo-wiki'
 
-    - id: ui-uma-design
+    - id: ui-hey-design
       name: '@deepseek-ai/dsh-client-ui-uma-design'
 
-    - id: ui-uma-brand
+    - id: ui-hey-brand
       name: '@deepseek-ai/dsh-client-ui-uma-brand'
       config:
-        name: UMA Studio
+        name: HeyWork
 
 - id: command-feedback
   disabled: true
@@ -111,7 +111,7 @@
     - id: uma-feedback
       name: '@deepseek-ai/dsh-uma-base/feedback'
       config:
-        origin: !!js "ctx.get('launchEnvironment')?.get('UMA_STUDIO_API_ORIGIN')?.value ?? 'https://studio.umayun.com'"
-        allowLoopbackHttp: !!js "ctx.get('launchEnvironment')?.get('UMA_STUDIO_ALLOW_LOOPBACK_HTTP')?.value === '1'"
-    - id: uma-operations-ssh
+        origin: !!js "ctx.get('launchEnvironment')?.get('HEY_STUDIO_API_ORIGIN')?.value ?? 'https://studio.umayun.com'"
+        allowLoopbackHttp: !!js "ctx.get('launchEnvironment')?.get('HEY_STUDIO_ALLOW_LOOPBACK_HTTP')?.value === '1'"
+    - id: hey-operations-ssh
       name: '@deepseek-ai/dsh-uma-base/operations-ssh'

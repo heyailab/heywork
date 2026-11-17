@@ -416,7 +416,7 @@ Tesla's approach to elevation is essentially "none." The site avoids box-shadows
        * box so the input is visible against the pale section
        * background; focus tightens to --accent and adds the soft blue
        * halo. Density is quiet — photography is supposed to dominate
-       * the page, not .uma-preview-form chrome. */
+       * the page, not .hey-preview-form chrome. */
       .field {
         display: flex;
         flex-direction: column;
@@ -859,7 +859,7 @@ Tesla's approach to elevation is essentially "none." The site avoids box-shadows
               </div>
             </div>
 
-            <div role="group" class="uma-preview-form form">
+            <div role="group" class="hey-preview-form form">
               <div class="field">
                 <label for="email">Work email</label>
                 <input

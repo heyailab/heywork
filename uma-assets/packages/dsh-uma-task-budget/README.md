@@ -1,5 +1,5 @@
 ---
-description: "Own financial task allowances for UMA sessions and delegated agents."
+description: "Own financial task allowances for HEY sessions and delegated agents."
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-This private UMA Host service binds a recorded root session and its delegated children to one server financial allowance. It exposes credential-free budget controls and prepares admission headers for managed model calls. The server remains authoritative for reservations, spending, version conflicts and pauses. Reopening a session preserves its original cap and accumulated spending.
+This private HEY Host service binds a recorded root session and its delegated children to one server financial allowance. It exposes credential-free budget controls and prepares admission headers for managed model calls. The server remains authoritative for reservations, spending, version conflicts and pauses. Reopening a session preserves its original cap and accumulated spending.
 
 ## Table of Contents
 
@@ -23,9 +23,9 @@ This private UMA Host service binds a recorded root session and its delegated ch
 <a id="use-this-package"></a>
 ## Use this package
 
-UMA base mounts this service with `storageDomain`, `sessionQuery` and `typert`. The optional signed-in account supplies the issuer for the UI. Managed native and Pi-AI transports opt in through their UMA profile; independently configured providers keep their existing behavior. `prepare()` receives the real local session, captured issuer and credential, and request cancellation signal. Budget metadata failure stops dispatch. Neither this service nor its transport hook retries inference.
+HEY base mounts this service with `storageDomain`, `sessionQuery` and `typert`. The optional signed-in account supplies the issuer for the UI. Managed native and Pi-AI transports opt in through their HEY profile; independently configured providers keep their existing behavior. `prepare()` receives the real local session, captured issuer and credential, and request cancellation signal. Budget metadata failure stops dispatch. Neither this service nor its transport hook retries inference.
 
-`read` and `update` are available through the generated `remote['uma-budget']` facade. Updates require the observed version, explicit cap as a CNY decimal string or `null`, and the next state. A null cap adds no session spending limit; account funds and API key allowances still apply. Accepted requests retain their reservations when a budget is paused, and may finish settlement.
+`read` and `update` are available through the generated `remote['hey-budget']` facade. Updates require the observed version, explicit cap as a CNY decimal string or `null`, and the next state. A null cap adds no session spending limit; account funds and API key allowances still apply. Accepted requests retain their reservations when a budget is paused, and may finish settlement.
 
 <a id="understand-the-implementation"></a>
 ## Understand the implementation
@@ -41,8 +41,8 @@ The server uses integer currency units and an owned session binding, serializes 
 <a id="further-exploration"></a>
 ## Further Exploration
 
-- [Budget UI](../../client/ui-uma-task-budget/README.md)
-- [Server allowance implementation](../../../apps/uma-platform-go/internal/ledger/session_budgets.go)
+- [Budget UI](../../client/ui-hey-task-budget/README.md)
+- [Server allowance implementation](../../../apps/hey-platform-go/internal/ledger/session_budgets.go)
 - [Native inference integration](../../llm/llm-deepseek-account/src/managed-request.ts)
 
 <a id="model-experience"></a>
@@ -52,7 +52,7 @@ The server uses integer currency units and an owned session binding, serializes 
 
 #### What the model sees
 
-The allowance is a financial admission constraint, independent of a coding team's task identifiers or model prompt. Delegated agents cannot gain additional spending capacity merely by starting another child session. `X-UMA-Task-ID` and credentials are transport metadata and are not added to model context.
+The allowance is a financial admission constraint, independent of a coding team's task identifiers or model prompt. Delegated agents cannot gain additional spending capacity merely by starting another child session. `X-HEY-Task-ID` and credentials are transport metadata and are not added to model context.
 
 #### Token effect
 

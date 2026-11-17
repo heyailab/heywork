@@ -108,14 +108,14 @@ export class GuidanceTransportError extends Error {
   * @param status - Optional HTTP status without response content.
   */
   constructor(code: string, status?: number) {
-    super(`UMA guidance ${code}`);
+    super(`HEY guidance ${code}`);
     this.code = code;
     this.status = status;
   }
 }
 
 /**
-* Admit one canonical UMA destination at plugin load.
+* Admit one canonical HEY destination at plugin load.
 * @param config - Deployment origin and explicit loopback allowance.
 * @returns the exact canonical origin.
 */
@@ -125,9 +125,9 @@ export function guidanceOrigin(config: GuidanceConfig): string {
     url = new URL(config.origin);
   }
   catch {
-    throw new Error("UMA guidance requires a canonical platform origin");
+    throw new Error("HEY guidance requires a canonical platform origin");
   }
-  if (url.origin !== config.origin || url.username !== "" || url.password !== "" || url.protocol !== "https:" && !(config.allowLoopbackHttp && url.protocol === "http:" && url.hostname === "127.0.0.1")) throw new Error("UMA guidance requires canonical HTTPS or an explicitly enabled IPv4 loopback origin");
+  if (url.origin !== config.origin || url.username !== "" || url.password !== "" || url.protocol !== "https:" && !(config.allowLoopbackHttp && url.protocol === "http:" && url.hostname === "127.0.0.1")) throw new Error("HEY guidance requires canonical HTTPS or an explicitly enabled IPv4 loopback origin");
   return url.origin;
 }
 

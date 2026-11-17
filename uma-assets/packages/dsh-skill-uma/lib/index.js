@@ -81,24 +81,24 @@ function listResourceDirectory(path, options) {
 /** Validated resource configuration. */
 const Config = z.object({ assetRoot: z.string().min(1) });
 /** Cordis plugin identity. */
-const name = "skill-uma";
+const name = "skill-hey";
 /** Registry used by the bundled provider. */
 const inject = ["skills"];
 function strictBoolean(value, field, path) {
 	if (value === void 0) return void 0;
 	if (typeof value === "boolean") return value;
-	throw new Error(`skill-uma: ${path} has a non-boolean ${field}`);
+	throw new Error(`skill-hey: ${path} has a non-boolean ${field}`);
 }
 function parseFrontmatter(raw, path) {
 	const match = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/u.exec(raw);
-	if (match?.[1] === void 0) throw new Error(`skill-uma: ${path} has no YAML frontmatter`);
+	if (match?.[1] === void 0) throw new Error(`skill-hey: ${path} has no YAML frontmatter`);
 	const metadata = parse(match[1]);
-	if (typeof metadata !== "object" || metadata === null) throw new Error(`skill-uma: ${path} has no metadata object`);
+	if (typeof metadata !== "object" || metadata === null) throw new Error(`skill-hey: ${path} has no metadata object`);
 	const record = metadata;
 	const skillName = record.name;
 	const description = record.description;
-	if (typeof skillName !== "string" || !isSkillName(skillName)) throw new Error(`skill-uma: ${path} has an invalid skill name`);
-	if (typeof description !== "string" || description.length === 0) throw new Error(`skill-uma: ${path} has no description`);
+	if (typeof skillName !== "string" || !isSkillName(skillName)) throw new Error(`skill-hey: ${path} has an invalid skill name`);
+	if (typeof description !== "string" || description.length === 0) throw new Error(`skill-hey: ${path} has no description`);
 	const whenToUse = typeof record.whenToUse === "string" && record.whenToUse.length > 0 ? record.whenToUse : void 0;
 	const modelInvocable = strictBoolean(record["disable-model-invocation"], "disable-model-invocation", path) !== true;
 	const userInvocable = strictBoolean(record["user-invocable"], "user-invocable", path) !== false;
@@ -122,12 +122,12 @@ function candidateOf(directory, frontmatter) {
 			modelInvocable: frontmatter.modelInvocable,
 			userInvocable: false
 		},
-		provider: "dsh-uma",
+		provider: "dsh-hey",
 		source: "bundled",
 		rank: BUNDLED_SKILL_RANK,
 		resourceBase: {
 			kind: "opaque",
-			description: `UMA-managed resources. Use uma_resource_read with skill "${frontmatter.name}" and the relative path named below; omit path to browse. These are references, not local file paths. Use the native design tools instead of installed Python scripts.`
+			description: `HEY-managed resources. Use hey_resource_read with skill "${frontmatter.name}" and the relative path named below; omit path to browse. These are references, not local file paths. Use the native design tools instead of installed Python scripts.`
 		},
 		locator: join(directory, "SKILL.md")
 	};
@@ -144,7 +144,7 @@ function apply(ctx, config = {}) {
 		return candidateOf(directory, parseFrontmatter(readResourceFile(join(directory, "SKILL.md"), "utf8"), join(directory, "SKILL.md")).frontmatter);
 	});
 	const provider = {
-		name: "dsh-uma",
+		name: "dsh-hey",
 		list: () => Promise.resolve(candidates),
 		get: (candidate, options) => Promise.resolve().then(() => {
 			options.signal?.throwIfAborted();

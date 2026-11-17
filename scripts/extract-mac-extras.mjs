@@ -1,11 +1,11 @@
 /**
- * Vendor the first-party packages the UMA product layers mount but the public
+ * Vendor the first-party packages the HEY product layers mount but the public
  * deepseek-harness repository does not publish.
  *
  * The Mac app's `app.asar` carries 362 `@deepseek-ai/*` packages; the pinned
- * upstream ref carries 406, and the two sets differ by the UMA bundle plus 11
- * first-party packages that only the UMA edition builds (knowledge base, project
- * wiki, coding workbench, design studio, worktree, task query). The UMA desktop
+ * upstream ref carries 406, and the two sets differ by the HEY bundle plus 11
+ * first-party packages that only the HEY edition builds (knowledge base, project
+ * wiki, coding workbench, design studio, worktree, task query). The HEY desktop
  * layer stack mounts them by name, so a Windows package without them fails to
  * boot the profile — the difference is invisible at build time because the
  * prepare-stage runtime smoke runs before injection.
@@ -16,7 +16,7 @@
  * per-file SHA-256 so the vendored copy stays auditable.
  *
  * Usage:
- *   node scripts/extract-mac-extras.mjs --asar "<...>/UMA Studio.app/Contents/Resources/app.asar"
+ *   node scripts/extract-mac-extras.mjs --asar "<...>/HeyWork.app/Contents/Resources/app.asar"
  *   node scripts/extract-mac-extras.mjs --asar <path> --dry-run
  */
 import { createHash } from 'node:crypto'
@@ -29,8 +29,8 @@ const argValue = (name, fallback) => {
   return index === -1 ? fallback : ARGS[index + 1]
 }
 const DRY_RUN = ARGS.includes('--dry-run')
-const PORT_ROOT = process.env.UMA_PORT_ROOT ?? resolve(import.meta.dirname, '..')
-const DSH_ROOT = process.env.UMA_DSH_ROOT ?? join(PORT_ROOT, 'deepseek-harness')
+const PORT_ROOT = process.env.HEY_ROOT ?? resolve(import.meta.dirname, '..')
+const DSH_ROOT = process.env.HEY_DSH_ROOT ?? join(PORT_ROOT, 'deepseek-harness')
 const OUT = resolve(argValue('--out', join(PORT_ROOT, 'uma-assets', 'packages')))
 const ASAR = argValue('--asar', undefined)
 if (ASAR === undefined) {
@@ -38,7 +38,7 @@ if (ASAR === undefined) {
   process.exit(2)
 }
 
-/** Packages the UMA layers mount that the public repository does not ship. */
+/** Packages the HEY layers mount that the public repository does not ship. */
 const SEEDS = [
   '@deepseek-ai/dsh-knowledge',
   '@deepseek-ai/dsh-task-query',
@@ -55,13 +55,13 @@ const SEEDS = [
 
 /**
  * Third-party packages the extracted closure imports at module scope or from a
- * worker. They join the `deps/` pool that inject-uma.mjs tops up only when the
+ * worker. They join the `deps/` pool that inject-hey.mjs tops up only when the
  * materialized tree is missing them, so a tree that already hoists them (zod via
  * the CUA packages, js-yaml via the dsh CLI) pays nothing while a tree that does
  * not still resolves every import. Sizes: zod 5.2 MB, pdfjs-dist 15.4 MB,
  * picomatch 91 KB, typescript 19.0 MB, js-yaml 395 KB, papaparse 216 KB,
  * yaml 774 KB (dsh-skill-uma parses skill front matter with it, so its absence
- * would break every uma_resource_read), ws 150 KB (dsh-uma-base).
+ * would break every hey_resource_read), ws 150 KB (dsh-uma-base).
  */
 const POOL_DEPS = ['zod', 'pdfjs-dist', 'picomatch', 'typescript', 'js-yaml', 'papaparse', 'yaml', 'ws']
 
@@ -233,9 +233,9 @@ console.log(`extract-mac-extras: ${report.length} packages, ${(bytes / 1024 / 10
 if (!DRY_RUN) {
   const manifestPath = join(PORT_ROOT, 'uma-assets', 'packages.extras.json')
   writeFileSync(manifestPath, `${JSON.stringify({
-    source: 'UMA Studio.app/Contents/Resources/app.asar → dsh/node_modules/@deepseek-ai',
+    source: 'HeyWork.app/Contents/Resources/app.asar → dsh/node_modules/@deepseek-ai',
     desktopVersion: '0.2.2-rc.3',
-    note: 'First-party packages the UMA desktop layers mount but the public deepseek-harness ref does not publish.',
+    note: 'First-party packages the HEY desktop layers mount but the public deepseek-harness ref does not publish.',
     packages: report,
   }, undefined, 2)}\n`)
   console.log(`extract-mac-extras: wrote ${manifestPath}`)

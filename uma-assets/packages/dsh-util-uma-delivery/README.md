@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Exports the delivery artifact contract used by `dsh-tool-uma-workflow` and the Web Delivery Workbench. One pure module keeps the Host gate and the Client dashboard on identical artifact kinds, section checks, placeholder rules, and blocking order, so the dashboard can recompute status from `.uma/` files without a Host tool call or model request.
+Exports the delivery artifact contract used by `dsh-tool-uma-workflow` and the Web Delivery Workbench. One pure module keeps the Host gate and the Client dashboard on identical artifact kinds, section checks, placeholder rules, and blocking order, so the dashboard can recompute status from `.hey/` files without a Host tool call or model request.
 
 ## Table of Contents
 

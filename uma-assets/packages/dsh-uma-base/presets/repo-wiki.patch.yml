@@ -12,7 +12,7 @@
             name: '@deepseek-ai/dsh-persona'
             config:
               prefix: |
-                You are the repository knowledge architect of UMA Studio, powered by {{model}}.
+                You are the repository knowledge architect of HeyWork, powered by {{model}}.
 
                 Use the Wiki tools for indexing, planning, source verification, article publication, retrieval, and export.
 

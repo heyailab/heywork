@@ -49,7 +49,7 @@ interface ProjectMemoryContext {
 
 /** Explicit, account- and workspace-scoped local memory for later conversations. */
 /** Loader entry identity. */
-export const name = 'uma-project-memory'
+export const name = 'hey-project-memory'
 
 /** Human commands own mutations; tools only retrieve approved notes. */
 export const inject = [
@@ -141,7 +141,7 @@ export function apply(ctx: ProjectMemoryContext, config: ProjectMemoryConfig): v
         ) STRICT;
         PRAGMA user_version=1;
       `)
-      else if (row?.user_version !== 1) throw new Error('Unsupported UMA project memory database version')
+      else if (row?.user_version !== 1) throw new Error('Unsupported HEY project memory database version')
       db.exec('COMMIT')
       return db
     }
@@ -154,7 +154,7 @@ export function apply(ctx: ProjectMemoryContext, config: ProjectMemoryConfig): v
   ctx.effect(() => () => {
     lifetime.abort()
     database.close()
-  }, 'uma-project-memory: database')
+  }, 'hey-project-memory: database')
   const scopeFor = async (agent: MemoryAgent, signal: AbortSignal): Promise<Scope | null> => {
     const service = ctx.get('deepseekAccount')
     if (service === void 0) return null
@@ -166,7 +166,7 @@ export function apply(ctx: ProjectMemoryContext, config: ProjectMemoryConfig): v
   }
   const notesFor = (scope: Scope): Note[] => {
     return database.prepare('SELECT title,content FROM notes WHERE account=? AND workspace=? ORDER BY updated DESC,title').all(...scope).map((row) => {
-      if (typeof row.title !== 'string' || typeof row.content !== 'string') throw new Error('Invalid UMA project memory record')
+      if (typeof row.title !== 'string' || typeof row.content !== 'string') throw new Error('Invalid HEY project memory record')
       return {
         title: row.title,
         content: row.content
@@ -174,7 +174,7 @@ export function apply(ctx: ProjectMemoryContext, config: ProjectMemoryConfig): v
     })
   }
   ctx.effect(() => ctx.commands.register({
-    definitionId: CommandDefinitionId('uma/project-memory'),
+    definitionId: CommandDefinitionId('hey/project-memory'),
     name: 'memory',
     description: 'Save, view or delete local project memory',
     input: { hint: 'list | save | show | delete' },
@@ -191,7 +191,7 @@ export function apply(ctx: ProjectMemoryContext, config: ProjectMemoryConfig): v
       const scope = await scopeFor(agent, signal)
       if (scope === null) return {
         kind: 'error',
-        text: '请先登录 UMA 并打开已导入的工作区。'
+        text: '请先登录 HEY 并打开已导入的工作区。'
       }
       if (action === 'list') {
         const notes = notesFor(scope)
@@ -238,9 +238,9 @@ export function apply(ctx: ProjectMemoryContext, config: ProjectMemoryConfig): v
         text: `已删除工作区记忆「${title}」，后续检索将不再返回它。`
       }
     }
-  }), 'uma-project-memory: human command')
+  }), 'hey-project-memory: human command')
   ctx.effect(() => ctx.tools.register(defineTool({
-    name: 'uma_project_memory',
+    name: 'hey_project_memory',
     description: 'Recall user-saved decisions or preferences for the signed-in account and current workspace. Use when the user refers to prior decisions or asks what was remembered.',
     parameters: { query: {
       type: 'string',
@@ -267,5 +267,5 @@ export function apply(ctx: ProjectMemoryContext, config: ProjectMemoryConfig): v
       title: 'Recall project memory',
       rawInput: {}
     })
-  })), 'uma-project-memory: recall tool')
+  })), 'hey-project-memory: recall tool')
 }

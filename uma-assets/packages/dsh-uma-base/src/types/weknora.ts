@@ -38,7 +38,7 @@ interface WeknoraContext {
 }
 
 /** Loader entry identity. */
-export const name = 'uma-weknora'
+export const name = 'hey-weknora'
 
 /** Services for explicit workspace ownership and Host-only credentials. */
 export const inject = [
@@ -62,7 +62,7 @@ export const Config = z.object({
 })
 
 /** Register on-demand retrieval. Each request is restricted by account, workspace and base IDs.
- * @param ctx - UMA Host scope.
+ * @param ctx - HEY Host scope.
  * @param config - Approved connection, credential and resource limits.
  */
 export function apply(ctx: WeknoraContext, config: WeknoraConfig): void {
@@ -78,7 +78,7 @@ export function apply(ctx: WeknoraContext, config: WeknoraConfig): void {
   const lifetime = new AbortController()
   ctx.effect(() => () => {
     lifetime.abort()
-  }, 'uma-weknora: retrieval')
+  }, 'hey-weknora: retrieval')
   const authorized = async (agent: { id: string }, signal: AbortSignal): Promise<boolean> => {
     const account = await ctx.deepseekAccount.getPlatformSession()
     signal.throwIfAborted()
@@ -86,7 +86,7 @@ export function apply(ctx: WeknoraContext, config: WeknoraConfig): void {
     return ctx.workspaceRegistry.list().some(workspace => workspace.id === config.workspaceId && workspace.sessionIds.includes(agent.id))
   }
   ctx.tools.register(defineTool({
-    name: 'uma_weknora_search',
+    name: 'hey_weknora_search',
     description: 'Search the connected WeKnora document collection when the user asks to consult it. The focused query is sent to that configured service.',
     parameters: { query: {
       type: 'string',

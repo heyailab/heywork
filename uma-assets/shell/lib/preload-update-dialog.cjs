@@ -23,5 +23,5 @@ const api = {
 		};
 	}
 };
-if (location.href === "uma-app://shell/update-dialog.html") electron.contextBridge.exposeInMainWorld("dshUpdateDialog", api);
+if (location.href === "hey-app://shell/update-dialog.html") electron.contextBridge.exposeInMainWorld("dshUpdateDialog", api);
 //#endregion

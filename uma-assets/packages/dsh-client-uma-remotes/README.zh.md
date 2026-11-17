@@ -1,5 +1,5 @@
 ---
-description: "UMA 自有的浏览器 Remote 组合，连接知识库、编码证据和项目 Wiki。"
+description: "HEY 自有的浏览器 Remote 组合，连接知识库、编码证据和项目 Wiki。"
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-UMA 知识库、交付和 Wiki 页面通过此浏览器组合调用对应 Host 服务。它将产品专用 Remote 定义从通用内核组合中分离，同时保持现有命名空间名称及方法行为。
+HEY 知识库、交付和 Wiki 页面通过此浏览器组合调用对应 Host 服务。它将产品专用 Remote 定义从通用内核组合中分离，同时保持现有命名空间名称及方法行为。
 
 ## 目录
 
@@ -22,10 +22,10 @@ UMA 知识库、交付和 Wiki 页面通过此浏览器组合调用对应 Host �
 <a id="use-this-package"></a>
 ## 使用此包
 
-UMA Web bundle 在通用 API 组合之后挂载此包。UMA 页面声明对此 Client 模块的依赖，并导入其客户端类型入口。UMA base bundle 提供对应 Host 服务；挂载此 Client 组合不会创建 Host 服务或授予权限。
+HEY Web bundle 在通用 API 组合之后挂载此包。HEY 页面声明对此 Client 模块的依赖，并导入其客户端类型入口。HEY base bundle 提供对应 Host 服务；挂载此 Client 组合不会创建 Host 服务或授予权限。
 
 ```yaml
-- id: uma-remotes
+- id: hey-remotes
   name: '@deepseek-ai/dsh-client-uma-remotes'
 ```
 

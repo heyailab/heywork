@@ -6,14 +6,14 @@ const user = z.object({
     email: z.string(), mobile: z.string().optional(), mobile_number: z.string().optional(),
     id_profile: z.object({
         name: z.string().nullable(), picture: z.string().nullish(),
-        uma_badge: z.literal('beta-veteran').optional().catch(undefined),
+        hey_badge: z.literal('beta-veteran').optional().catch(undefined),
     }).nullish(),
 });
 // balance and amount arrive as strings that Platform's Web client passes to big.js, whose decimal
 // grammar also accepts an omitted integer or fraction part and a decimal exponent (0E-16, 1e+3).
 const decimal = /^-?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i;
 const wallet = z.object({
-    currency: z.enum(['CNY', 'USD', 'UMA']), balance: z.string().regex(decimal),
+    currency: z.enum(['CNY', 'USD', 'HEY']), balance: z.string().regex(decimal),
 });
 const summary = z.object({ normal_wallets: z.array(wallet), bonus_wallets: z.array(wallet) });
 // Protocol responses are JSON-decoded; metadata keeps any JSON value without field validation.
@@ -39,7 +39,7 @@ function projectProfile(value) {
     return {
         id: value.id == null ? null : value.id,
         avatarUrl: identity?.picture || null,
-        ...(identity?.uma_badge === undefined ? {} : { umaBadge: identity.uma_badge }),
+        ...(identity?.hey_badge === undefined ? {} : { umaBadge: identity.hey_badge }),
         name: identity?.name || null, contact: mobile || mobileNumber || email || null,
     };
 }

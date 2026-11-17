@@ -384,14 +384,14 @@ Slack uses light shadows on a light surface:
       .hero-actions { display: flex; gap: var(--space-3); margin-block-start: var(--space-6); flex-wrap: wrap; }
     </style>
 
-    <style data-uma-responsive-repair>
+    <style data-hey-responsive-repair>
       /* Grid and flex children may shrink; long labels wrap within their own column. */
       :where(*) { min-width: 0; }
       :where(h1, h2, h3, p, a, span, strong, label, code) { overflow-wrap: anywhere; }
       :where(input, select, textarea) { max-width: 100%; }
     </style>
-<style data-uma-layout-repair>.uma-preview-form > div { flex-wrap: wrap; } .uma-preview-form button { flex-shrink: 0; max-width: 100%; white-space: normal; }</style>
-<style data-uma-form-layout>.uma-form-layout { display:grid;grid-template-columns:1.2fr 1fr;gap:var(--space-12);align-items:start; } @media (max-width: 1023px) { .uma-form-layout { grid-template-columns: minmax(0, 1fr); } }</style>
+<style data-hey-layout-repair>.hey-preview-form > div { flex-wrap: wrap; } .hey-preview-form button { flex-shrink: 0; max-width: 100%; white-space: normal; }</style>
+<style data-hey-form-layout>.hey-form-layout { display:grid;grid-template-columns:1.2fr 1fr;gap:var(--space-12);align-items:start; } @media (max-width: 1023px) { .hey-form-layout { grid-template-columns: minmax(0, 1fr); } }</style>
 </head>
   <body>
     <main class="container">
@@ -467,7 +467,7 @@ Slack uses light shadows on a light surface:
 
       <!-- FORM -->
       <section data-od-id="form">
-        <div class="uma-form-layout">
+        <div class="hey-form-layout">
           <div class="stack-4">
             <h2>Inputs and buttons.</h2>
             <p class="body-muted" style="max-width:44ch">
@@ -475,7 +475,7 @@ Slack uses light shadows on a light surface:
               Focus ring: 2px solid #1264A3. Height 36px, font-size 15px.
             </p>
           </div>
-          <div role="group" class="uma-preview-form" style="display:flex;flex-direction:column;gap:var(--space-4);max-width:400px">
+          <div role="group" class="hey-preview-form" style="display:flex;flex-direction:column;gap:var(--space-4);max-width:400px">
             <div class="field">
               <label for="email">Work email</label>
               <input id="email" type="email" placeholder="you@company.com" />

@@ -22,5 +22,5 @@ const api = {
 		};
 	}
 };
-if (location.href === "uma-app://shell/mandatory-update.html") electron.contextBridge.exposeInMainWorld("dshMandatoryUpdate", api);
+if (location.href === "hey-app://shell/mandatory-update.html") electron.contextBridge.exposeInMainWorld("dshMandatoryUpdate", api);
 //#endregion

@@ -126,7 +126,7 @@ interface TerminalContext {
 }
 
 /** Authenticated SSH connections used by the embedded terminal and the delegated command tool. */
-const path = '/uma/operations/ssh'
+const path = '/hey/operations/ssh'
 const maxBody = 128 * 1024
 const maxConnections = 8
 const handshakeMs = 15e3
@@ -461,7 +461,7 @@ export function installOperationsTerminal(ctx: TerminalContext, transferBytes: n
             }
             return
           }
-          const route = /^\/uma\/operations\/ssh\/([a-f0-9-]+)\/([a-z]+)$/u.exec(pathname)
+          const route = /^\/hey\/operations\/ssh\/([a-f0-9-]+)\/([a-z]+)$/u.exec(pathname)
           const connection = route?.[1] === void 0 ? void 0 : connections.get(route[1])
           if (route === null || connection === void 0 || connection.owner !== owner) {
             reply(response, 404)
@@ -575,7 +575,7 @@ export function installOperationsTerminal(ctx: TerminalContext, transferBytes: n
         for (const socket of opening) socket.destroy()
         await Promise.allSettled(sockets.values())
       }
-    }, 'UMA SSH: authenticated terminal route')
+    }, 'HEY SSH: authenticated terminal route')
   })
   return (id) => {
     const connection = currentConnections?.get(id)

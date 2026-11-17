@@ -45,7 +45,7 @@ interface ResourceDirEntry {
   isSymbolicLink(): boolean
 }
 
-/** Read-only, virtual references to installed UMA skill resources. */
+/** Read-only, virtual references to installed HEY skill resources. */
 /**
  * Keep a valid UTF-8 prefix without retaining an incomplete final code point.
  * @param bytes - Complete or bounded UTF-8 bytes.
@@ -60,19 +60,19 @@ export function utf8Prefix(bytes: Uint8Array): string {
 
 /** 校验 skill/path 标识并解析为真实文件路径，容器分支与开发态分支分流。 */
 function resourcePath(root: string, skill: string, path: string): string {
-  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(skill) || path.length > 512 || path.includes('\\') || path.includes(':') || /[\u0000-\u001f\u007f]/u.test(path) || path !== '' && path.split('/').some((part) => part === '' || part === '.' || part === '..')) throw new Error('Invalid UMA resource identifier')
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(skill) || path.length > 512 || path.includes('\\') || path.includes(':') || /[\u0000-\u001f\u007f]/u.test(path) || path !== '' && path.split('/').some((part) => part === '' || part === '.' || part === '..')) throw new Error('Invalid HEY resource identifier')
   if (isBundledPath(root)) {
-    if (!resourceExists(join(root, skill, 'SKILL.md'))) throw new Error('Unknown UMA skill')
+    if (!resourceExists(join(root, skill, 'SKILL.md'))) throw new Error('Unknown HEY skill')
     const target = join(root, skill, path)
-    if (!resourceExists(target)) throw new Error('Unknown UMA resource')
+    if (!resourceExists(target)) throw new Error('Unknown HEY resource')
     return target
   }
   const assets = realpathSync(root)
   const base = realpathSync(join(assets, skill))
-  if (!base.startsWith(assets + sep)) throw new Error('UMA skill leaves the asset root')
-  if (!statSync(join(base, 'SKILL.md')).isFile()) throw new Error('Unknown UMA skill')
+  if (!base.startsWith(assets + sep)) throw new Error('HEY skill leaves the asset root')
+  if (!statSync(join(base, 'SKILL.md')).isFile()) throw new Error('Unknown HEY skill')
   const result = realpathSync(join(base, path))
-  if (result !== base && !result.startsWith(base + sep)) throw new Error('UMA resource leaves its skill')
+  if (result !== base && !result.startsWith(base + sep)) throw new Error('HEY resource leaves its skill')
   return result
 }
 
@@ -123,7 +123,7 @@ export function readBundledText(root: string, skill: string, path: string, offse
     }
   }
   catch {
-    throw new Error('UMA resource is unavailable or is not valid UTF-8 text; check its skill, relative path and page offset')
+    throw new Error('HEY resource is unavailable or is not valid UTF-8 text; check its skill, relative path and page offset')
   }
 }
 
@@ -137,7 +137,7 @@ export function readBundledText(root: string, skill: string, path: string, offse
  * @returns Bounded resource content or directory entries and a continuation offset.
  */
 export function readBundledResource(root: string, skill: string, path: string, offset: number, maximum: number): string {
-  const reference = `uma-resource://${skill}/${path}`
+  const reference = `hey-resource://${skill}/${path}`
   try {
     if (!Number.isSafeInteger(offset) || offset < 0) throw new Error('Invalid offset')
     const target = resourcePath(root, skill, path)
@@ -165,6 +165,6 @@ export function readBundledResource(root: string, skill: string, path: string, o
     return `${header}Next byte offset: ${page.nextOffset < page.totalBytes ? String(page.nextOffset) : 'complete'}\n\n${page.content}`
   }
   catch {
-    throw new Error('UMA resource could not be read; use the installed skill name and its relative resource path')
+    throw new Error('HEY resource could not be read; use the installed skill name and its relative resource path')
   }
 }

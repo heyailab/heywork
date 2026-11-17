@@ -475,7 +475,7 @@ What makes ElevenLabs distinctive is its multi-layered shadow system. Rather tha
               Ring Blue (rgba(147,197,253,0.5)) — the only cool tone in the system.
             </p>
           </div>
-          <div role="group" class="uma-preview-form form">
+          <div role="group" class="hey-preview-form form">
             <div class="field">
               <label for="email">Work email</label>
               <input id="email" type="email" placeholder="you@studio.ai" autocomplete="email" required />

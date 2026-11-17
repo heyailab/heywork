@@ -1,7 +1,7 @@
 {
-  "source": "UMA Studio.app/Contents/Resources/app.asar → dsh/node_modules/@deepseek-ai",
+  "source": "HeyWork.app/Contents/Resources/app.asar → dsh/node_modules/@deepseek-ai",
   "desktopVersion": "0.2.2-rc.3",
-  "note": "First-party packages the UMA desktop layers mount but the public deepseek-harness ref does not publish.",
+  "note": "First-party packages the HEY desktop layers mount but the public deepseek-harness ref does not publish.",
   "packages": [
     {
       "name": "@deepseek-ai/dsh-api-account-controller",

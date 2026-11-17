@@ -123,7 +123,7 @@ function apply(ctx, config) {
 		await Promise.allSettled([...pending]);
 	});
 	ctx.systemPrompt.context({
-		name: "uma:project-standards",
+		name: "hey:project-standards",
 		order: 135,
 		interpolate: false,
 		text: ({ agent }) => agent === void 0 ? "" : prepared.get(agent) ?? ""

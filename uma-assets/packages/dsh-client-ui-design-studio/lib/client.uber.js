@@ -280,16 +280,16 @@ What makes Uber's design truly distinctive is its use of full-bleed photography 
         max-width: var(--container-max);
         margin-inline: auto;
         padding-inline: var(--container-gutter-desktop);
-        --uma-preview-gutter:           var(--container-gutter-desktop);
+        --hey-preview-gutter:           var(--container-gutter-desktop);
       }
       section { padding-block: var(--section-y-desktop); }
       section + section { border-top: 1px solid var(--border-soft); }
       @media (max-width: 1023px) {
-        .container { padding-inline: var(--container-gutter-tablet); --uma-preview-gutter:           var(--container-gutter-tablet); }
+        .container { padding-inline: var(--container-gutter-tablet); --hey-preview-gutter:           var(--container-gutter-tablet); }
         section { padding-block: var(--section-y-tablet); }
       }
       @media (max-width: 639px) {
-        .container { padding-inline: var(--container-gutter-phone); --uma-preview-gutter:           var(--container-gutter-phone); }
+        .container { padding-inline: var(--container-gutter-phone); --hey-preview-gutter:           var(--container-gutter-phone); }
         section { padding-block: var(--section-y-phone); }
       }
 
@@ -403,8 +403,8 @@ What makes Uber's design truly distinctive is its use of full-bleed photography 
         background: var(--fg);
         color: var(--accent-on);
         padding: var(--space-8) 0;
-        margin-inline: calc(var(--uma-preview-gutter) * -1);
-        padding-inline: var(--uma-preview-gutter);
+        margin-inline: calc(var(--hey-preview-gutter) * -1);
+        padding-inline: var(--hey-preview-gutter);
       }
 
       /* ─── Layout ─────────────────────────────── */
@@ -427,7 +427,7 @@ What makes Uber's design truly distinctive is its use of full-bleed photography 
       .icon { width: 16px; height: 16px; flex-shrink: 0; }
     </style>
 
-    <style data-uma-responsive-repair>
+    <style data-hey-responsive-repair>
       /* Grid and flex children may shrink; long labels wrap within their own column. */
       :where(*) { min-width: 0; }
       :where(h1, h2, h3, p, a, span, strong, label, code) { overflow-wrap: anywhere; }

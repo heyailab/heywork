@@ -180,16 +180,16 @@ The shape system is uniformly soft: 8px–12px radii, 9999px pills for tags and 
         max-width: var(--container-max);
         margin-inline: auto;
         padding-inline: var(--container-gutter-desktop);
-        --uma-preview-gutter:           var(--container-gutter-desktop);
+        --hey-preview-gutter:           var(--container-gutter-desktop);
       }
       section { padding-block: var(--section-y-desktop); }
       section + section { border-top: 1px solid var(--border); }
       @media (max-width: 1023px) {
-        .container { padding-inline: var(--container-gutter-tablet); --uma-preview-gutter:           var(--container-gutter-tablet); }
+        .container { padding-inline: var(--container-gutter-tablet); --hey-preview-gutter:           var(--container-gutter-tablet); }
         section { padding-block: var(--section-y-tablet); }
       }
       @media (max-width: 639px) {
-        .container { padding-inline: var(--container-gutter-phone); --uma-preview-gutter:           var(--container-gutter-phone); }
+        .container { padding-inline: var(--container-gutter-phone); --hey-preview-gutter:           var(--container-gutter-phone); }
         section { padding-block: var(--section-y-phone); }
       }
 
@@ -352,14 +352,14 @@ The shape system is uniformly soft: 8px–12px radii, 9999px pills for tags and 
       .icon { width: 16px; height: 16px; flex-shrink: 0; }
     </style>
 
-    <style data-uma-responsive-repair>
+    <style data-hey-responsive-repair>
       /* Grid and flex children may shrink; long labels wrap within their own column. */
       :where(*) { min-width: 0; }
       :where(h1, h2, h3, p, a, span, strong, label, code) { overflow-wrap: anywhere; }
       :where(input, select, textarea) { max-width: 100%; }
     </style>
-<style data-uma-layout-repair>.uma-preview-form > div { flex-wrap: wrap; } .uma-preview-form button { flex-shrink: 0; max-width: 100%; white-space: normal; }</style>
-<style data-uma-form-layout>.uma-form-layout { display:grid;grid-template-columns:1.2fr 1fr;gap:var(--space-12);align-items:start; } @media (max-width: 1023px) { .uma-form-layout { grid-template-columns: minmax(0, 1fr); } }</style>
+<style data-hey-layout-repair>.hey-preview-form > div { flex-wrap: wrap; } .hey-preview-form button { flex-shrink: 0; max-width: 100%; white-space: normal; }</style>
+<style data-hey-form-layout>.hey-form-layout { display:grid;grid-template-columns:1.2fr 1fr;gap:var(--space-12);align-items:start; } @media (max-width: 1023px) { .hey-form-layout { grid-template-columns: minmax(0, 1fr); } }</style>
 </head>
   <body>
     <main class="container">
@@ -403,7 +403,7 @@ The shape system is uniformly soft: 8px–12px radii, 9999px pills for tags and 
       </section>
 
       <!-- FEATURES -->
-      <section data-od-id="features" style="background:var(--surface-warm);margin-inline:calc(var(--uma-preview-gutter)*-1);padding-inline:var(--uma-preview-gutter)">
+      <section data-od-id="features" style="background:var(--surface-warm);margin-inline:calc(var(--hey-preview-gutter)*-1);padding-inline:var(--hey-preview-gutter)">
         <div class="stack-3" style="margin-bottom:var(--space-6)">
           <p class="label">What this fixture exercises</p>
           <h2>Restraint as identity.</h2>
@@ -437,7 +437,7 @@ The shape system is uniformly soft: 8px–12px radii, 9999px pills for tags and 
 
       <!-- FORM -->
       <section data-od-id="form">
-        <div class="uma-form-layout">
+        <div class="hey-form-layout">
           <div class="stack-4">
             <p class="label">Form components</p>
             <h2>Soft radius, teal focus.</h2>
@@ -446,7 +446,7 @@ The shape system is uniformly soft: 8px–12px radii, 9999px pills for tags and 
               Focus: border <code>#10a37f</code> + 3px rgba ring.
             </p>
           </div>
-          <div role="group" class="uma-preview-form" style="display:flex;flex-direction:column;gap:var(--space-4);max-width:400px">
+          <div role="group" class="hey-preview-form" style="display:flex;flex-direction:column;gap:var(--space-4);max-width:400px">
             <div class="field">
               <label for="email">Email address</label>
               <input id="email" type="email" placeholder="you@example.com" />

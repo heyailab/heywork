@@ -760,7 +760,7 @@ What distinguishes Mintlify from other documentation platforms is its atmospheri
       .icon { width: 16px; height: 16px; flex-shrink: 0; }
     </style>
 
-    <style data-uma-responsive-repair>
+    <style data-hey-responsive-repair>
       /* Grid and flex children may shrink; long labels wrap within their own column. */
       :where(*) { min-width: 0; }
       :where(h1, h2, h3, p, a, span, strong, label, code) { overflow-wrap: anywhere; }
@@ -921,7 +921,7 @@ What distinguishes Mintlify from other documentation platforms is its atmospheri
             </p>
           </div>
 
-          <div role="group" class="uma-preview-form form">
+          <div role="group" class="hey-preview-form form">
             <div class="row-between">
               <p class="eyebrow">Get the spec</p>
               <span class="badge badge-success">

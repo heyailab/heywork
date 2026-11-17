@@ -35,7 +35,7 @@ sourcemap 或 `.d.ts` 可供逐字校验。
    建议把 `src` 当「可读参考 + 改动草稿」，确认后再落到 `lib`。
 3. 要用 `tsc` 校验这些文件，需要补齐上游类型包（`@deepseek-ai/dsh-brand` 等）并自行写 `tsconfig`；
    仓库不提供这套配置，因为它不是构建路径。本目录已用仓库自带的
-   `uma-assets/deps/typescript/lib/typescript.js`（TS 6.0.3）`transpileModule`
+   `hey-assets/deps/typescript/lib/typescript.js`（TS 6.0.3）`transpileModule`
    （target ES2022 / module ESNext / reportDiagnostics）做纯语法校验，0 error。
 
 ## 导出面对照（逐项）
@@ -74,7 +74,7 @@ export { ARTIFACTS, BUILTIN_CODING_GUIDES, CODING_STANDARD_RULES, CODING_STANDAR
    `requiredArtifacts("feature", "documents")` 只要求 `spec`。照抄，不补 `preview`。
 2. `selectCodingStandards` 的 `matches` 中 `tag === "all" && options.includeGeneral !== false`
    依赖 `&&` 优先于 `||`；未加括号改写。
-3. `ENGINEERING_RULES` 里 `UMA.STD.ORDER_REPLAY` / `UMA.STD.TENANT_SCOPE` 引用了
+3. `ENGINEERING_RULES` 里 `HEY.STD.ORDER_REPLAY` / `HEY.STD.TENANT_SCOPE` 引用了
    `microsoft-rest` / `owasp-asvs5`，但 `ENGINEERING_SOURCES` 只有 3 条；这两个来源在
    `CODING_STANDARD_SOURCES` 中补齐。`selectCodingStandards` 只返回命中 `sourceIds` 的来源，
    这是数据事实，未做"引用完整性修复"。

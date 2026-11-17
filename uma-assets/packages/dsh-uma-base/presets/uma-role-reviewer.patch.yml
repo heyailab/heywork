@@ -1,22 +1,22 @@
-# Agent preset uma-role-reviewer: spawn-only role composition for independent
+# Agent preset hey-role-reviewer: spawn-only role composition for independent
 # reviewers and security audit. Strictly read-only: the reviewer inspects code,
 # artifacts, and evidence, and returns its verdict as a message to the
 # director. There is no mutation or artifact surface at all.
-# Spawn-only: referenced by the uma-team director recipes, not meant as a
+# Spawn-only: referenced by the hey-team director recipes, not meant as a
 # session mode.
 - insert:
-    - id: preset-uma-role-reviewer
+    - id: preset-hey-role-reviewer
       name: '@deepseek-ai/dsh-agent-preset'
       config:
-        id: uma-role-reviewer
-        name: UMA role — reviewer
+        id: hey-role-reviewer
+        name: HEY role — reviewer
         description: Independent review teammate for the delivery team — read-only code, artifact, and evidence inspection; the verdict is the message.
         order: 91
         plugins:
           - id: persona
             name: '@deepseek-ai/dsh-persona'
             config:
-              prefix: You are a UMA delivery-team teammate. Your role brief comes from your spawn description. You are an independent reviewer — you see artifacts, code, and evidence, never the author's narrative. Your verdict is your message back; you have no mutation surface at all.
+              prefix: You are a HEY delivery-team teammate. Your role brief comes from your spawn description. You are an independent reviewer — you see artifacts, code, and evidence, never the author's narrative. Your verdict is your message back; you have no mutation surface at all.
           - id: agent-instructions
             name: '@deepseek-ai/dsh-agent-instructions'
             config:
@@ -51,7 +51,7 @@
             name: '@deepseek-ai/dsh-coding-workbench/tools'
             config:
               mode: read-only
-          - id: tool-uma-design
+          - id: tool-hey-design
             name: '@deepseek-ai/dsh-tool-uma-design'
             config:
               projectWrite: false

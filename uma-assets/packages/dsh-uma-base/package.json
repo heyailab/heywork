@@ -1,6 +1,6 @@
 {
   "name": "@deepseek-ai/dsh-uma-base",
-  "description": "UMA shared Host services and product profile metadata",
+  "description": "HEY shared Host services and product profile metadata",
   "version": "0.2.2-rc.3",
   "private": true,
   "type": "module",

@@ -24,7 +24,7 @@ Generate an article tree and Knowledge Cards from real repository files, retain 
 <a id="use-this-package"></a>
 ## Use this package
 
-The context plugin provides `uma_wiki_lookup` for source-checked task evidence in the current branch. UMA presets set `automaticContext: false` and retrieve Wiki facts when the model calls this tool.
+The context plugin provides `hey_wiki_lookup` for source-checked task evidence in the current branch. HEY presets set `automaticContext: false` and retrieve Wiki facts when the model calls this tool.
 
 The Web bundle mounts generation tools in the `repo-wiki` Agent preset and `@deepseek-ai/dsh-tool-repo-wiki/context` in ordinary development presets. In the application, open **Project Wiki**, select a workspace and language, then generate.
 
@@ -54,7 +54,7 @@ The Web bundle mounts generation tools in the `repo-wiki` Agent preset and `@dee
 | `catalogRetries` | 5 | Bounded catalog compare-and-swap attempts |
 | `excludeDirectories` | See `Config` | Source directory exclusions; secret-file exclusions always apply |
 
-A project can provide `.uma/wiki/wiki_plan.yaml` using `version: 1`, `repowiki.template`, reader `notes`, document `title`/`goal`/`parent`/`hints`/`template`, and `knowledgecard.notes`. The parser accepts data-only YAML and rejects executable tags.
+A project can provide `.hey/wiki/wiki_plan.yaml` using `version: 1`, `repowiki.template`, reader `notes`, document `title`/`goal`/`parent`/`hints`/`template`, and `knowledgecard.notes`. The parser accepts data-only YAML and rejects executable tags.
 
 Resume the recorded generation Session after interruption. An explicit takeover may transfer a stopped or unavailable writer; a locally running writer is refused. Failed publication preserves the committed checkpoint but may retain unreferenced immutable content. Restore a modified content-addressed file or import a valid export before continuing.
 
@@ -66,7 +66,7 @@ Resume the recorded generation Session after interruption. An explicit takeover 
 
 The indexer respects Git ignore rules, skips known secret names, and reads bounded UTF-8 sources. It stores hashes and relative and workspace-package import relationships without copying source text. Plans record page dependencies; source reads return exact citations. `wiki_write_page` publishes immutable Markdown before compare-and-swap checkpoint replacement, while `wiki_finish` rescans the source fingerprint before readiness. Branches and languages use separate checkpoints.
 
-The workspace preview checks the catalog edition, published page, exact citation and index before reading the cited file. If the file changes, disappears or falls out of the eligible Git source list, the preview reports that the citation is stale and returns no source text. Wiki records and generated files must resolve within the physical `.uma/wiki/` directory.
+The workspace preview checks the catalog edition, published page, exact citation and index before reading the cited file. If the file changes, disappears or falls out of the eligible Git source list, the preview reports that the citation is stale and returns no source text. Wiki records and generated files must resolve within the physical `.hey/wiki/` directory.
 
 The context entry checks changed paths, including uncommitted paths that existed during generation, and suppresses knowledge affected by transitive dependencies. Relevant facts enter the existing durable runtime-context mechanism. Lookup failure contributes an explicit unavailable notice instead of unverified facts; it does not block unrelated code work.
 

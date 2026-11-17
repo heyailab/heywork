@@ -19,7 +19,7 @@
  *
  * Reads the source container only (uma-assets/packages/dsh-skill-uma); it does not
  * need a materialized dsh tree, so it runs in the same second-scale slot as
- * verify-uma-platform.mjs.
+ * verify-hey-platform.mjs.
  *
  * Usage:
  *   node scripts/verify-skill-container.mjs [path-to.umadb]
@@ -35,7 +35,7 @@ import { fileURLToPath } from 'node:url'
 import { join, resolve } from 'node:path'
 
 const SELF = fileURLToPath(import.meta.url)
-const PORT_ROOT = process.env.UMA_PORT_ROOT ?? resolve(import.meta.dirname, '..')
+const PORT_ROOT = process.env.HEY_ROOT ?? resolve(import.meta.dirname, '..')
 const container = resolve(process.argv[2] ?? join(PORT_ROOT, 'uma-assets', 'packages', 'dsh-skill-uma', 'resources.umadb'))
 
 /** Lower bounds, not exact counts: a newer Mac build may add systems without breaking the product. */

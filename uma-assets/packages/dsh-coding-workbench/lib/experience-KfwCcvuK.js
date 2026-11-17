@@ -1,7 +1,7 @@
 import { n as redactArgv, r as redactOutput } from "./process-UWH2go78.js";
 import { createHash } from "node:crypto";
 //#region lib/types/experience.js
-/** Parsing and relevance matching for the team experience ledger (`.uma/experience.md`). */
+/** Parsing and relevance matching for the team experience ledger (`.hey/experience.md`). */
 const TERM_LIMIT = 64;
 const SYMPTOM_LIMIT = 4096;
 const QUERY_MAX_CHARS = 2e3;

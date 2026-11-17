@@ -15,14 +15,14 @@
 
 | 补丁 | 作用 |
 |---|---|
-| `cordis.patch.yml` | 挂载 UMA web 层 / 客户端插件 entry：把 `ui-uma-task-budget`、`uma-remotes`、`ui-uma-design`、`ui-knowledge`、`ui-design-studio`、`ui-repo-wiki`、`ui-uma-brand` 等客户端模块插入 Cordis 图；配置 `deepseek-account` / `llm-deepseek-account` / `llm-pi-ai` 指向 UMA Studio，并禁用 DeepSeek 官方 web 搜索、遥测等条目。 |
-| `presets/standard.patch.yml` | 向内核 `standard` preset 注入 UMA 工具与技能（`skill-uma`、`tool-uma-design`、`tool-uma-workflow`、`coding-tools`、`repo-wiki-context` 等）及 persona 前后缀。 |
-| `presets/ptc.patch.yml` | `ptc` preset 的同类 UMA 扩展。 |
-| `presets/minimal.patch.yml` | `minimal` preset 的同类 UMA 扩展。 |
+| `cordis.patch.yml` | 挂载 HEY web 层 / 客户端插件 entry：把 `ui-hey-task-budget`、`hey-remotes`、`ui-hey-design`、`ui-knowledge`、`ui-design-studio`、`ui-repo-wiki`、`ui-hey-brand` 等客户端模块插入 Cordis 图；配置 `deepseek-account` / `llm-deepseek-account` / `llm-pi-ai` 指向 HeyWork，并禁用 DeepSeek 官方 web 搜索、遥测等条目。 |
+| `presets/standard.patch.yml` | 向内核 `standard` preset 注入 HEY 工具与技能（`skill-hey`、`tool-hey-design`、`tool-hey-workflow`、`coding-tools`、`repo-wiki-context` 等）及 persona 前后缀。 |
+| `presets/ptc.patch.yml` | `ptc` preset 的同类 HEY 扩展。 |
+| `presets/minimal.patch.yml` | `minimal` preset 的同类 HEY 扩展。 |
 
 `package.json` 的 `dependencies` 同时把上述客户端 UI、Agent、coding、knowledge 等包拉进
 打包闭包；`exports` 把 `.` 指向 `lib/index.js`，并把 `./cordis.patch.yml`、
-`./presets/*.patch.yml` 暴露给打包器。**这就是它在 profile 里的全部作用：作为 UMA web 层
+`./presets/*.patch.yml` 暴露给打包器。**这就是它在 profile 里的全部作用：作为 HEY web 层
 与客户端插件 entry 的清单载体。**
 
 ## 怎么用（重要）

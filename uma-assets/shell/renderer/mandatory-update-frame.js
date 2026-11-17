@@ -22,7 +22,7 @@ if (window.parent !== window && window.dshMandatoryUpdate === undefined) {
     }
   }
   window.addEventListener('message', event => {
-    if (!event.isTrusted || event.source !== window.parent || event.origin !== 'uma-app://app'
+    if (!event.isTrusted || event.source !== window.parent || event.origin !== 'hey-app://app'
       || event.data?.type !== 'dsh-mandatory-connect' || event.ports.length !== 1 || port) return
     port = event.ports[0]
     port.onmessage = receive

@@ -40,7 +40,7 @@ export function parseWikiUserPlan(text) {
         return wikiUserPlanSchema.parse(load(text, { schema: JSON_SCHEMA }));
     }
     catch (error) {
-        throw new WikiError('wiki/invalid-data', 'Invalid .uma/wiki/wiki_plan.yaml; correct its fields or YAML before generation', { cause: error });
+        throw new WikiError('wiki/invalid-data', 'Invalid .hey/wiki/wiki_plan.yaml; correct its fields or YAML before generation', { cause: error });
     }
 }
 //# sourceMappingURL=plan.js.map

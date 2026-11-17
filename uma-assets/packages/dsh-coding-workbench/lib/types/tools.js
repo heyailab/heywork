@@ -46,7 +46,7 @@ export function apply(ctx, config = {}) {
                 + 'Use coding_check for those commands and coding_inspect acceptance before reporting engineering completion. '
                 + 'For an unchanged failed check, coding_repair can start a bounded repair and retain its independent verification history; read or cancel it by the returned repair id. '
                 + 'After editing several files, prefer coding_check with scope "changed" so only the affected checks run; '
-                + 'declare coverage globs per check in .uma/coding.json to make that selection precise. '
+                + 'declare coverage globs per check in .hey/coding.json to make that selection precise. '
                 + 'A shell transcript, document checkbox, model-authored approval flag or older pass is not current acceptance evidence. '
                 + 'Report failed, missing, stale or interrupted checks and open findings. Human approval and deployment need their own evidence. '
                 + 'Use the full Uma team workflow only when the request warrants a complete product workflow.',
@@ -151,7 +151,7 @@ export function apply(ctx, config = {}) {
     }));
     ctx.tools.register(defineTool({
         name: 'coding_check',
-        description: 'Run an explicitly selected verification command discovered by coding_inspect, or run every check affected by the current working-tree changes with scope "changed". Stores actual argv, directory, source fingerprints, exit status, bounded logs and diagnostics. A passed command is not fresh acceptance if source changed or the scan was incomplete. Affected selection needs coverage globs declared per check in .uma/coding.json; checks without declared coverage always run, and an incomplete change list runs everything. Reading and cancelling refer to a previously returned execution id.',
+        description: 'Run an explicitly selected verification command discovered by coding_inspect, or run every check affected by the current working-tree changes with scope "changed". Stores actual argv, directory, source fingerprints, exit status, bounded logs and diagnostics. A passed command is not fresh acceptance if source changed or the scan was incomplete. Affected selection needs coverage globs declared per check in .hey/coding.json; checks without declared coverage always run, and an incomplete change list runs everything. Reading and cancelling refer to a previously returned execution id.',
         parameters: { action: { type: 'string', required: true, enum: readOnly ? ['read'] : ['run', 'read', 'cancel'] }, check: { type: 'string', description: 'Discovered check name for run.' }, scope: { type: 'string', enum: ['changed'], description: 'Run every affected check for the working-tree change set instead of one named check.' }, id: { type: 'string', description: 'Returned verification execution id for read/cancel.' } },
         output: { ...jsonOutput, presentationMeta: (_args, value) => verificationMeta(value) },
         async execute(args, exec) {

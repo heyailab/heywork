@@ -485,7 +485,7 @@ What truly distinguishes Stripe is its shadow system. Rather than the flat or si
       /* ─── Cards ─────────────────────────────────────────────────
        * Two card flavours:
        *   .card           hairline border, no shadow — for grids and
-       *                   .uma-preview-form panels where the border IS the edge.
+       *                   .hey-preview-form panels where the border IS the edge.
        *   .card-elevated  no border, blue-tinted multi-layer shadow —
        *                   for featured / hero cards where Stripe's
        *                   trademark elevation does the work.
@@ -815,7 +815,7 @@ What truly distinguishes Stripe is its shadow system. Rather than the flat or si
       }
     </style>
 
-    <style data-uma-responsive-repair>
+    <style data-hey-responsive-repair>
       /* Grid and flex children may shrink; long labels wrap within their own column. */
       :where(*) { min-width: 0; }
       :where(h1, h2, h3, p, a, span, strong, label, code) { overflow-wrap: anywhere; }
@@ -1124,7 +1124,7 @@ What truly distinguishes Stripe is its shadow system. Rather than the flat or si
             </p>
           </div>
 
-          <div role="group" class="uma-preview-form form">
+          <div role="group" class="hey-preview-form form">
             <div class="row-between">
               <h3 class="card-title" style="font-size: var(--text-lg)">
                 Contact sales

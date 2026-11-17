@@ -31,7 +31,7 @@ export const Config = z.object({
     busyTimeoutMs: z.number().min(1).step(1).default(5000),
     excludeDirectories: z
         .array(z.string())
-        .default(['.git', '.uma', 'node_modules', 'vendor', 'dist', 'lib', 'build', '.cache']),
+        .default(['.git', '.hey', 'node_modules', 'vendor', 'dist', 'lib', 'build', '.cache']),
     embeddingUrl: z.string(),
     embeddingModel: z.string(),
     embeddingKeyRef: z.string(),

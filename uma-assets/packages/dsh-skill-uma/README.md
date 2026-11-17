@@ -24,14 +24,14 @@ Registers the bundled Uma skill catalog on `ctx.skills`. The catalog gives the d
 <a id="use-this-package"></a>
 ## Use this package
 
-Editable source assets live in the repository’s `assets/`; installations read their container on demand. The provider validates every `SKILL.md` frontmatter at registration, rejects invalid or duplicate names, and exposes an opaque resource hint naming `uma_resource_read`; installed directories are not sent to the model.
+Editable source assets live in the repository’s `assets/`; installations read their container on demand. The provider validates every `SKILL.md` frontmatter at registration, rejects invalid or duplicate names, and exposes an opaque resource hint naming `hey_resource_read`; installed directories are not sent to the model.
 
-Installations ship `resources.umadb`, not the `assets/` source tree. `pnpm run build:uma-resources` builds the local SQLite container; resources are compressed and sealed, then read directly without plaintext extraction. This prevents casual file browsing and direct Markdown copying, not extraction by a device owner who can inspect application code or memory. Maintainers keep editable source assets in the repository and rebuild the container. Skills remain model-invocable but are absent from user invocation menus.
+Installations ship `resources.umadb`, not the `assets/` source tree. `pnpm run build:hey-resources` builds the local SQLite container; resources are compressed and sealed, then read directly without plaintext extraction. This prevents casual file browsing and direct Markdown copying, not extraction by a device owner who can inspect application code or memory. Maintainers keep editable source assets in the repository and rebuild the container. Skills remain model-invocable but are absent from user invocation menus.
 
 Mount it beside a skill registry inside an agent preset:
 
 ```yaml
-- id: skill-uma
+- id: skill-hey
   name: '@deepseek-ai/dsh-skill-uma'
 ```
 
@@ -48,35 +48,35 @@ Custom profiles that load these bundled skills must also mount `@deepseek-ai/dsh
 
 | Skill | Purpose |
 |---|---|
-| `uma-impact-analysis` | Source-grounded change impact and regression planning |
-| `uma-code-review` | Read-only review of concrete regressions in local changes |
-| `uma-debug` | Failure reproduction, diagnosis, authorized repair and regression evidence |
-| `uma-team` | Full product-delivery pipeline and role routing |
-| `uma-delivery-docs` | PRD, architecture, UI/UX, and spec documents |
-| `uma-design-taste` | Anti-slop visual direction for pages and app screens |
-| `uma-design-craft` | Shape, critique, audit, polish, harden, and DESIGN.md capture |
-| `uma-design-system` | Searchable palettes, type pairings, styles, UX rules, and stacks |
+| `hey-impact-analysis` | Source-grounded change impact and regression planning |
+| `hey-code-review` | Read-only review of concrete regressions in local changes |
+| `hey-debug` | Failure reproduction, diagnosis, authorized repair and regression evidence |
+| `hey-team` | Full product-delivery pipeline and role routing |
+| `hey-delivery-docs` | PRD, architecture, UI/UX, and spec documents |
+| `hey-design-taste` | Anti-slop visual direction for pages and app screens |
+| `hey-design-craft` | Shape, critique, audit, polish, harden, and DESIGN.md capture |
+| `hey-design-system` | Searchable palettes, type pairings, styles, UX rules, and stacks |
 | `uma-design-md` | Complete production DESIGN.md reference catalog |
 | `uma-design-systems` | Installed design systems with tokens and component references |
-| `uma-design-brief` | Structured design brief to DESIGN.md |
-| `uma-web-prototype` | Single-file HTML prototype composition |
-| `uma-dashboard` | Live dashboard with KPIs, activity, and task table |
-| `uma-wireframe` | Annotated lo-fi wireframe with spec panel |
-| `uma-mobile-app` | Mobile app screen in a realistic device frame |
-| `uma-deck` | HTML presentation decks |
-| `uma-apple-review` | Apple HIG platform review with cross-platform translation |
-| `uma-design-review` | Rendered-interface design QA |
-| `uma-quality-gate` | Deterministic pre-delivery gates |
+| `hey-design-brief` | Structured design brief to DESIGN.md |
+| `hey-web-prototype` | Single-file HTML prototype composition |
+| `hey-dashboard` | Live dashboard with KPIs, activity, and task table |
+| `hey-wireframe` | Annotated lo-fi wireframe with spec panel |
+| `hey-mobile-app` | Mobile app screen in a realistic device frame |
+| `hey-deck` | HTML presentation decks |
+| `hey-apple-review` | Apple HIG platform review with cross-platform translation |
+| `hey-design-review` | Rendered-interface design QA |
+| `hey-quality-gate` | Deterministic pre-delivery gates |
 
 Team authors, reviewers and coordinators receive read-only design catalog, context and built-in knowledge tools; only implementation presets expose design scaffolding. Authors and reviewers also receive workspace-scoped experience recall. The Wiki teammate owns source-cited discovery and affected-page updates; publication requires the Wiki freshness check. Disabled collections and unrelated workspaces remain excluded.
 
 For UI work, the delivery designer inspects the installed system catalog and honors an explicit selection, a copied design prompt or a natural-language style request. Without a specified style, the designer selects by product, audience, density and existing brand, and records the choice and project-specific layout and component decisions in the design and UI/UX artifacts. Frontend applies those decisions to the product and QA compares the rendered result with the design separately from functional checks. Later pages reuse the choice and adapt it to approved project tokens and components.
 
-The project director can search the local UMA terminology library with `uma_knowledge_search` when informal language leaves an implementation choice. The library covers interface design, backend, product, testing, tools, AI, version control and visual styles. Its design critique guide translates reported defects into verifiable handoffs.
+The project director can search the local HEY terminology library with `hey_knowledge_search` when informal language leaves an implementation choice. The library covers interface design, backend, product, testing, tools, AI, version control and visual styles. Its design critique guide translates reported defects into verifiable handoffs.
 
-The installed library comes from normalized runtime files rather than upstream research dumps. `scripts/sync-uma-design-library.ts` generates the complete catalog, lazy detail modules and `library-source.json` digests; `--check` verifies their correspondence. Reference manifests list only shipped files and use `uma-design-system-reference/v1`. Native project scaffolds use `uma-design-project/v1`; they do not advertise upstream preview or audit files that were not copied.
+The installed library comes from normalized runtime files rather than upstream research dumps. `scripts/sync-hey-design-library.ts` generates the complete catalog, lazy detail modules and `library-source.json` digests; `--check` verifies their correspondence. Reference manifests list only shipped files and use `hey-design-system-reference/v1`. Native project scaffolds use `hey-design-project/v1`; they do not advertise upstream preview or audit files that were not copied.
 
-The expanded brand references use attributed Simple Icons identity metadata and UMA-authored product-domain recipes. Identity colors and source URLs are distinct from authored layout, typography and component choices; these kits are not official brand component libraries. Each kit includes offline DESIGN.md, tokens.css, components.html and manifest.json. The metadata license ships as BRAND-METADATA-LICENSE.txt. Run `pnpm run generate-uma-brand-references`, then `pnpm exec tsx scripts/sync-uma-design-library.ts`; `pnpm run verify-uma-design-library` rejects stale or incomplete kits instead of silently excluding them.
+The expanded brand references use attributed Simple Icons identity metadata and HEY-authored product-domain recipes. Identity colors and source URLs are distinct from authored layout, typography and component choices; these kits are not official brand component libraries. Each kit includes offline DESIGN.md, tokens.css, components.html and manifest.json. The metadata license ships as BRAND-METADATA-LICENSE.txt. Run `pnpm run generate-hey-brand-references`, then `pnpm exec tsx scripts/sync-hey-design-library.ts`; `pnpm run verify-hey-design-library` rejects stale or incomplete kits instead of silently excluding them.
 
 Component specimens are offline visual references inside a script-disabled iframe. Native fields and selectors remain usable; specimen action buttons do not implement a business backend. The static preview gate rejects scripts, handlers, remote assets, missing accessible labels and divergent default tokens. The browser quality lane checks every installed specimen at 316 (embedded phone preview), 390, 768 and 1280 CSS pixels in light and dark environments, including document overflow, clipped labels and field focus. Systems without a declared alternate palette retain their intended appearance. The iframe document resolves links to tokens.css and DESIGN.md into native disclosures containing those exact files, while copied project assets retain their sibling-file links.
 

@@ -4,7 +4,7 @@ import z from "@deepseek-ai/schemastery";
 import { credentialRef } from "@deepseek-ai/dsh-credentials";
 //#region lib/types/weknora.js
 /** Loader entry identity. */
-const name = "uma-weknora";
+const name = "hey-weknora";
 /** Services for explicit workspace ownership and Host-only credentials. */
 const inject = [
 	"tools",
@@ -25,7 +25,7 @@ const Config = z.object({
 	maxResponseBytes: z.number().step(1).min(1024).max(4194304).default(1048576)
 });
 /** Register on-demand retrieval. Each request is restricted by account, workspace and base IDs.
-* @param ctx - UMA Host scope.
+* @param ctx - HEY Host scope.
 * @param config - Approved connection, credential and resource limits.
 */
 function apply(ctx, config) {
@@ -41,7 +41,7 @@ function apply(ctx, config) {
 	const lifetime = new AbortController();
 	ctx.effect(() => () => {
 		lifetime.abort();
-	}, "uma-weknora: retrieval");
+	}, "hey-weknora: retrieval");
 	const authorized = async (agent, signal) => {
 		const account = await ctx.deepseekAccount.getPlatformSession();
 		signal.throwIfAborted();
@@ -49,7 +49,7 @@ function apply(ctx, config) {
 		return ctx.workspaceRegistry.list().some((workspace) => workspace.id === config.workspaceId && workspace.sessionIds.includes(agent.id));
 	};
 	ctx.tools.register(defineTool({
-		name: "uma_weknora_search",
+		name: "hey_weknora_search",
 		description: "Search the connected WeKnora document collection when the user asks to consult it. The focused query is sent to that configured service.",
 		parameters: { query: {
 			type: "string",

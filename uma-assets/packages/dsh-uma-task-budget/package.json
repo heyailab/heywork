@@ -1,6 +1,6 @@
 {
   "name": "@deepseek-ai/dsh-uma-task-budget",
-  "description": "Owned financial task budgets shared by a UMA session and its delegated agents",
+  "description": "Owned financial task budgets shared by a HEY session and its delegated agents",
   "version": "0.2.2-rc.3",
   "private": true,
   "type": "module",

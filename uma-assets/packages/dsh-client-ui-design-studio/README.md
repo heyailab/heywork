@@ -1,5 +1,5 @@
 ---
-description: "The Design Studio and Delivery Workbench global pages: browse design systems, inspect tokens, launch UMA presets, and review the delivery pipeline."
+description: "The Design Studio and Delivery Workbench global pages: browse design systems, inspect tokens, launch HEY presets, and review the delivery pipeline."
 kind: "package-reference"
 ---
 
@@ -11,7 +11,7 @@ English | [中文](README.zh.md)
 
 Design Studio browses installed references, tokens and component previews. Conversation **More actions → Task details** opens the existing right sidebar for the current project’s checks, acceptance, findings, repairs, tasks and documents. Verification and repair actions append a draft to that conversation without sending it. Browsing references and evidence does not request a model.
 
-The fixed UMA Design entry opens the gallery and saved projects. UMA displays palettes, typography, design guides and component previews. Full reference documents stay in the local Agent resource store. Maintainers can inspect them in source builds with `showInternalLibrary: true`.
+The fixed HEY Design entry opens the gallery and saved projects. HEY displays palettes, typography, design guides and component previews. Full reference documents stay in the local Agent resource store. Maintainers can inspect them in source builds with `showInternalLibrary: true`.
 
 ## Table of Contents
 
@@ -25,7 +25,7 @@ The fixed UMA Design entry opens the gallery and saved projects. UMA displays pa
 <a id="use-this-package"></a>
 ## Use this package
 
-In **UMA Operations**, save servers with a host, port, username and password, private key or local ssh-agent. Confirm the SSH host fingerprint with the administrator before connecting. Each connected server retains its own terminal while switching among servers. The desktop stores server records and their credentials in its [encrypted local vault](../../../apps/desktop/README.md#local-desktop-settings). Browser sessions can open temporary connections.
+In **HEY Operations**, save servers with a host, port, username and password, private key or local ssh-agent. Confirm the SSH host fingerprint with the administrator before connecting. Each connected server retains its own terminal while switching among servers. The desktop stores server records and their credentials in its [encrypted local vault](../../../apps/desktop/README.md#local-desktop-settings). Browser sessions can open temporary connections.
 
 **Overview** displays Linux CPU, memory, swap, disk and network probes. Individual panels show disk usage, processes, services, logs and containers. The service and container lists support start, stop and restart when the remote user has permission. **Files** uses SFTP for listing, transfers, creating directories, renaming and deleting files or empty directories. **Agent access** delegates the selected connection to one conversation. Each delegated command requires approval, and disconnecting revokes that server’s grant.
 
@@ -46,7 +46,7 @@ Mount it in the Web composition:
   name: '@deepseek-ai/dsh-client-ui-design-studio'
 ```
 
-The package retains the `design` and compatibility `delivery` keyed main pages, with Design and UMA Operations in `sidebar.panellist`. Task details open through the conversation menu in the existing right sidebar. Design Studio reads `.design/` projects from the selected session, shows contract completeness plus a DESIGN.md preview, and can open the owning session; each system in the gallery has a sandboxed component preview. Selecting a design system also offers **Build a design brief**: a guided form captures product, surface, audience, tone, density, required pages, and constraints, then starts the UI Design Agent with a structured prompt that first reads `design_context`, preserves approved branding and existing implementation, and uses `design_project_create` only when a foundation is missing. Production UI uses the current stack; single-file HTML is reserved for explicit prototype requests. Selecting a delivery stage opens its Markdown; a missing or not-ready artifact offers **Ask the agent to complete**, which starts the UMA Delivery Team with the required sections and placeholder rules in the prompt. The gate panel lists the artifacts that currently block delivery and copies a structured gate report.
+The package retains the `design` and compatibility `delivery` keyed main pages, with Design and HEY Operations in `sidebar.panellist`. Task details open through the conversation menu in the existing right sidebar. Design Studio reads `.design/` projects from the selected session, shows contract completeness plus a DESIGN.md preview, and can open the owning session; each system in the gallery has a sandboxed component preview. Selecting a design system also offers **Build a design brief**: a guided form captures product, surface, audience, tone, density, required pages, and constraints, then starts the UI Design Agent with a structured prompt that first reads `design_context`, preserves approved branding and existing implementation, and uses `design_project_create` only when a foundation is missing. Production UI uses the current stack; single-file HTML is reserved for explicit prototype requests. Selecting a delivery stage opens its Markdown; a missing or not-ready artifact offers **Ask the agent to complete**, which starts the HEY Delivery Team with the required sections and placeholder rules in the prompt. The gate panel lists the artifacts that currently block delivery and copies a structured gate report.
 
 Task details recheck membership of their owning Session and project rather than following global project selection; removing membership hides old evidence. Documents load on demand, and missing documents do not require a full document set. Design and the compatibility route can still prepare ordinary Agent drafts.
 
@@ -82,7 +82,7 @@ None; the package neither assembles nor sends a provider request.
 <a id="known-limitations-and-deferred-work"></a>
 
 - The catalog is generated from the bundled design systems; adding a system requires regenerating `src/client/catalog.ts`.
-- Section checks and placeholder rules come from the shared `dsh-util-uma-delivery` contract used by `uma_gate_status`; artifact status and findings are read live from the selected workspace through its initialized Session.
+- Section checks and placeholder rules come from the shared `dsh-util-uma-delivery` contract used by `hey_gate_status`; artifact status and findings are read live from the selected workspace through its initialized Session.
 - The pages start sessions with prompts prefilled; they do not submit on the user's behalf.
 - Default root token values are shown; simple `var()` aliases resolve within the same stylesheet, while `color-mix()` remains a CSS expression.
 

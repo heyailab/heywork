@@ -73,8 +73,8 @@ interface SshContext {
   tools: { register(tool: unknown, options?: unknown): unknown }
 }
 
-/** UMA Host plugin identity. */
-export const name = 'uma-operations-ssh'
+/** HEY Host plugin identity. */
+export const name = 'hey-operations-ssh'
 
 /** The command registry is the human-only grant entry point. */
 export const inject = [
@@ -92,7 +92,7 @@ export const Config = z.object({
 })
 
 /** Register explicit, temporary SSH access with per-command approval.
- * @param ctx - UMA Host scope.
+ * @param ctx - HEY Host scope.
  * @param config - SSH grant and execution bounds.
  */
 export function apply(ctx: SshContext, config: SshConfig): void {
@@ -108,13 +108,13 @@ export function apply(ctx: SshContext, config: SshConfig): void {
   }
   ctx.effect(() => () => {
     lifetime.abort()
-  }, 'uma-operations-ssh: revoke all')
+  }, 'hey-operations-ssh: revoke all')
   ctx.on('agent/disposed', ({ agent }) => {
     revokeAll(agent)
   })
   ctx.effect(() => ctx.commands.register({
     name: 'ops-ssh',
-    definitionId: CommandDefinitionId('uma/operations-ssh'),
+    definitionId: CommandDefinitionId('hey/operations-ssh'),
     description: 'Delegate an SSH connection to this conversation, inspect it, or revoke it',
     input: { hint: 'status | disconnect' },
     recordInput: false,
@@ -147,7 +147,7 @@ export function apply(ctx: SshContext, config: SshConfig): void {
       const connection = connectionId === void 0 ? void 0 : terminal(connectionId)
       if (connectionId === void 0 || connection === void 0) return {
         kind: 'error',
-        text: 'Connect and grant access from the UMA Operations panel.'
+        text: 'Connect and grant access from the HEY Operations panel.'
       }
       if (!ctx.workspaceRegistry.list().some(workspace => workspace.sessionIds.includes(agent.id))) return {
         kind: 'error',
@@ -180,9 +180,9 @@ export function apply(ctx: SshContext, config: SshConfig): void {
         text: `SSH access delegated for this conversation: ${umaSshUri(connection.target)}. Each command requires approval.`
       }
     }
-  }), 'uma-operations-ssh: human commands')
+  }), 'hey-operations-ssh: human commands')
   ctx.tools.register(defineTool({
-    name: 'uma_ssh_servers',
+    name: 'hey_ssh_servers',
     description: 'List live SSH servers explicitly delegated to this conversation. Use the returned connection ID when choosing a server.',
     parameters: {},
     output: {
@@ -205,7 +205,7 @@ export function apply(ctx: SshContext, config: SshConfig): void {
     })
   }), { when: ({ agent }: { agent: SshAgent }) => active(agent).length > 0 })
   ctx.tools.register(defineTool({
-    name: 'uma_ssh_run',
+    name: 'hey_ssh_run',
     description: 'Run a command on the SSH server explicitly delegated to this conversation. Ask for approval for the exact command. Use this tool for remote work and inspect its exit code.',
     parameters: {
       command: {
@@ -215,7 +215,7 @@ export function apply(ctx: SshContext, config: SshConfig): void {
       },
       connection_id: {
         type: 'string',
-        description: 'Connection ID from uma_ssh_servers. Required when multiple servers are delegated.'
+        description: 'Connection ID from hey_ssh_servers. Required when multiple servers are delegated.'
       }
     },
     output: {
@@ -228,9 +228,9 @@ export function apply(ctx: SshContext, config: SshConfig): void {
     async execute({ command, connection_id: selected }, exec: SshExec) {
       const agent = exec.agent
       const delegated = active(agent)
-      if (selected === void 0 && delegated.length > 1) throw new ToolArgsError(['Choose one connection_id from uma_ssh_servers'])
+      if (selected === void 0 && delegated.length > 1) throw new ToolArgsError(['Choose one connection_id from hey_ssh_servers'])
       const grant = selected === void 0 ? delegated[0]?.[1] : delegated.find(([, entry]) => entry.modelId === selected)?.[1]
-      if (agent === void 0 || grant === void 0 || grant.signal.aborted) throw new ToolContextUnavailableError('Delegate an SSH connection from UMA Operations before executing a command')
+      if (agent === void 0 || grant === void 0 || grant.signal.aborted) throw new ToolContextUnavailableError('Delegate an SSH connection from HEY Operations before executing a command')
       const workspace = ctx.workspaceRegistry.list().find(item => item.sessionIds.includes(agent.id))
       const approval = ctx.get('approval')
       if (workspace === void 0 || approval === void 0) throw new ToolContextUnavailableError('SSH execution requires a workspace and an approval channel')

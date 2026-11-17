@@ -65,7 +65,7 @@ export function platformHeaders(values) {
     const names = new Set();
     for (const [name, value] of Object.entries(values)) {
         const key = name.toLowerCase();
-        if (['authorization', 'x-dsh-auth-token', 'x-uma-token-mode', 'host', 'content-length', 'transfer-encoding', 'connection', 'content-type'].includes(key)
+        if (['authorization', 'x-dsh-auth-token', 'x-hey-token-mode', 'host', 'content-length', 'transfer-encoding', 'connection', 'content-type'].includes(key)
             || names.has(key))
             throw new Error('account: requestHeaders contains a reserved or duplicate header');
         names.add(key);
@@ -92,8 +92,8 @@ export const exchange = z.object({
 }).refine(value => (value.refresh_token === undefined) === (value.expires_in === undefined));
 const rotated = z.object({ access_token: opaque, refresh_token: opaque, expires_in: lifetime, token_type: z.literal('Bearer') });
 /**
- * Rotate one UMA device credential. The same attempt can recover a lost response.
- * @param origin - validated UMA issuer.
+ * Rotate one HEY device credential. The same attempt can recover a lost response.
+ * @param origin - validated HEY issuer.
  * @param token - current refresh credential.
  * @param attempt - independently generated nonce stored with the credential.
  * @param signal - request deadline and service lifetime.
@@ -101,7 +101,7 @@ const rotated = z.object({ access_token: opaque, refresh_token: opaque, expires_
  * @returns new access and refresh credentials with the remaining access lifetime.
  */
 export async function refreshAccount(origin, token, attempt, signal, headers) {
-    const data = await requestPlatform(origin, 'auth_refresh', { attempt_id: attempt }, signal, accountHeaders(headers, token), 'uma');
+    const data = await requestPlatform(origin, 'auth_refresh', { attempt_id: attempt }, signal, accountHeaders(headers, token), 'hey');
     const result = rotated.safeParse(data);
     if (!result.success)
         throw new PlatformAuthError('protocol');
@@ -114,7 +114,7 @@ export async function refreshAccount(origin, token, attempt, signal, headers) {
  * @param body - protocol request, never logged.
  * @param signal - attempt cancellation and timeout.
  * @param headers - validated deployment headers for this origin.
- * @param product - owner of the authentication routes; UMA uses its branded API prefix.
+ * @param product - owner of the authentication routes; HEY uses its branded API prefix.
  * @returns successful business payload, validated by its caller.
  */
 export async function requestPlatform(origin, method, body, signal, headers, product = 'dsh') {
@@ -135,7 +135,7 @@ export function requestAccount(origin, path, token, signal, headers) {
     return platformRequest(`${origin}${path}`, { method: 'GET', headers: accountHeaders(headers, token) }, signal, 'compatibility');
 }
 /**
- * Fetch a native UMA JSON endpoint with the same bounded account transport.
+ * Fetch a native HEY JSON endpoint with the same bounded account transport.
  * @param origin - configured and grant-matched origin.
  * @param path - native account endpoint.
  * @param token - captured account grant.

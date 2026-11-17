@@ -36,7 +36,7 @@ const ENGINEERING_SOURCES = [
 /** Conditional implementation/review obligations, never automatically passing checks. */
 const ENGINEERING_RULES = [
 	{
-		id: "UMA.STD.KEYBOARD_FOCUS",
+		id: "HEY.STD.KEYBOARD_FOCUS",
 		languages: ["frontend", "web"],
 		sourceIds: ["w3c-wcag22"],
 		level: "required-by-project",
@@ -47,7 +47,7 @@ const ENGINEERING_RULES = [
 		verification: "test"
 	},
 	{
-		id: "UMA.STD.ACCESSIBLE_ERRORS",
+		id: "HEY.STD.ACCESSIBLE_ERRORS",
 		languages: ["frontend", "web"],
 		sourceIds: ["w3c-wcag22"],
 		level: "required-by-project",
@@ -58,7 +58,7 @@ const ENGINEERING_RULES = [
 		verification: "test"
 	},
 	{
-		id: "UMA.STD.TRANSACTION_RETRY",
+		id: "HEY.STD.TRANSACTION_RETRY",
 		languages: ["postgresql", "database"],
 		sourceIds: ["postgres-isolation"],
 		level: "advisory",
@@ -69,7 +69,7 @@ const ENGINEERING_RULES = [
 		verification: "test"
 	},
 	{
-		id: "UMA.STD.REVIEW_COUNTEREXAMPLE",
+		id: "HEY.STD.REVIEW_COUNTEREXAMPLE",
 		languages: ["all"],
 		sourceIds: ["google-review"],
 		level: "advisory",
@@ -80,7 +80,7 @@ const ENGINEERING_RULES = [
 		verification: "review"
 	},
 	{
-		id: "UMA.STD.ORDER_REPLAY",
+		id: "HEY.STD.ORDER_REPLAY",
 		languages: ["payments", "commerce"],
 		sourceIds: ["microsoft-rest", "postgres-isolation"],
 		level: "advisory",
@@ -91,7 +91,7 @@ const ENGINEERING_RULES = [
 		verification: "test"
 	},
 	{
-		id: "UMA.STD.TENANT_SCOPE",
+		id: "HEY.STD.TENANT_SCOPE",
 		languages: [
 			"saas",
 			"backend",
@@ -106,7 +106,7 @@ const ENGINEERING_RULES = [
 		verification: "test"
 	}
 ];
-/** Source-informed original summaries and UMA verification examples, not publisher manuals or certifications. */
+/** Source-informed original summaries and HEY verification examples, not publisher manuals or certifications. */
 const ENGINEERING_GUIDES = [
 	{
 		id: "accessible-product-ui",
@@ -208,7 +208,7 @@ function freezeGuide(value) {
 		body: Object.freeze({ ...value.body })
 	});
 }
-/** Verified official source metadata; guide text below is original UMA synthesis. */
+/** Verified official source metadata; guide text below is original HEY synthesis. */
 const CODING_STANDARD_SOURCES = Object.freeze([
 	...ENGINEERING_SOURCES.map((value) => Object.freeze(value)),
 	Object.freeze({
@@ -306,7 +306,7 @@ const CODING_STANDARD_SOURCES = Object.freeze([
 const CODING_STANDARD_RULES = Object.freeze([
 	...ENGINEERING_RULES.map(freezeRule),
 	freezeRule({
-		id: "UMA.STD.PROJECT_PRECEDENCE",
+		id: "HEY.STD.PROJECT_PRECEDENCE",
 		languages: ["all"],
 		sourceIds: ["python-pep8", "google-ts"],
 		level: "advisory",
@@ -317,7 +317,7 @@ const CODING_STANDARD_RULES = Object.freeze([
 		verification: "review"
 	}),
 	freezeRule({
-		id: "UMA.STD.SEMANTIC_NAMES",
+		id: "HEY.STD.SEMANTIC_NAMES",
 		languages: ["all"],
 		sourceIds: [
 			"google-ts",
@@ -332,7 +332,7 @@ const CODING_STANDARD_RULES = Object.freeze([
 		verification: "lint"
 	}),
 	freezeRule({
-		id: "UMA.STD.JAVA_LAYERING",
+		id: "HEY.STD.JAVA_LAYERING",
 		languages: ["java"],
 		sourceIds: ["alibaba-p3c"],
 		level: "advisory",
@@ -343,7 +343,7 @@ const CODING_STANDARD_RULES = Object.freeze([
 		verification: "review"
 	}),
 	freezeRule({
-		id: "UMA.STD.JAVA_RESOURCE_LIFETIME",
+		id: "HEY.STD.JAVA_RESOURCE_LIFETIME",
 		languages: ["java"],
 		sourceIds: ["alibaba-p3c"],
 		level: "advisory",
@@ -354,7 +354,7 @@ const CODING_STANDARD_RULES = Object.freeze([
 		verification: "test"
 	}),
 	freezeRule({
-		id: "UMA.STD.TS_UNTRUSTED_TYPES",
+		id: "HEY.STD.TS_UNTRUSTED_TYPES",
 		languages: ["typescript"],
 		sourceIds: ["google-ts"],
 		level: "advisory",
@@ -365,7 +365,7 @@ const CODING_STANDARD_RULES = Object.freeze([
 		verification: "typecheck"
 	}),
 	freezeRule({
-		id: "UMA.STD.TS_MODULE_BOUNDARIES",
+		id: "HEY.STD.TS_MODULE_BOUNDARIES",
 		languages: ["typescript", "javascript"],
 		sourceIds: ["google-ts"],
 		level: "advisory",
@@ -376,7 +376,7 @@ const CODING_STANDARD_RULES = Object.freeze([
 		verification: "review"
 	}),
 	freezeRule({
-		id: "UMA.STD.PYTHON_PUBLIC_NAMES",
+		id: "HEY.STD.PYTHON_PUBLIC_NAMES",
 		languages: ["python"],
 		sourceIds: ["python-pep8"],
 		level: "advisory",
@@ -387,7 +387,7 @@ const CODING_STANDARD_RULES = Object.freeze([
 		verification: "lint"
 	}),
 	freezeRule({
-		id: "UMA.STD.GO_PACKAGES",
+		id: "HEY.STD.GO_PACKAGES",
 		languages: ["go"],
 		sourceIds: ["go-review", "uber-go"],
 		level: "advisory",
@@ -398,7 +398,7 @@ const CODING_STANDARD_RULES = Object.freeze([
 		verification: "review"
 	}),
 	freezeRule({
-		id: "UMA.STD.GO_ERRORS_CONTEXT",
+		id: "HEY.STD.GO_ERRORS_CONTEXT",
 		languages: ["go"],
 		sourceIds: ["go-review", "uber-go"],
 		level: "advisory",
@@ -409,7 +409,7 @@ const CODING_STANDARD_RULES = Object.freeze([
 		verification: "review"
 	}),
 	freezeRule({
-		id: "UMA.STD.GO_GOROUTINE_LIFETIME",
+		id: "HEY.STD.GO_GOROUTINE_LIFETIME",
 		languages: ["go"],
 		sourceIds: ["uber-go"],
 		level: "advisory",
@@ -420,7 +420,7 @@ const CODING_STANDARD_RULES = Object.freeze([
 		verification: "test"
 	}),
 	freezeRule({
-		id: "UMA.STD.DOTNET_PUBLIC_NAMING",
+		id: "HEY.STD.DOTNET_PUBLIC_NAMING",
 		languages: ["csharp", "dotnet"],
 		sourceIds: ["microsoft-dotnet"],
 		level: "advisory",
@@ -431,7 +431,7 @@ const CODING_STANDARD_RULES = Object.freeze([
 		verification: "lint"
 	}),
 	freezeRule({
-		id: "UMA.STD.API_COMPATIBILITY",
+		id: "HEY.STD.API_COMPATIBILITY",
 		languages: ["rest", "http-api"],
 		sourceIds: ["microsoft-rest"],
 		level: "advisory",
@@ -442,7 +442,7 @@ const CODING_STANDARD_RULES = Object.freeze([
 		verification: "test"
 	}),
 	freezeRule({
-		id: "UMA.STD.AUTHORIZATION_RESOURCE",
+		id: "HEY.STD.AUTHORIZATION_RESOURCE",
 		languages: [
 			"web",
 			"backend",
@@ -457,7 +457,7 @@ const CODING_STANDARD_RULES = Object.freeze([
 		verification: "test"
 	}),
 	freezeRule({
-		id: "UMA.STD.INPUT_PARAMETERIZATION",
+		id: "HEY.STD.INPUT_PARAMETERIZATION",
 		languages: [
 			"web",
 			"backend",
@@ -472,7 +472,7 @@ const CODING_STANDARD_RULES = Object.freeze([
 		verification: "test"
 	}),
 	freezeRule({
-		id: "UMA.STD.SECRET_HANDLING",
+		id: "HEY.STD.SECRET_HANDLING",
 		languages: ["all"],
 		sourceIds: ["owasp-asvs5"],
 		level: "required-by-project",
@@ -483,7 +483,7 @@ const CODING_STANDARD_RULES = Object.freeze([
 		verification: "lint"
 	}),
 	freezeRule({
-		id: "UMA.STD.FILE_PATH_SCOPE",
+		id: "HEY.STD.FILE_PATH_SCOPE",
 		languages: [
 			"web",
 			"backend",
@@ -503,7 +503,7 @@ const CODING_STANDARD_RULES = Object.freeze([
 		verification: "test"
 	}),
 	freezeRule({
-		id: "UMA.STD.OUTBOUND_TARGET_SCOPE",
+		id: "HEY.STD.OUTBOUND_TARGET_SCOPE",
 		languages: [
 			"web",
 			"backend",
@@ -660,8 +660,8 @@ const BUILTIN_CODING_GUIDES = Object.freeze([
 		languages: ["all"],
 		sourceIds: ["owasp-asvs5"],
 		body: {
-			zh: "# 验证与评审\n\n以下是 UMA 的验证流程，安全用例参考 ASVS。发现项目已有检查，以行为和失败路径选择合适测试层；边界变化采用真实集成验证。不要用复刻实现的测试、任意覆盖率数字或模型自评代替证据。\n\n执行检查后记录命令、目录、源码指纹和退出状态。失败、取消、来源不完整及过期结果不能作为当前通过。独立评审记录触发条件、后果与源码位置；未解决问题继续阻塞验收。历史通过率和文档勾选都不是当前源码通过或部署成功。",
-			en: "# Verification and review\n\nThis is the UMA verification workflow; ASVS informs applicable security cases. Discover existing checks and select test layers from behavior and failure boundaries. Avoid tests that merely repeat implementation, arbitrary coverage targets and model self-grades.\n\nRetain commands, directories, source fingerprints and exit outcomes. Failed, cancelled, incomplete or stale evidence is not a current pass. Record actionable independent findings. Historical pass rates and document checkboxes do not certify current source or deployment."
+			zh: "# 验证与评审\n\n以下是 HEY 的验证流程，安全用例参考 ASVS。发现项目已有检查，以行为和失败路径选择合适测试层；边界变化采用真实集成验证。不要用复刻实现的测试、任意覆盖率数字或模型自评代替证据。\n\n执行检查后记录命令、目录、源码指纹和退出状态。失败、取消、来源不完整及过期结果不能作为当前通过。独立评审记录触发条件、后果与源码位置；未解决问题继续阻塞验收。历史通过率和文档勾选都不是当前源码通过或部署成功。",
+			en: "# Verification and review\n\nThis is the HEY verification workflow; ASVS informs applicable security cases. Discover existing checks and select test layers from behavior and failure boundaries. Avoid tests that merely repeat implementation, arbitrary coverage targets and model self-grades.\n\nRetain commands, directories, source fingerprints and exit outcomes. Failed, cancelled, incomplete or stale evidence is not a current pass. Record actionable independent findings. Historical pass rates and document checkboxes do not certify current source or deployment."
 		},
 		version: "2026.11.09.1"
 	}),

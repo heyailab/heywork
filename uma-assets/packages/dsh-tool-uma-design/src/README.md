@@ -76,7 +76,7 @@
    这是 lib 原意，未改动。
 2. `readBundledResource`（同文件）与 `readBundledText` 的 `catch` 会吞掉内部具体错误，
    统一抛向用户的一句泛化提示；原始错误文本仍保留在 `throw new Error(...)` 中。
-3. `design_project_create`（`src/types/index.ts`）返回体的 `system` 字段被硬编码为 `'UMA'`，
+3. `design_project_create`（`src/types/index.ts`）返回体的 `system` 字段被硬编码为 `'HEY'`，
    而非入参 `args.system`；与 lib 一致，未改动。
 4. `maxSnippetChars` 上限写作 `2e3`（=2000），与 description 中「200 through 2000」一致。
 5. `systemInfo` 的 `aliases` 用 `typeof item === 'string'` 过滤，未做去空 / 去重；

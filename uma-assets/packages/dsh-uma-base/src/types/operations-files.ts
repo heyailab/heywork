@@ -229,7 +229,7 @@ async function listDirectory(sftp: SftpChannel, remote: string, signal: AbortSig
 }
 
 async function upload(sftp: SftpChannel, request: FileRequest, path: string, signal: AbortSignal, maxBytes: number): Promise<void> {
-  const temporary = posix.join(posix.dirname(path), '.uma-upload-' + randomUUID())
+  const temporary = posix.join(posix.dirname(path), '.hey-upload-' + randomUUID())
   let bytes = 0
   const limit = new Transform({ transform(chunk, _encoding, next) {
     bytes += chunk.byteLength

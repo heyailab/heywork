@@ -25,7 +25,7 @@ export class WikiFiles {
         if (!fs.contains(this.root, target))
             throw new WikiError('wiki/outside-workspace', 'The path leaves the selected workspace');
         if (path.startsWith(`${WIKI_ROOT}/`)) {
-            for (const directory of ['.uma', WIKI_ROOT]) {
+            for (const directory of ['.hey', WIKI_ROOT]) {
                 const info = await fs.lstat(directory, { cwd: this.cwd }, signal);
                 if (info !== undefined && info.type !== 'directory')
                     throw new WikiError('wiki/outside-workspace', 'Wiki storage requires real directories');
@@ -76,7 +76,7 @@ export class WikiFiles {
         if (!('rootCallId' in exec))
             throw new WikiError('wiki/invalid-data', 'A read-only Wiki observation cannot publish files');
         if (!path.startsWith(`${WIKI_ROOT}/`))
-            throw new WikiError('wiki/outside-workspace', 'Wiki writes are confined to .uma/wiki');
+            throw new WikiError('wiki/outside-workspace', 'Wiki writes are confined to .hey/wiki');
         const target = await this.target(path);
         this.ctx.emit('fs/observed', target, before === null ? { kind: 'absent' } : { kind: 'present', version: before.version }, exec);
         const policy = await this.ctx.waterfall('fs/write-intent', target, exec, () => undefined);

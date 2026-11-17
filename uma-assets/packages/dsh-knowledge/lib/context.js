@@ -14,7 +14,7 @@ const inject = [
 function apply(ctx) {
 	const contexts = /* @__PURE__ */ new WeakMap();
 	ctx.systemPrompt.context({
-		name: "uma:workspace-knowledge",
+		name: "hey:workspace-knowledge",
 		order: 140,
 		interpolate: false,
 		text: (context) => context.agent === void 0 ? "" : contexts.get(context.agent) ?? ""

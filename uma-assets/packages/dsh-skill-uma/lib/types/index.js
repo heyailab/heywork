@@ -10,7 +10,7 @@ export const Config = z.object({
     assetRoot: z.string().min(1),
 });
 /** Cordis plugin identity. */
-export const name = 'skill-uma';
+export const name = 'skill-hey';
 /** Registry used by the bundled provider. */
 export const inject = ['skills'];
 function strictBoolean(value, field, path) {
@@ -18,23 +18,23 @@ function strictBoolean(value, field, path) {
         return undefined;
     if (typeof value === 'boolean')
         return value;
-    throw new Error(`skill-uma: ${path} has a non-boolean ${field}`);
+    throw new Error(`skill-hey: ${path} has a non-boolean ${field}`);
 }
 function parseFrontmatter(raw, path) {
     const match = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/u.exec(raw);
     if (match?.[1] === undefined)
-        throw new Error(`skill-uma: ${path} has no YAML frontmatter`);
+        throw new Error(`skill-hey: ${path} has no YAML frontmatter`);
     const metadata = parseYaml(match[1]);
     if (typeof metadata !== 'object' || metadata === null)
-        throw new Error(`skill-uma: ${path} has no metadata object`);
+        throw new Error(`skill-hey: ${path} has no metadata object`);
     const record = metadata;
     const skillName = record.name;
     const description = record.description;
     if (typeof skillName !== 'string' || !isSkillName(skillName)) {
-        throw new Error(`skill-uma: ${path} has an invalid skill name`);
+        throw new Error(`skill-hey: ${path} has an invalid skill name`);
     }
     if (typeof description !== 'string' || description.length === 0) {
-        throw new Error(`skill-uma: ${path} has no description`);
+        throw new Error(`skill-hey: ${path} has no description`);
     }
     const whenToUse = typeof record.whenToUse === 'string' && record.whenToUse.length > 0 ? record.whenToUse : undefined;
     const modelInvocable = strictBoolean(record['disable-model-invocation'], 'disable-model-invocation', path) !== true;
@@ -50,10 +50,10 @@ function candidateOf(directory, frontmatter) {
         description: frontmatter.description,
         ...(frontmatter.whenToUse === undefined ? {} : { whenToUse: frontmatter.whenToUse }),
         invocation: { modelInvocable: frontmatter.modelInvocable, userInvocable: false },
-        provider: 'dsh-uma',
+        provider: 'dsh-hey',
         source: 'bundled',
         rank: BUNDLED_SKILL_RANK,
-        resourceBase: { kind: 'opaque', description: `UMA-managed resources. Use uma_resource_read with skill "${frontmatter.name}" and the relative path named below; omit path to browse. These are references, not local file paths. Use the native design tools instead of installed Python scripts.` },
+        resourceBase: { kind: 'opaque', description: `HEY-managed resources. Use hey_resource_read with skill "${frontmatter.name}" and the relative path named below; omit path to browse. These are references, not local file paths. Use the native design tools instead of installed Python scripts.` },
         locator: join(directory, 'SKILL.md'),
     };
 }
@@ -73,7 +73,7 @@ export function apply(ctx, config = {}) {
         return candidateOf(directory, parseFrontmatter(readFileSync(join(directory, 'SKILL.md'), 'utf8'), join(directory, 'SKILL.md')).frontmatter);
     });
     const provider = {
-        name: 'dsh-uma',
+        name: 'dsh-hey',
         list: () => Promise.resolve(candidates),
         get: (candidate, options) => Promise.resolve().then(() => {
             options.signal?.throwIfAborted();

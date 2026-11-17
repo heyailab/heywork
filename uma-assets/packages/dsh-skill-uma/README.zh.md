@@ -24,14 +24,14 @@ kind: "package-reference"
 <a id="use-this-package"></a>
 ## 使用
 
-资源存放在 `assets/` 并按需读取。提供器在注册时验证每个 `SKILL.md` 的 frontmatter，拒绝无效或重复的名称，并以不透明资源提示指向 `uma_resource_read`，不向模型发送实际安装目录。
+资源存放在 `assets/` 并按需读取。提供器在注册时验证每个 `SKILL.md` 的 frontmatter，拒绝无效或重复的名称，并以不透明资源提示指向 `hey_resource_read`，不向模型发送实际安装目录。
 
-安装版分发 `resources.umadb`，不分发 `assets/` 源目录。`pnpm run build:uma-resources` 构建本地 SQLite 资源库；资料压缩封装后直接读取，不解包成明文目录。这用于防止普通文件浏览和直接复制 Markdown，不能阻止能检查应用代码或内存的设备所有者提取内容。维护者在仓库保留可编辑源资料并重建资源库。技能继续供模型调用，但不出现在用户调用菜单中。
+安装版分发 `resources.umadb`，不分发 `assets/` 源目录。`pnpm run build:hey-resources` 构建本地 SQLite 资源库；资料压缩封装后直接读取，不解包成明文目录。这用于防止普通文件浏览和直接复制 Markdown，不能阻止能检查应用代码或内存的设备所有者提取内容。维护者在仓库保留可编辑源资料并重建资源库。技能继续供模型调用，但不出现在用户调用菜单中。
 
 在 Agent 预设中与技能注册表一起挂载：
 
 ```yaml
-- id: skill-uma
+- id: skill-hey
   name: '@deepseek-ai/dsh-skill-uma'
 ```
 
@@ -48,35 +48,35 @@ kind: "package-reference"
 
 | 技能 | 用途 |
 |---|---|
-| `uma-impact-analysis` | 带源码依据的影响分析与回归规划 |
-| `uma-code-review` | 对本地变更进行只读缺陷审查 |
-| `uma-debug` | 复现报错、诊断、按授权修复与回归验证 |
-| `uma-team` | 完整产品交付流水线与角色路由 |
-| `uma-delivery-docs` | PRD、架构、UI/UX 与规格文档 |
-| `uma-design-taste` | 面向页面与应用界面的反模板视觉方向 |
-| `uma-design-craft` | 塑造、批评、审查、打磨、加固与 DESIGN.md 沉淀 |
-| `uma-design-system` | 可检索的配色、字体搭配、风格、UX 规则与技术栈 |
+| `hey-impact-analysis` | 带源码依据的影响分析与回归规划 |
+| `hey-code-review` | 对本地变更进行只读缺陷审查 |
+| `hey-debug` | 复现报错、诊断、按授权修复与回归验证 |
+| `hey-team` | 完整产品交付流水线与角色路由 |
+| `hey-delivery-docs` | PRD、架构、UI/UX 与规格文档 |
+| `hey-design-taste` | 面向页面与应用界面的反模板视觉方向 |
+| `hey-design-craft` | 塑造、批评、审查、打磨、加固与 DESIGN.md 沉淀 |
+| `hey-design-system` | 可检索的配色、字体搭配、风格、UX 规则与技术栈 |
 | `uma-design-md` | 完整的生产 DESIGN.md 参考目录 |
 | `uma-design-systems` | 含令牌与组件的完整设计系统目录 |
-| `uma-design-brief` | 结构化设计简报转 DESIGN.md |
-| `uma-web-prototype` | 单文件 HTML 原型组合 |
-| `uma-dashboard` | 含 KPI、活动流与任务表的实时仪表盘 |
-| `uma-wireframe` | 带规格面板的标注低保真线框图 |
-| `uma-mobile-app` | 真实设备框架中的移动应用界面 |
-| `uma-deck` | HTML 演示稿 |
-| `uma-apple-review` | Apple HIG 平台审查与跨平台转译 |
-| `uma-design-review` | 渲染界面的设计走查 |
-| `uma-quality-gate` | 确定性的交付前门禁 |
+| `hey-design-brief` | 结构化设计简报转 DESIGN.md |
+| `hey-web-prototype` | 单文件 HTML 原型组合 |
+| `hey-dashboard` | 含 KPI、活动流与任务表的实时仪表盘 |
+| `hey-wireframe` | 带规格面板的标注低保真线框图 |
+| `hey-mobile-app` | 真实设备框架中的移动应用界面 |
+| `hey-deck` | HTML 演示稿 |
+| `hey-apple-review` | Apple HIG 平台审查与跨平台转译 |
+| `hey-design-review` | 渲染界面的设计走查 |
+| `hey-quality-gate` | 确定性的交付前门禁 |
 
 团队作者、评审和协调角色具备只读设计目录、上下文及内置知识检索工具；只有实现预设暴露设计脚手架写入。作者与评审也接收工作区范围内的经验召回。Wiki 成员负责有源码引用的项目梳理和受影响页面更新，发布必须通过 Wiki 新鲜度检查。禁用的知识集合与无关工作区不参与检索。
 
 涉及 UI 工作时，交付团队的设计师检查内置系统目录，优先遵循用户明确选择、复制的设计提示词或自然语言风格描述。用户未指定时，设计师根据产品、受众、信息密度和已有品牌自行选择，在设计与 UI/UX 工件中记录选择和适用于项目的布局与组件决策。前端将这些决策落实到产品中，QA 对照设计验收渲染结果，并单独报告功能测试。后续页面复用该选择，并适配项目已确认的令牌与组件。
 
-口语需求可能对应不同实现时，项目总监可通过 `uma_knowledge_search` 检索本地 UMA 术语库。术语覆盖前端、后端、产品、测试、工具、AI、版本控制和视觉风格。设计走查指南将界面问题转成可验证的开发交接。
+口语需求可能对应不同实现时，项目总监可通过 `hey_knowledge_search` 检索本地 HEY 术语库。术语覆盖前端、后端、产品、测试、工具、AI、版本控制和视觉风格。设计走查指南将界面问题转成可验证的开发交接。
 
-安装目录使用规范化运行文件，不混入上游研究转储。`scripts/sync-uma-design-library.ts` 生成完整目录、按需详情模块与 `library-source.json` 摘要，`--check` 校验对应关系。参考清单仅声明实际随包文件，使用 `uma-design-system-reference/v1`；原生项目脚手架使用 `uma-design-project/v1`，不声明未复制的上游预览或审计文件。
+安装目录使用规范化运行文件，不混入上游研究转储。`scripts/sync-hey-design-library.ts` 生成完整目录、按需详情模块与 `library-source.json` 摘要，`--check` 校验对应关系。参考清单仅声明实际随包文件，使用 `hey-design-system-reference/v1`；原生项目脚手架使用 `hey-design-project/v1`，不声明未复制的上游预览或审计文件。
 
-扩展品牌参考使用带来源记录的 Simple Icons 身份元数据，以及 UMA 编写的产品领域规则。身份配色与来源 URL 和自编的布局、字体、组件选择分开记录；这些资源不是品牌官方组件库。每套包含可离线使用的 DESIGN.md、tokens.css、components.html 和 manifest.json。元数据许可证随 BRAND-METADATA-LICENSE.txt 提供。运行 `pnpm run generate-uma-brand-references`，再运行 `pnpm exec tsx scripts/sync-uma-design-library.ts`；`pnpm run verify-uma-design-library` 会拒绝过期或不完整的资源，而不会静默排除它们。
+扩展品牌参考使用带来源记录的 Simple Icons 身份元数据，以及 HEY 编写的产品领域规则。身份配色与来源 URL 和自编的布局、字体、组件选择分开记录；这些资源不是品牌官方组件库。每套包含可离线使用的 DESIGN.md、tokens.css、components.html 和 manifest.json。元数据许可证随 BRAND-METADATA-LICENSE.txt 提供。运行 `pnpm run generate-hey-brand-references`，再运行 `pnpm exec tsx scripts/sync-hey-design-library.ts`；`pnpm run verify-hey-design-library` 会拒绝过期或不完整的资源，而不会静默排除它们。
 
 组件示例是展示在禁用脚本 iframe 中的离线视觉参考。原生字段与选择器仍可使用；示例操作按钮不包含业务后端。静态预览检查拒绝脚本、事件处理器、外部资源、缺失的可访问标签及不一致的默认令牌。浏览器质量检查逐套验证所有已安装示例，在 316（手机内嵌预览）、390、768、1280 CSS 像素及深浅环境中检查页面溢出、文字裁切和字段焦点；没有声明另一套配色的系统保留其原定外观。iframe 文档将 tokens.css 和 DESIGN.md 链接转为包含对应原文的原生折叠区域；复制到项目的资源仍保留同目录文件链接。
 

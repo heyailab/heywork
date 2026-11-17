@@ -1,7 +1,7 @@
 # 对齐复核：还差什么、哪些没分析到位
 
 > 复核时间：2026-11-17（第二轮，前一轮见 `phase4-acceptance.md`）
-> 复核对象：本仓库的「功能面 1:1 对齐」结论，以及它对**当前这台 Mac 上的 UMA 包**是否仍然成立。
+> 复核对象：本仓库的「功能面 1:1 对齐」结论，以及它对**当前这台 Mac 上的 HEY 包**是否仍然成立。
 > 口径：每条结论都要能指到一处可复跑的证据；推断与事实分开写。
 
 ## 0. 一句话结论
@@ -28,14 +28,14 @@
 后果不是「设计工具没了」，而是**整个桌面 profile 起不来**：
 
 ```js
-// uma-assets/packages/dsh-tool-uma-design/lib/index.js:213-217
-if (systems.length === 0) throw new Error(`tool-uma-design: no design systems under ${systemsRoot}`)
-if (references.length === 0) throw new Error(`tool-uma-design: no DESIGN.md references under ${referencesRoot}`)
-if (knowledge.length === 0) throw new Error(`tool-uma-design: no knowledge sections under ${assetRoot}`)
+// hey-assets/packages/dsh-tool-uma-design/lib/index.js:213-217
+if (systems.length === 0) throw new Error(`tool-hey-design: no design systems under ${systemsRoot}`)
+if (references.length === 0) throw new Error(`tool-hey-design: no DESIGN.md references under ${referencesRoot}`)
+if (knowledge.length === 0) throw new Error(`tool-hey-design: no knowledge sections under ${assetRoot}`)
 ```
 
 而 `assetRoot` 默认是 `join(skillRoot, 'assets')` ——**这个 `assets/` 目录在包里并不存在**（Mac 的
-app.asar 与我们的 `uma-assets/packages/dsh-skill-uma` 都没有）。它能工作，是因为同包的
+app.asar 与我们的 `hey-assets/packages/dsh-skill-uma` 都没有）。它能工作，是因为同包的
 `lib/types/resources.js` 里 `locate()` 从该路径逐级向上找同级的 `resources.umadb`，
 命中后把「相对 `assets/` 的 POSIX 路径」当作容器键去查：
 
@@ -89,20 +89,20 @@ objects and files ACL'd by another AppContainer tool stay unreadable."*
 
 ### 1.5 界面的 7 个客户端插件与 21 个注入目标全部可解析
 
-门禁输出（`verify-uma-platform.mjs`）：`client packages: 7 mounted as loader entries, 21 distinct inject targets resolve`。
+门禁输出（`verify-hey-platform.mjs`）：`client packages: 7 mounted as loader entries, 21 distinct inject targets resolve`。
 这条上一轮已加，本轮无变化。
 
 ### 1.6 beta4 的插件层没有漂移
 
-你 Mac 上的 UMA 已经升到 **`1.0.0-beta4.20261117.1`**，我们冻结的基线是 `beta3.20261116.1`。
+你 Mac 上的 HEY 已经升到 **`1.0.0-beta4.20261117.1`**，我们冻结的基线是 `beta3.20261116.1`。
 逐项核对如下（全部相同）：
 
 | 项 | beta3（基线） | beta4（当前 Mac） | 结论 |
 |---|---|---|---|
 | dsh 内核 | 0.2.2-rc.3 | 0.2.2-rc.3 | 同 |
 | `@deepseek-ai` 包数 | 362 | 362 | 同 |
-| UMA 自有包 | 12 | 12（同名同集合） | 同 |
-| `uma-platform.patch.yml` | — | 与 `uma-assets/uma-platform.patch.mac.yml` **逐字节相同** | 同 |
+| HEY 自有包 | 12 | 12（同名同集合） | 同 |
+| `uma-platform.patch.yml` | — | 与 `hey-assets/hey-platform.patch.mac.yml` **逐字节相同** | 同 |
 
 → 插件层、开关层、工具层不用重做。但**壳层不一样**，见 §4.2。
 
@@ -143,12 +143,12 @@ Mac 用户永远看不到这个窗口。构建、门禁、启动都不会报错�
 注意 `production` 下**不能**再带 `MANDATORY_UPDATE_CONFIG`——`allowedAuthOrigins` 在正式策略里
 是被拒绝的（`desktop package: production policy must not configure allowedAuthOrigins`），会直接打包失败。
 
-**已加门禁**防回归：`verify-uma-platform.mjs` 现在读 `build-win.yml`，`AUTO_UPDATE_ENV != production`、
+**已加门禁**防回归：`verify-hey-platform.mjs` 现在读 `build-win.yml`，`AUTO_UPDATE_ENV != production`、
 或 production 混用 `CONFIG`、或缺少 `PROD_ORIGIN`，三种情况都会 `::error::` 失败。实测把值改回
 `test` 能立刻拦住：
 
 ```
-::error::verify-uma-platform: CI uses DSH_DESKTOP_AUTO_UPDATE_ENV=test;
+::error::verify-hey-platform: CI uses DSH_DESKTOP_AUTO_UPDATE_ENV=test;
   the Mac build ships authentication=anonymous, which requires the production preset
 ```
 
@@ -169,7 +169,7 @@ Mac 用户永远看不到这个窗口。构建、门禁、启动都不会报错�
 - `KNOWLEDGE_ROOTS`（**从 `dsh-tool-uma-design/lib/index.js` 里读出来，不复制常量**）逐个非空
 
 阈值取**下限**而不是精确值：Mac 出 beta5 时多几套设计系统不该让门禁红，少一半才该红。
-`verify-uma-platform.mjs` 会调它并把结果并进门禁输出：
+`verify-hey-platform.mjs` 会调它并把结果并进门禁输出：
 
 ```
 skill container content: skills: 20, design systems: 507 (+all manifests), DESIGN.md brands: 84, knowledge roots: 6/6 present
@@ -181,7 +181,7 @@ skill container content: skills: 20, design systems: 507 (+all manifests), DESIG
 
 ### 4.1 更新 feed 是「半开」状态
 
-现状：功能上不做更新，但 CI 仍设了 `DSH_DESKTOP_UPDATE_PUBLIC_URL=https://studio.umayun.com/uma-studio/feeds/win-x64/`。
+现状：功能上不做更新，但 CI 仍设了 `DSH_DESKTOP_UPDATE_PUBLIC_URL=https://studio.umayun.com/heywork/feeds/win-x64/`。
 按 `electron-builder-config.mjs:110`，**只要设了它，未签名构建也会产出 `app-update.yml`**：
 
 ```js
@@ -229,12 +229,12 @@ preload-update-dialog / preload-welcome / operation-report-worker` 一致），�
 
 | # | 项 | 为什么必须真机 | 怎么验 |
 |---|---|---|---|
-| 5.1 | **CI 在 23 包改造后是否完整跑通过** | Phase 4 把注入从 12 包改到 23 包、门禁加了两道之后，仓库里没有一次「带注入的完整出包」记录；静态门禁全绿不等于 electron-builder 能过 | 看 Actions 最近一次 `build-windows` 是否绿；绿的话下载 `uma-window-baseline` |
-| 5.2 | **账号登录链路**（新增） | `uma://` 协议回调 + `safeStorage` + `platform-account` + `deepseek-account` 托管账号。原 9 步验收里**一条都没有登录**，而这是产品能不能用的前提 | 装包 → 登录 → 看 `%USERPROFILE%\.uma` 下凭据落盘 → 退出重进是否免登 |
+| 5.1 | **CI 在 23 包改造后是否完整跑通过** | Phase 4 把注入从 12 包改到 23 包、门禁加了两道之后，仓库里没有一次「带注入的完整出包」记录；静态门禁全绿不等于 electron-builder 能过 | 看 Actions 最近一次 `build-windows` 是否绿；绿的话下载 `heywork-baseline` |
+| 5.2 | **账号登录链路**（新增） | `hey://` 协议回调 + `safeStorage` + `platform-account` + `deepseek-account` 托管账号。原 9 步验收里**一条都没有登录**，而这是产品能不能用的前提 | 装包 → 登录 → 看 `%USERPROFILE%\.hey` 下凭据落盘 → 退出重进是否免登 |
 | 5.3 | **`coding_*` 在 Windows ACL 沙箱下能否执行**（新增） | §1.4 只证明了「后端存在」，没证明「能跑」。这是开发团队功能的核心动作 | 在 Windows 上开一个工作区 → `coding_inspect` → `coding_check` 跑一次 lint/test |
-| 5.4 | 卸载 / 重装 / 多实例 | `~/.uma` 是否保留、单实例锁是否生效、`uma://` 二次唤起是否聚焦 | 装 → 卸载 → 看 `.uma` 是否被删；双开图标看是否只起一个 |
+| 5.4 | 卸载 / 重装 / 多实例 | `~/.hey` 是否保留、单实例锁是否生效、`hey://` 二次唤起是否聚焦 | 装 → 卸载 → 看 `.hey` 是否被删；双开图标看是否只起一个 |
 
-原来的 9 步（启动品牌页、6 处 UI、44 工具自述、`uma_resource_read`、工件 + gate、团队板、
+原来的 9 步（启动品牌页、6 处 UI、44 工具自述、`hey_resource_read`、工件 + gate、团队板、
 SSH 中文路径、切语言、数据位置）仍然有效，见 `phase4-acceptance.md` 第 4 节。
 
 ---
@@ -253,7 +253,7 @@ SSH 中文路径、切语言、数据位置）仍然有效，见 `phase4-accepta
 |---|---|---|---|
 | dsh 内核 | `0.2.2-rc.3` | `0.2.2-rc.3`（pin `39163dd`） | 同版本；**commit 不同**（见 §4.2） |
 | `@deepseek-ai` 包 | 362 | 上游 + 23 注入 | 对齐 |
-| UMA 自有包 | 12 | 12 | 对齐 |
+| HEY 自有包 | 12 | 12 | 对齐 |
 | 上游未发布一等包 | 11 | 11（`packages.extras.json` 逐包 SHA-256） | 对齐 |
 | 工具 | 40 | 40（门禁 `EXPECTED_TOOLS`） | 对齐 |
 | 内置技能 | 20 / 2895 文件 | 同一容器逐字节复用 | 对齐 |
@@ -263,8 +263,8 @@ SSH 中文路径、切语言、数据位置）仍然有效，见 `phase4-accepta
 | SSH 运维面板 | 有（Mac 专属菜单入口） | 不做（工具带 `when` 门控，不出现≠报错） | 已知边界 |
 | 强更策略 | `anonymous` | `production` → `anonymous` | **本轮修正后对齐** |
 | 更新 feed | `feeds/mac-arm64/` 已部署 | `feeds/win-x64/` 未部署 | 待决策（§4.1） |
-| 数据根 | `~/Library/Application Support/...` | `%USERPROFILE%\.uma` | 设计如此 |
-| 协议 | `uma://` | `uma://` | 对齐 |
+| 数据根 | `~/Library/Application Support/...` | `%USERPROFILE%\.hey` | 设计如此 |
+| 协议 | `hey://` | `hey://` | 对齐 |
 | 命令沙箱 | macOS sandbox | `sandbox-windows-acl`（restricted token） | 上游支持，待真机验 |
 | 语言 | 8 | 8（20 个本地化包 × 8 语言） | 对齐 |
 | 壳层代码 | beta4 `main.js` 1,052,262 B | 基于 beta3 1,045,645 B | **差 6,617 B**，待决策（§4.2） |
@@ -279,10 +279,10 @@ SSH 中文路径、切语言、数据位置）仍然有效，见 `phase4-accepta
 node scripts/verify-skill-container.mjs
 
 # 全量合成门禁：开关 / 包 / 工具 / 客户端 / 容器内容 / 强更策略（§1.5 / §2 / §3）
-node scripts/verify-uma-platform.mjs
+node scripts/verify-hey-platform.mjs
 
 # 平台耦合静态检查（§1.2 / §1.3）
-grep -rn --include=*.js -E "sh -c|/bin/sh|bash -lc|chmod|symlink" uma-assets/packages | grep -v client.js
+grep -rn --include=*.js -E "sh -c|/bin/sh|bash -lc|chmod|symlink" hey-assets/packages | grep -v client.js
 
 # Mac 侧事实：版本 / 内核 / 构建 commit / 强更策略 / 包数（§2 / §4.2 / §6）
 node scripts/inspect-mac-manifest.mjs
@@ -292,16 +292,16 @@ node scripts/inspect-mac-manifest.mjs
 
 ## 附：TS 源码还原可行性（2026-11-17 追加）
 
-**问题**：UMA 自有 12 个包能不能还原成 `src/*.ts` 级别？
+**问题**：HEY 自有 12 个包能不能还原成 `src/*.ts` 级别？
 
 **关键纠正**：本仓库里 3 个带原始 `src/*.ts` 的包（`dsh-worktree`、`dsh-deepseek-account-platform`、
-`dsh-api-account-controller`）**都是上游一等包，不是 UMA 自有的**。UMA 12 包一个原始 TS 都没有，
+`dsh-api-account-controller`）**都是上游一等包，不是 HEY 自有的**。HEY 12 包一个原始 TS 都没有，
 全部是 Mac 包里的 `lib/*.js`（362 包内 sourcemap = 0、`.d.ts` = 0）。
 
-| UMA 包分组 | 规模 | 编译形态 | 还原判断 |
+| HEY 包分组 | 规模 | 编译形态 | 还原判断 |
 |---|---|---|---|
-| 8 个服务端包（base / design / task-budget / delivery / guidance / skill-uma / workflow / web） | 约 6,300 行 | tsc 直出或 esbuild 轻度打包，JSDoc + 变量名保留 | **可还原成可读 TS**，类型靠推断，逻辑可逐行等价 |
-| 4 个 UI 包（3 × client-ui-uma + remotes） | 50 行但单行 25K–258K 字符 | 压缩 bundle | **不可还原**，硬转只是给压缩代码标 `any` |
+| 8 个服务端包（base / design / task-budget / delivery / guidance / skill-hey / workflow / web） | 约 6,300 行 | tsc 直出或 esbuild 轻度打包，JSDoc + 变量名保留 | **可还原成可读 TS**，类型靠推断，逻辑可逐行等价 |
+| 4 个 UI 包（3 × client-ui-hey + remotes） | 50 行但单行 25K–258K 字符 | 压缩 bundle | **不可还原**，硬转只是给压缩代码标 `any` |
 
 **已完成全部 8 个服务端包的还原**（2026-11-17）：每个包的 `src/` 下是还原的 TypeScript，
 共 **45 个 `.ts` / 7,554 行 + 8 份 README**（`dsh-uma-web` 是配置壳，只有 README）。
@@ -329,5 +329,5 @@ node scripts/inspect-mac-manifest.mjs
 **注意**：`src` 是只读参考 + 改动草稿，不是构建输入。`package.json` 仍指向 `lib/index.js`，
 改 `src` 必须手动同步回 `lib`，否则两边分叉。每份 `src/README.md` 都记录了还原边界、
 hash 文件名映射（如 `rules-B-6_mXU8.js` → `rules.ts`）以及「可疑但逐字保留」的代码点，
-例如 design 包 `design_project_create` 返回体 `system` 硬编码 `'UMA'`（非入参）等——
+例如 design 包 `design_project_create` 返回体 `system` 硬编码 `'HEY'`（非入参）等——
 这类问题只登记、不擅自修正。

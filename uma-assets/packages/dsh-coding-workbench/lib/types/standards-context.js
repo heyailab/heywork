@@ -89,7 +89,7 @@ export function apply(ctx, config) {
     const pending = new Set();
     const prepared = new WeakMap();
     ctx.effect(() => async () => { lifetime.abort(); await Promise.allSettled([...pending]); });
-    ctx.systemPrompt.context({ name: 'uma:project-standards', order: 135, interpolate: false,
+    ctx.systemPrompt.context({ name: 'hey:project-standards', order: 135, interpolate: false,
         text: ({ agent }) => agent === undefined ? '' : prepared.get(agent) ?? '' });
     ctx.on('agent/pre-step', async ({ agent, signal }, next) => {
         const owned = AbortSignal.any([signal, lifetime.signal]);

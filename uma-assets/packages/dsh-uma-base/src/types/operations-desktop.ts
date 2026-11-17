@@ -63,7 +63,7 @@ interface DesktopContext {
   connection: { admit(request: DesktopRequest): Admission }
 }
 
-const path = '/uma/operations/desktop'
+const path = '/hey/operations/desktop'
 const handshakeMs = 1e4
 
 function reject(socket: DesktopSocket, status: string): void {
@@ -193,5 +193,5 @@ export function mountOperationsDesktop(ctx: DesktopContext, lookup: (id: string,
         })
       }), ...closing])
     }
-  }, 'UMA Operations: remote desktop transport')
+  }, 'HEY Operations: remote desktop transport')
 }

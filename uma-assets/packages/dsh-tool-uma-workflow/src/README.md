@@ -9,7 +9,7 @@ sourcemap 或 `.d.ts` 可供逐字校验。
 - 还原依据：`lib/index.js` 是 esbuild bundle，只有一个 `//#region lib/types/index.js`；
   本包没有独立的 `lib/types/*.js`，模块拆分完全依赖该标记。
 - 推断部分：`ctx` / args / exec / 目录条目等 interface 由调用点反推，名字可能与原始定义不同。
-- 等价部分：三个工具（`uma_artifact_write` / `uma_artifact_read` / `uma_gate_status`）的参数、
+- 等价部分：三个工具（`hey_artifact_write` / `hey_artifact_read` / `hey_gate_status`）的参数、
   输出 schema、render 文本、gate 分级与全部错误文本与 `lib` 逐行一致
   （用 tsc token 流逐 region 核对过）。
 
@@ -28,7 +28,7 @@ sourcemap 或 `.d.ts` 可供逐字校验。
    建议把 `src` 当「可读参考 + 改动草稿」，确认后再落到 `lib`。
 3. 要用 `tsc` 校验这些文件，需要补齐上游类型包（`@deepseek-ai/dsh-tools` /
    `dsh-util-uma-delivery` 等）并自行写 `tsconfig`；仓库不提供这套配置，因为它不是构建路径。
-   本目录已用仓库自带的 `uma-assets/deps/typescript/lib/typescript.js`（TS 6.0.3）
+   本目录已用仓库自带的 `hey-assets/deps/typescript/lib/typescript.js`（TS 6.0.3）
    `transpileModule`（target ES2022 / module ESNext / reportDiagnostics）做纯语法校验，0 error。
 
 ## 导出面对照（逐项）
@@ -52,10 +52,10 @@ export { apply, inject, name };
 2. gate 分级来自 `@deepseek-ai/dsh-util-uma-delivery` 的 `requiredArtifacts(depth, phase)`：
    `patch` 返回空数组（因此 `ready=true`）；`feature` 在 `documents` 阶段只要 `spec`；
    `product` 在 `documents` 阶段要 4 份前置文档、在 `delivery` 阶段要全量 7 份。照抄。
-3. `uma_gate_status` 在 `.uma` 目录不存在（`FS_NOT_FOUND`）时直接返回
+3. `hey_gate_status` 在 `.hey` 目录不存在（`FS_NOT_FOUND`）时直接返回
    `exists:false` + 按 `requiredArtifacts` 算出的 `missing/blocked`，**不创建目录**。
    照抄，未改成"自动初始化"。
-4. `uma_artifact_write` 的 sandbox 前置条件是 `ctx.fs.sandboxMode !== undefined && policy === undefined`
+4. `hey_artifact_write` 的 sandbox 前置条件是 `ctx.fs.sandboxMode !== undefined && policy === undefined`
    才抛 `ToolContextUnavailableError`；`policy.resolve({ session })` 的结果直接透传给
    `ctx.fs.writeText`。注意它只传 `session`，未传其它上下文。照抄。
 5. `ctx.waterfall("fs/write-intent", target, exec, () => void 0)` 的 fallback 返回 `undefined`；

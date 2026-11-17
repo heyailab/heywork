@@ -762,7 +762,7 @@ No neumorphism. No glassmorphism. No coloured shadows. Bottom sheet has no shado
         color: var(--fg);
       }
     </style>
-  <style data-uma-responsive-repair>
+  <style data-hey-responsive-repair>
       /* Grid and flex children may shrink; long labels wrap within their own column. */
       :where(*) { min-width: 0; }
       :where(h1, h2, h3, p, a, span, strong, label, code) { overflow-wrap: anywhere; }
@@ -1017,7 +1017,7 @@ No neumorphism. No glassmorphism. No coloured shadows. Bottom sheet has no shado
             </div>
           </div>
 
-          <div role="group" class="uma-preview-form form" aria-label="订阅每日灵感">
+          <div role="group" class="hey-preview-form form" aria-label="订阅每日灵感">
             <div class="row-between">
               <p style="font-size: var(--text-sm); font-weight: 600; color: var(--fg); margin: 0;">订阅每日灵感</p>
               <span class="chip chip-success">

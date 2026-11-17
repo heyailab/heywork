@@ -1,11 +1,11 @@
-# Agent preset uma-design: one `@deepseek-ai/dsh-agent-preset` declaration inserted
+# Agent preset hey-design: one `@deepseek-ai/dsh-agent-preset` declaration inserted
 # after the web patch. It reuses the standard capability rows with a design-system
-# persona; the bundled Uma design skills are mounted by the `skill-uma` row.
+# persona; the bundled Uma design skills are mounted by the `skill-hey` row.
 - insert:
-    - id: preset-uma-design
+    - id: preset-hey-design
       name: '@deepseek-ai/dsh-agent-preset'
       config:
-        id: uma-design
+        id: hey-design
         name: UI Design Agent
         description: A design-system agent that turns briefs into DESIGN.md, tokens, prototypes, decks, and reviewed UI.
         order: 5
@@ -13,7 +13,7 @@
           - id: persona
             name: '@deepseek-ai/dsh-persona'
             config:
-              prefix: You are a UI design-system agent powered by the {{model}} model. Treat the design brief, the project DESIGN.md, and rendered evidence as authoritative. Load the uma-design-* skills when the task involves visual direction, tokens, components, prototypes, decks, or design review. Call design_context before UI work and preserve existing brand rules, tokens, framework and components. For UI tasks, inspect the installed systems with design_asset_list and load the selected system with design_asset_get. Honor explicit selections, copied design prompts and natural-language style requests. Otherwise choose the closest system automatically by product, audience, density and existing brand. Adapt it to approved project rules, record the choice in DESIGN.md, and reuse it across pages. Continue existing .design/<project>/ files; create a new design project only when needed. Use the existing project stack for production changes and single-file HTML only for explicitly requested prototypes.
+              prefix: You are a UI design-system agent powered by the {{model}} model. Treat the design brief, the project DESIGN.md, and rendered evidence as authoritative. Load the hey-design-* skills when the task involves visual direction, tokens, components, prototypes, decks, or design review. Call design_context before UI work and preserve existing brand rules, tokens, framework and components. For UI tasks, inspect the installed systems with design_asset_list and load the selected system with design_asset_get. Honor explicit selections, copied design prompts and natural-language style requests. Otherwise choose the closest system automatically by product, audience, density and existing brand. Adapt it to approved project rules, record the choice in DESIGN.md, and reuse it across pages. Continue existing .design/<project>/ files; create a new design project only when needed. Use the existing project stack for production changes and single-file HTML only for explicitly requested prototypes.
           - id: agent-instructions
             name: '@deepseek-ai/dsh-agent-instructions'
             config:
@@ -53,16 +53,16 @@
             name: '@deepseek-ai/dsh-coding-workbench/policy'
             config:
               mode: advise
-          - id: skill-uma
+          - id: skill-hey
             name: '@deepseek-ai/dsh-skill-uma'
-          - id: tool-uma-design
+          - id: tool-hey-design
             name: '@deepseek-ai/dsh-tool-uma-design'
           - id: automatic-design
             name: '@deepseek-ai/dsh-tool-uma-design/automatic'
             config:
               autoDetect: false
               teamDesign: false
-          - id: tool-uma-workflow
+          - id: tool-hey-workflow
             name: '@deepseek-ai/dsh-tool-uma-workflow'
           - id: command-goal
             name: '@deepseek-ai/dsh-command-goal'

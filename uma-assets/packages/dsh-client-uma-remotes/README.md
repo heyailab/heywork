@@ -1,5 +1,5 @@
 ---
-description: "UMA-owned browser Remote assembly for knowledge, coding evidence and project Wiki."
+description: "HEY-owned browser Remote assembly for knowledge, coding evidence and project Wiki."
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-UMA knowledge, delivery and Wiki pages call their Host services through this browser assembly. It keeps product-specific Remote definitions out of the generic kernel assembly while preserving the existing namespace names and method behavior.
+HEY knowledge, delivery and Wiki pages call their Host services through this browser assembly. It keeps product-specific Remote definitions out of the generic kernel assembly while preserving the existing namespace names and method behavior.
 
 ## Table of Contents
 
@@ -22,10 +22,10 @@ UMA knowledge, delivery and Wiki pages call their Host services through this bro
 <a id="use-this-package"></a>
 ## Use this package
 
-The UMA Web bundle mounts this package after the generic API assembly. UMA pages declare it as a Client module dependency and import its client type face. The UMA base bundle supplies the corresponding Host services; mounting this Client assembly does not create Host services or grant access.
+The HEY Web bundle mounts this package after the generic API assembly. HEY pages declare it as a Client module dependency and import its client type face. The HEY base bundle supplies the corresponding Host services; mounting this Client assembly does not create Host services or grant access.
 
 ```yaml
-- id: uma-remotes
+- id: hey-remotes
   name: '@deepseek-ai/dsh-client-uma-remotes'
 ```
 

@@ -41,7 +41,7 @@ export interface EngineeringRule {
   verification: VerificationMethod
 }
 
-/** 由来源摘要改写的 UMA 指南，非发布方手册或认证。 */
+/** 由来源摘要改写的 HEY 指南，非发布方手册或认证。 */
 export interface EngineeringGuide {
   id: string
   version: string
@@ -88,7 +88,7 @@ export const ENGINEERING_SOURCES: EngineeringSource[] = [
 /** Conditional implementation/review obligations, never automatically passing checks. */
 export const ENGINEERING_RULES: EngineeringRule[] = [
   {
-    id: "UMA.STD.KEYBOARD_FOCUS",
+    id: "HEY.STD.KEYBOARD_FOCUS",
     languages: ["frontend", "web"],
     sourceIds: ["w3c-wcag22"],
     level: "required-by-project",
@@ -99,7 +99,7 @@ export const ENGINEERING_RULES: EngineeringRule[] = [
     verification: "test"
   },
   {
-    id: "UMA.STD.ACCESSIBLE_ERRORS",
+    id: "HEY.STD.ACCESSIBLE_ERRORS",
     languages: ["frontend", "web"],
     sourceIds: ["w3c-wcag22"],
     level: "required-by-project",
@@ -110,7 +110,7 @@ export const ENGINEERING_RULES: EngineeringRule[] = [
     verification: "test"
   },
   {
-    id: "UMA.STD.TRANSACTION_RETRY",
+    id: "HEY.STD.TRANSACTION_RETRY",
     languages: ["postgresql", "database"],
     sourceIds: ["postgres-isolation"],
     level: "advisory",
@@ -121,7 +121,7 @@ export const ENGINEERING_RULES: EngineeringRule[] = [
     verification: "test"
   },
   {
-    id: "UMA.STD.REVIEW_COUNTEREXAMPLE",
+    id: "HEY.STD.REVIEW_COUNTEREXAMPLE",
     languages: ["all"],
     sourceIds: ["google-review"],
     level: "advisory",
@@ -132,7 +132,7 @@ export const ENGINEERING_RULES: EngineeringRule[] = [
     verification: "review"
   },
   {
-    id: "UMA.STD.ORDER_REPLAY",
+    id: "HEY.STD.ORDER_REPLAY",
     languages: ["payments", "commerce"],
     sourceIds: ["microsoft-rest", "postgres-isolation"],
     level: "advisory",
@@ -143,7 +143,7 @@ export const ENGINEERING_RULES: EngineeringRule[] = [
     verification: "test"
   },
   {
-    id: "UMA.STD.TENANT_SCOPE",
+    id: "HEY.STD.TENANT_SCOPE",
     languages: [
       "saas",
       "backend",
@@ -159,7 +159,7 @@ export const ENGINEERING_RULES: EngineeringRule[] = [
   }
 ]
 
-/** Source-informed original summaries and UMA verification examples, not publisher manuals or certifications. */
+/** Source-informed original summaries and HEY verification examples, not publisher manuals or certifications. */
 export const ENGINEERING_GUIDES: EngineeringGuide[] = [
   {
     id: "accessible-product-ui",

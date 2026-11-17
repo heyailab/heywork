@@ -6,7 +6,7 @@ import { z } from "zod";
 //#region lib/types/source.js
 /** Bounded same-world source observations, manifest discovery and compiler output parsing. */
 const CHECK_MANIFESTS = [
-	".uma/coding.json",
+	".hey/coding.json",
 	"package.json",
 	"pyproject.toml",
 	"pom.xml"
@@ -80,7 +80,7 @@ async function scanSources(ctx, config, cwd, signal) {
 		".netrc",
 		".git-credentials"
 	]);
-	const allowed = (path) => !path.replaceAll("\\", "/").split("/").some((part) => part === ".git" || part === ".uma" || secrets.has(part) || excluded.has(part) || /^\.env(?:\.|$)/u.test(part));
+	const allowed = (path) => !path.replaceAll("\\", "/").split("/").some((part) => part === ".git" || part === ".hey" || secrets.has(part) || excluded.has(part) || /^\.env(?:\.|$)/u.test(part));
 	let git = false;
 	try {
 		const result = await runCommand(ctx, config, {
@@ -198,7 +198,7 @@ function checkDefinitions(files) {
 */
 async function discoverChecks(ctx, cwd, config, signal) {
 	const result = [];
-	const manifest = await readSource(ctx, cwd, ".uma/coding.json", config.maxFileBytes, signal);
+	const manifest = await readSource(ctx, cwd, ".hey/coding.json", config.maxFileBytes, signal);
 	if (manifest !== void 0) result.push(...manifestSchema.parse(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(manifest.bytes))).checks);
 	const pkg = await readSource(ctx, cwd, "package.json", config.maxFileBytes, signal);
 	if (pkg !== void 0) {

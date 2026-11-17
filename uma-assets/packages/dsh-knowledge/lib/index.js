@@ -43,7 +43,7 @@ const Config = z$1.object({
 	busyTimeoutMs: z$1.number().min(1).step(1).default(5e3),
 	excludeDirectories: z$1.array(z$1.string()).default([
 		".git",
-		".uma",
+		".hey",
 		"node_modules",
 		"vendor",
 		"dist",
@@ -1913,13 +1913,13 @@ let KnowledgeService = (() => {
 			};
 		}
 		/**
-		* Provision the installation-wide development experience collection on UMA startup.
+		* Provision the installation-wide development experience collection on HEY startup.
 		* @param signal - Consumer lifetime.
 		*/
 		ensureGlobalExperience(signal) {
 			signal.throwIfAborted();
 			if (this.data.bases().some((base) => base.id === globalExperienceId)) return;
-			const team = this.createTeam({ name: "UMA Studio" }, signal);
+			const team = this.createTeam({ name: "HeyWork" }, signal);
 			this.data.saveBase(globalExperienceId, {
 				name: "Development experience",
 				description: "",
@@ -2355,7 +2355,7 @@ let KnowledgeService = (() => {
 			signal.throwIfAborted();
 			if (workspaceId !== void 0 && this.ctx.workspaceRegistry.get(workspaceId) === void 0) throw fail("workspace-not-found");
 			if (knowledgeFtsQuery(query) === null) return [];
-			const selected = /^UMA_KNOWLEDGE_BASE:([^\r\n]*)$/mu.exec(query)?.[1];
+			const selected = /^HEY_KNOWLEDGE_BASE:([^\r\n]*)$/mu.exec(query)?.[1];
 			const selectedBase = selected === void 0 ? void 0 : baseIdSchema.parse(selected);
 			const matches = [];
 			const bases = this.data.bases();
@@ -2381,7 +2381,7 @@ let KnowledgeService = (() => {
 		* @returns current project/team evidence, without unrelated Workspace knowledge.
 		*/
 		forWorkspace(workspaceId, query, signal) {
-			const selected = /^UMA_KNOWLEDGE_BASE:([^\r\n]*)$/mu.exec(query)?.[1];
+			const selected = /^HEY_KNOWLEDGE_BASE:([^\r\n]*)$/mu.exec(query)?.[1];
 			return this.run(signal, (owned) => this.retrieve({
 				workspaceId,
 				query,

@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Show persistent conversation cards for design, knowledge, Wiki and development-experience operations. A public UMA Design catalog read shows the display name and which resource types were retrieved. Private names, queries and source content are excluded. Project design, artifact and preview cards retain user-owned outputs and their readiness.
+Show persistent conversation cards for design, knowledge, Wiki and development-experience operations. A public HEY Design catalog read shows the display name and which resource types were retrieved. Private names, queries and source content are excluded. Project design, artifact and preview cards retain user-owned outputs and their readiness.
 
 ## Table of Contents
 
@@ -28,7 +28,7 @@ Resource receipts are derived from existing tool calls and results and experienc
 Mount it in the Web composition beside the other client Tool views:
 
 ```yaml
-- id: ui-uma-design
+- id: ui-hey-design
   name: '@deepseek-ai/dsh-client-ui-uma-design'
 ```
 
@@ -43,7 +43,7 @@ The package carries dictionaries for the eight shipped Client languages. It read
 
 #### What the model sees
 
-Nothing. The cards render logged `design_asset_list`, `design_asset_get`, `uma_artifact_write`, and `uma_gate_status` tool results and register no tool, prompt section, or Session event.
+Nothing. The cards render logged `design_asset_list`, `design_asset_get`, `hey_artifact_write`, and `hey_gate_status` tool results and register no tool, prompt section, or Session event.
 
 #### Token effect
 

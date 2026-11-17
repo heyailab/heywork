@@ -1,6 +1,6 @@
 # Third-party notice
 
-The UMA operations health inspection adapts the Linux CPU, memory, disk and network probes in [TencentCloud Octop CVM Doctor](https://github.com/TencentCloud/Octop/tree/main/src/octop/infra/agents/experts/library/tencent-cvm-ops/skills/cvm-ai-doctor). The upstream license is reproduced below.
+The HEY operations health inspection adapts the Linux CPU, memory, disk and network probes in [TencentCloud Octop CVM Doctor](https://github.com/TencentCloud/Octop/tree/main/src/octop/infra/agents/experts/library/tencent-cvm-ops/skills/cvm-ai-doctor). The upstream license is reproduced below.
 
 ```text
 MIT License

@@ -31,7 +31,7 @@ var WikiFiles = class {
 		});
 		if (!fs.contains(this.root, target)) throw new WikiError("wiki/outside-workspace", "The path leaves the selected workspace");
 		if (path.startsWith(`${WIKI_ROOT}/`)) {
-			for (const directory of [".uma", WIKI_ROOT]) {
+			for (const directory of [".hey", WIKI_ROOT]) {
 				const info = await fs.lstat(directory, { cwd: this.cwd }, signal);
 				if (info !== void 0 && info.type !== "directory") throw new WikiError("wiki/outside-workspace", "Wiki storage requires real directories");
 			}
@@ -78,7 +78,7 @@ var WikiFiles = class {
 	async write(path, text, before) {
 		const exec = this.exec;
 		if (!("rootCallId" in exec)) throw new WikiError("wiki/invalid-data", "A read-only Wiki observation cannot publish files");
-		if (!path.startsWith(`${WIKI_ROOT}/`)) throw new WikiError("wiki/outside-workspace", "Wiki writes are confined to .uma/wiki");
+		if (!path.startsWith(`${WIKI_ROOT}/`)) throw new WikiError("wiki/outside-workspace", "Wiki writes are confined to .hey/wiki");
 		const target = await this.target(path);
 		this.ctx.emit("fs/observed", target, before === null ? { kind: "absent" } : {
 			kind: "present",
@@ -126,7 +126,7 @@ function parseWikiUserPlan(text) {
 	try {
 		return wikiUserPlanSchema.parse(load(text, { schema: JSON_SCHEMA }));
 	} catch (error) {
-		throw new WikiError("wiki/invalid-data", "Invalid .uma/wiki/wiki_plan.yaml; correct its fields or YAML before generation", { cause: error });
+		throw new WikiError("wiki/invalid-data", "Invalid .hey/wiki/wiki_plan.yaml; correct its fields or YAML before generation", { cause: error });
 	}
 }
 //#endregion
@@ -593,7 +593,7 @@ var WikiRepository = class {
 		if (manifest.generationSession !== this.session()) throw new WikiError("wiki/conflict", `Resume generation in Session ${manifest.generationSession}`);
 	}
 	owned(path) {
-		if (!path.startsWith(`${WIKI_ROOT}/`)) throw new WikiError("wiki/outside-workspace", "Expected a .uma/wiki path");
+		if (!path.startsWith(`${WIKI_ROOT}/`)) throw new WikiError("wiki/outside-workspace", "Expected a .hey/wiki path");
 	}
 	async immutable(path, text) {
 		const before = await this.files.read(path, this.config.maxRecordBytes);

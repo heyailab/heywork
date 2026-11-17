@@ -410,7 +410,7 @@ const Config = z.object({
 		"build",
 		"coverage",
 		".git",
-		".uma",
+		".hey",
 		".next",
 		".cache",
 		".playwright-mcp"

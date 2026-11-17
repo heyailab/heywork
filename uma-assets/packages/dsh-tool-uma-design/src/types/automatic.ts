@@ -116,7 +116,7 @@ interface DesignerRecord {
 
 /** Automatic, read-only design preparation inside the existing development Agent and Session. */
 /** Automatic-design plugin identity. */
-export const name = 'uma-design-automatic'
+export const name = 'hey-design-automatic'
 /** Services required for read-only design preparation. */
 export const inject = [
   'tools',
@@ -182,7 +182,7 @@ export async function apply(ctx: AutomaticContext, config: AutomaticConfig): Pro
         name,
         label,
         provider: 'spawn',
-        agentPreset: 'uma-role-reviewer',
+        agentPreset: 'hey-role-reviewer',
         agentOptions: modelSelection,
         ...maxDepth === void 0 ? {} : { maxDepth },
         delivery: 'parent',
@@ -193,7 +193,7 @@ export async function apply(ctx: AutomaticContext, config: AutomaticConfig): Pro
             `User brief: ${JSON.stringify(task.brief)}`,
             'Act as the UI designer. Call design_context without a target unless the brief names a subdirectory. Omit optional arguments that do not apply.',
             'Search the installed design catalog with design_asset_list, a focused query and a limit of 5. Read the selected reference using design_asset_get. Use the user’s chosen system or approved project style first. Otherwise choose by audience, layout, density and product needs without asking for a style choice.',
-            'Use task-relevant project Wiki, workspace knowledge and development experience available in your request context. Search bundled standards with uma_knowledge_search or project experience with coding_inspect mode experience when more evidence is needed. Check current files before relying on historical advice.',
+            'Use task-relevant project Wiki, workspace knowledge and development experience available in your request context. Search bundled standards with hey_knowledge_search or project experience with coding_inspect mode experience when more evidence is needed. Check current files before relying on historical advice.',
             'Return the system ID, essential tokens, page hierarchy and composition, applicable component patterns and states, content or asset needs, and concrete visual checks to the lead. Explain how each applicable pattern serves the brief. Note missing evidence when it affects the result. Keep it brief for a single page.',
             'Use read-only tools. Do not modify the project, expose private resource locations, or claim visual checks you did not perform.',
           ].join('\n'),
@@ -202,7 +202,7 @@ export async function apply(ctx: AutomaticContext, config: AutomaticConfig): Pro
     }
     catch (error) {
       signal.throwIfAborted()
-      ctx.logger.warn('uma-design: automatic designer could not start: %o', error)
+      ctx.logger.warn('hey-design: automatic designer could not start: %o', error)
       return 'The automatic designer could not start. Continue the work in this conversation and report any required design review that could not be completed.'
     }
   }
@@ -217,10 +217,10 @@ export async function apply(ctx: AutomaticContext, config: AutomaticConfig): Pro
         totalBytes: config.projectBytes,
       })
       const cwd = await ctx.workingDirectory.ensure(agent, control)
-      const names = task.phase === 'create' ? ['uma-design-craft', 'uma-design-brief'] : ['uma-design-craft']
-      if (/原型|prototype|(?:[二三四五六七八九十]|\d+)套/iu.test(task.brief) && !/(?:不要|不用|不需要).{0,5}原型|no prototypes/iu.test(task.brief)) names.push('uma-web-prototype')
-      names.push('uma-design-review')
-      const candidates = searchDesignRules(join(assetRoot, 'uma-design-system/data'), {
+      const names = task.phase === 'create' ? ['hey-design-craft', 'hey-design-brief'] : ['hey-design-craft']
+      if (/原型|prototype|(?:[二三四五六七八九十]|\d+)套/iu.test(task.brief) && !/(?:不要|不用|不需要).{0,5}原型|no prototypes/iu.test(task.brief)) names.push('hey-web-prototype')
+      names.push('hey-design-review')
+      const candidates = searchDesignRules(join(assetRoot, 'hey-design-system/data'), {
         domain: 'product',
         query: task.brief,
         limit: candidateLimit,
@@ -251,7 +251,7 @@ export async function apply(ctx: AutomaticContext, config: AutomaticConfig): Pro
         if (bytes + Buffer.byteLength(body) > config.contextBytes) throw new Error(`Automatic design method ${skillName} exceeds contextBytes`)
         blocks.push(body)
         bytes += Buffer.byteLength(body)
-        if (skillName === 'uma-design-craft' && skill.provider === 'dsh-uma') {
+        if (skillName === 'hey-design-craft' && skill.provider === 'dsh-hey') {
           const resource = readBundledText(assetRoot, skillName, `references/${task.mode === 'experience' ? 'shape.md' : `mode-${task.mode}.md`}`, 0, config.contextBytes)
           if (resource.nextOffset !== resource.totalBytes) throw new Error('Automatic design reference exceeds contextBytes')
           const file = Buffer.from(resource.content)
@@ -268,7 +268,7 @@ export async function apply(ctx: AutomaticContext, config: AutomaticConfig): Pro
     return operation
   }
   ctx.systemPrompt.context({
-    name: 'uma:automatic-design',
+    name: 'hey:automatic-design',
     order: 145,
     interpolate: false,
     text: ({ agent }) => {
@@ -278,7 +278,7 @@ export async function apply(ctx: AutomaticContext, config: AutomaticConfig): Pro
     },
   })
   ctx.systemPrompt.section({
-    name: 'uma-design-routing',
+    name: 'hey-design-routing',
     order: 113,
     text: 'Honor user opt-out and active planning restrictions. UI design works inside this conversation. If a natural-language request needs UI creation or refinement and no automatic design context is present, call design_begin with the brief and surface mode before implementation. The runtime loads real project evidence and full applicable methods. Do not require the user to open Uma Design, select a brand, invoke a skill or start a second Agent. Use design_stop when the user explicitly leaves design work.',
   })

@@ -152,7 +152,7 @@ export function searchDesignRules(root: string, request: RuleRequest): RuleRecor
       score += inverse * (subject.includes(term) ? 2 : 1) * count * 2.2 / (count + 1.2 * (.25 + .75 * record.terms.length / Math.max(averageLength, 1)))
     }
     return {
-      source: `uma-design-system/data/${file}`,
+      source: `hey-design-system/data/${file}`,
       row: record.row,
       fields: record.fields,
       score,

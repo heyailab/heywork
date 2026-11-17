@@ -1,5 +1,5 @@
 /**
- * Phase 4 composition acceptance: prove the UMA product layer still resolves on
+ * Phase 4 composition acceptance: prove the HEY product layer still resolves on
  * the Windows desktop profile before anything is packaged.
  *
  * The Mac app ships the same pieces, so every failure here is a difference a
@@ -11,14 +11,14 @@
  *  2. Every switch id must exist in the desktop layer stack
  *     (`dsh-base` + `dsh-web-app` + `dsh-uma-base` + `dsh-uma-web`); the launcher
  *     applies the product patch last, so an id no layer declares is silently dead.
- *  3. Every `@deepseek-ai/*` package the UMA layers name must resolve — either an
+ *  3. Every `@deepseek-ai/*` package the HEY layers name must resolve — either an
  *     upstream package or one of the packages vendored under uma-assets/packages.
  *     The public ref does not publish the knowledge base, project wiki, coding
  *     workbench, design studio, worktree or task query, which is why the extras
  *     are vendored at all.
- *  4. Every tool the packages register must still be present (the UMA system
- *     prompt names design_begin, uma_workspace_search, coding_inspect and
- *     uma_wiki_lookup by hand), and every client package must keep a prebuilt
+ *  4. Every tool the packages register must still be present (the HEY system
+ *     prompt names design_begin, hey_workspace_search, coding_inspect and
+ *     hey_wiki_lookup by hand), and every client package must keep a prebuilt
  *     `lib/client.js`.
  *  5. The skill container must stay outside the asar (node:sqlite cannot open a
  *     virtual path) and all eight locales must ship.
@@ -31,8 +31,8 @@
  *     login window the Mac build never shows; the bundle still builds and starts.
  *
  * Usage:
- *   node scripts/verify-uma-platform.mjs                 # source checkout + uma-assets
- *   node scripts/verify-uma-platform.mjs --tree <dir>    # materialized dsh tree (post-inject)
+ *   node scripts/verify-hey-platform.mjs                 # source checkout + uma-assets
+ *   node scripts/verify-hey-platform.mjs --tree <dir>    # materialized dsh tree (post-inject)
  *
  * Refs: packages/bundle/base/cordis.patch.yml (desktopPlatform expression),
  *       packages/util/official-bundles/src/bundles.ts (PROFILE_TEMPLATES.web),
@@ -46,13 +46,13 @@ const ARGS = process.argv.slice(2)
 const treeIndex = ARGS.indexOf('--tree')
 const TREE = treeIndex === -1 ? undefined : resolve(ARGS[treeIndex + 1] ?? '')
 if (treeIndex !== -1 && (TREE === undefined || !existsSync(TREE))) {
-  console.error(`verify-uma-platform: --tree path not found: ${ARGS[treeIndex + 1]}`)
+  console.error(`verify-hey-platform: --tree path not found: ${ARGS[treeIndex + 1]}`)
   process.exit(2)
 }
 
-const PORT_ROOT = process.env.UMA_PORT_ROOT ?? resolve(import.meta.dirname, '..')
-const DSH_ROOT = process.env.UMA_DSH_ROOT ?? join(PORT_ROOT, 'deepseek-harness')
-const ASSETS = process.env.UMA_ASSETS_DIR ?? join(PORT_ROOT, 'uma-assets')
+const PORT_ROOT = process.env.HEY_ROOT ?? resolve(import.meta.dirname, '..')
+const DSH_ROOT = process.env.HEY_DSH_ROOT ?? join(PORT_ROOT, 'deepseek-harness')
+const ASSETS = process.env.HEY_ASSETS_DIR ?? join(PORT_ROOT, 'uma-assets')
 
 const failures = []
 const notes = []
@@ -76,27 +76,27 @@ const EXPECTED_SWITCHES = {
 }
 
 /**
- * Tools the injected packages must register on Windows. The UMA system prompt
- * (uma-base/cordis.patch.yml) tells the model to call design_begin,
- * uma_workspace_search, coding_inspect and uma_wiki_lookup by name, so a missing
+ * Tools the injected packages must register on Windows. The HEY system prompt
+ * (hey-base/cordis.patch.yml) tells the model to call design_begin,
+ * hey_workspace_search, coding_inspect and hey_wiki_lookup by name, so a missing
  * family is a product-level regression, not merely a missing button.
  */
 const EXPECTED_TOOLS = [
   // delivery pipeline + gate (dsh-tool-uma-workflow)
-  'uma_artifact_write', 'uma_artifact_read', 'uma_gate_status',
+  'hey_artifact_write', 'hey_artifact_read', 'hey_gate_status',
   // design tool family (dsh-tool-uma-design)
   'design_begin', 'design_context', 'design_asset_list', 'design_asset_get',
   'design_rule_search', 'design_preview', 'design_project_create',
   'design_project_status', 'design_stop',
   // bundled skills + knowledge retrieval (dsh-tool-uma-design)
-  'uma_resource_read', 'uma_knowledge_search',
+  'hey_resource_read', 'hey_knowledge_search',
   // recall, SSH operations, WeKnora (dsh-uma-base)
-  'uma_workspace_search', 'uma_ssh_servers', 'uma_ssh_run',
-  'uma_project_memory', 'uma_experience_record', 'uma_weknora_search',
+  'hey_workspace_search', 'hey_ssh_servers', 'hey_ssh_run',
+  'hey_project_memory', 'hey_experience_record', 'hey_weknora_search',
   // task budget (dsh-uma-task-budget, typert-defined) and guidance (dsh-uma-guidance)
   'uma_session_budgets', 'uma_guidance',
   // project wiki (dsh-tool-repo-wiki)
-  'uma_wiki_lookup', 'wiki_status', 'wiki_inventory', 'wiki_read_source',
+  'hey_wiki_lookup', 'wiki_status', 'wiki_inventory', 'wiki_read_source',
   'wiki_read_page', 'wiki_search', 'wiki_plan', 'wiki_write_page', 'wiki_finish',
   'wiki_export', 'wiki_import',
   // coding workbench (dsh-coding-workbench)
@@ -132,7 +132,7 @@ const walk = (directory, visit) => {
 // ------------------------------------------------------------- 1. product patch
 
 const patchPath = join(DSH_ROOT, 'apps', 'desktop', 'resources', 'uma-platform.patch.yml')
-if (!existsSync(patchPath)) fail(`product patch not found: ${patchPath} (apply patches/uma-phase1.patch first)`)
+if (!existsSync(patchPath)) fail(`product patch not found: ${patchPath} (apply patches/hey-phase1.patch first)`)
 
 let entries = []
 if (existsSync(patchPath)) {
@@ -171,7 +171,7 @@ if (entries.length > 0) {
 
 // Drift guard: uma-assets keeps the Mac original as the reference, so a change to
 // the shipped copy has to be an intentional, reviewed difference.
-const macOriginal = join(ASSETS, 'uma-platform.patch.mac.yml')
+const macOriginal = join(ASSETS, 'hey-platform.patch.mac.yml')
 if (existsSync(macOriginal) && entries.length > 0) {
   const original = readJson(macOriginal)
   const originalById = new Map(original.map(entry => [entry.id, entry]))
@@ -236,7 +236,7 @@ function bundlePatchFiles(name) {
   })
 }
 
-// The desktop profile is PROFILE_TEMPLATES.web plus the UMA pair; read both from
+// The desktop profile is PROFILE_TEMPLATES.web plus the HEY pair; read both from
 // the patched sources so a rename there fails this check too.
 const projectManagerPath = join(DSH_ROOT, 'apps', 'desktop', 'src', 'project-manager.ts')
 let desktopBundles = []
@@ -256,7 +256,7 @@ if (existsSync(projectManagerPath)) {
     else {
       const webBundles = [...webTemplate[1].matchAll(/'(@deepseek-ai\/[^']+)'/g)].map(match => match[1])
       desktopBundles = [...webBundles, ...desktopBundles]
-      notes.push(`desktop profile = web template [${webBundles.join(', ')}] + UMA pair`)
+      notes.push(`desktop profile = web template [${webBundles.join(', ')}] + HEY pair`)
     }
   }
 } else fail(`project-manager.ts not found: ${projectManagerPath}`)
@@ -284,9 +284,9 @@ if (entries.length > 0) {
   }
 }
 
-// --------------------- 3. UMA layer package references must resolve to real packages
+// --------------------- 3. HEY layer package references must resolve to real packages
 
-// The inject list is the audited directory set: the 12 UMA product packages plus
+// The inject list is the audited directory set: the 12 HEY product packages plus
 // the 11 first-party packages the public ref does not publish.
 const injectedPackages = existsSync(join(ASSETS, 'packages'))
   ? readdirSync(join(ASSETS, 'packages'), { withFileTypes: true })
@@ -294,11 +294,11 @@ const injectedPackages = existsSync(join(ASSETS, 'packages'))
       .map(entry => `@deepseek-ai/${entry.name}`)
       .sort()
   : []
-if (injectedPackages.length < 12) fail(`uma-assets/packages must carry at least the 12 UMA packages, found ${injectedPackages.length}`)
+if (injectedPackages.length < 12) fail(`uma-assets/packages must carry at least the 12 HEY packages, found ${injectedPackages.length}`)
 for (const required of REQUIRED_PACKAGES) {
   if (!injectedPackages.includes(required)) fail(`required package missing from uma-assets/packages: ${required}`)
 }
-notes.push(`injected packages: ${injectedPackages.length} (12 UMA + ${injectedPackages.length - 12} first-party extras)`)
+notes.push(`injected packages: ${injectedPackages.length} (12 HEY + ${injectedPackages.length - 12} first-party extras)`)
 
 const upstreamNames = new Set()
 for (const scope of ['packages', 'apps', 'vendor']) {
@@ -315,7 +315,7 @@ for (const scope of ['packages', 'apps', 'vendor']) {
 if (upstreamNames.size === 0) fail(`no upstream package manifests found under ${DSH_ROOT}`)
 
 for (const file of layerFiles) {
-  if (!/uma-(base|web)\//.test(file)) continue
+  if (!/hey-(base|web)\//.test(file)) continue
   for (const match of readFileSync(file, 'utf8').matchAll(/^\s*name:\s*['"](@deepseek-ai\/[^'"]+)['"]\s*$/gm)) {
     const specifier = match[1]
     // Subpath mounts (`pkg/experience-capture`) resolve through the package root.
@@ -337,7 +337,7 @@ const clientBundles = new Set()
 const thirdPartyNeeds = new Set()
 for (const name of injectedPackages) {
   const entry = packageIndex.get(name)
-  if (entry === undefined) { fail(`UMA package not found: ${name}`); continue }
+  if (entry === undefined) { fail(`HEY package not found: ${name}`); continue }
   if (entry.manifest.version !== '0.2.2-rc.3') {
     fail(`${name} version ${entry.manifest.version} diverges from the 0.2.2-rc.3 baseline`)
   }
@@ -376,8 +376,8 @@ notes.push(`tools: ${toolNames.size} registered across ${new Set(toolNames.value
 for (const name of injectedPackages) {
   const entry = packageIndex.get(name)
   if (entry === undefined) continue
-  if (/dsh-client-ui-|dsh-client-uma-/.test(name) && !clientBundles.has(name)) {
-    fail(`${name} is a client package without a prebuilt lib/client.js — the window would render no UMA UI`)
+  if (/dsh-client-ui-|dsh-client-hey-/.test(name) && !clientBundles.has(name)) {
+    fail(`${name} is a client package without a prebuilt lib/client.js — the window would render no HEY UI`)
   }
 }
 
@@ -418,7 +418,7 @@ for (const name of injectedPackages) {
   }
 }
 for (const [target, requesters] of unresolvedInject) {
-  // UMA client packages inject each other; anything else must be a real package
+  // HEY client packages inject each other; anything else must be a real package
   // in the composition or the browser module table cannot satisfy the row.
   if (!injectedPackages.includes(target) && !declaredNames.has(target)) {
     fail(`${target} is injected by ${requesters.join(', ')} but is not part of the composition`)
@@ -504,11 +504,11 @@ notes.push(`locales: ${localized} localized packages × ${LOCALES.length} langua
 
 for (const note of notes) console.log(`  ${note}`)
 if (failures.length === 0) {
-  console.log(`verify-uma-platform: OK — ${entries.length} switches, ${toolNames.size} tools, ${injectedPackages.length} packages`)
+  console.log(`verify-hey-platform: OK — ${entries.length} switches, ${toolNames.size} tools, ${injectedPackages.length} packages`)
   process.exit(0)
 }
 for (const failure of failures) {
-  console.error(`::error::verify-uma-platform: ${failure}`)
+  console.error(`::error::verify-hey-platform: ${failure}`)
 }
-console.error(`verify-uma-platform: ${failures.length} failure(s)`)
+console.error(`verify-hey-platform: ${failures.length} failure(s)`)
 process.exit(1)

@@ -489,7 +489,7 @@ What makes SpaceX distinctive is its radical minimalism: no shadows, no borders 
       .icon { width: 14px; height: 14px; flex-shrink: 0; }
     </style>
 
-    <style data-uma-responsive-repair>
+    <style data-hey-responsive-repair>
       /* Grid and flex children may shrink; long labels wrap within their own column. */
       :where(*) { min-width: 0; }
       :where(h1, h2, h3, p, a, span, strong, label, code) { overflow-wrap: anywhere; }
@@ -586,7 +586,7 @@ What makes SpaceX distinctive is its radical minimalism: no shadows, no borders 
               no surface fills, no shadows, no cool grays.
             </p>
           </div>
-          <div role="group" class="uma-preview-form form">
+          <div role="group" class="hey-preview-form form">
             <div class="field">
               <label for="callsign">Callsign</label>
               <input id="callsign" type="text" placeholder="Mission control" autocomplete="username" required />

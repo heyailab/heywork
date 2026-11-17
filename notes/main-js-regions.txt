@@ -33,13 +33,13 @@
 9565://#region lib/types/update-settings.js|
 9641://#region ../../packages/util/home-paths/lib/index.js|
 9695://#region lib/types/paths.js|
-9709://#region lib/types/uma-home.js|
+9709://#region lib/types/hey-home.js|
 9721://#region lib/types/core-package-set.js|
 9725://#region lib/types/runtime-tree.js|
 9764://#region ../../node_modules/.pnpm/js-yaml@4.3.2/node_modules/js-yaml/dist/js-yaml.mjs|
 12199://#region ../../vendor/cosmokit/lib/index.js|
 12490://#region ../../vendor/loader/lib/index.js|
-13609://#region ../../packages/bundle/uma-base/lib/profiles.js|
+13609://#region ../../packages/bundle/hey-base/lib/profiles.js|
 13661://#region lib/types/project-manager.js|
 13782://#region lib/types/node-environment.js|
 13802://#region ../../packages/boot/plugin-manager/lib/types/diagnostic.js|
@@ -61,7 +61,7 @@
 17745://#region lib/types/microphone-permissions.js|
 17784://#region lib/types/startup-error.js|
 17798://#region lib/types/backend-controller.js|
-17937://#region ../../packages/util/uma-delivery/lib/index.js|
+17937://#region ../../packages/util/hey-delivery/lib/index.js|
 18655://#region lib/types/operations-vault.js|
 19012://#region lib/types/device-info.js|
 19044://#region lib/types/single-instance.js|

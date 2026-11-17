@@ -13,7 +13,7 @@
 
 ## 怎么用（重要）
 
-1. **运行时只认 `lib/*.js`**。注入脚本 `scripts/inject-uma.mjs` 复制的是整个包目录，
+1. **运行时只认 `lib/*.js`**。注入脚本 `scripts/inject-hey.mjs` 复制的是整个包目录，
    Node 按 `package.json` 的 `main: lib/index.js` 加载，不会编译 `src`。
 2. **没有构建链**。改了 `src/*.ts` 必须手动同步回对应 `lib/*.js`，否则两边会分叉。
    建议把 `src` 当「可读参考 + 改动草稿」，确认后再落到 `lib`。
@@ -30,12 +30,12 @@
 
 ## 还原范围（2026-11-17 全部完成）
 
-UMA 自有 12 个包的处理结果：
+HEY 自有 12 个包的处理结果：
 
 - **8 个服务端包已全部还原**（含本包）：`dsh-skill-uma`、`dsh-uma-base`、`dsh-tool-uma-design`、
   `dsh-uma-task-budget`、`dsh-util-uma-delivery`、`dsh-uma-guidance`、`dsh-tool-uma-workflow`、
   `dsh-uma-web`（纯配置壳，仅 README）。合计 45 个 `.ts` 文件 / 7,554 行，8 份 `src/README.md`。
-- **4 个 UI 客户端包不还原**：3 个 `client-ui-uma-*` + `dsh-client-uma-remotes`，
+- **4 个 UI 客户端包不还原**：3 个 `client-ui-hey-*` + `dsh-client-uma-remotes`，
   压缩成单行的 bundle（最长单行 258K 字符），**不具备有意义的还原条件**，保持 lib 原样。
 
 所有还原件共用同一约定：`src` 只读参考，运行时只认 `lib`，改 `src` 需手动同步回 `lib`。
