@@ -246,6 +246,59 @@ node --experimental-sqlite -e "/* 见 inspect-skill-container.mjs 的解密例�
 
 ---
 
+## 10. 设计系统与技术栈：不固定，但有优先级与记忆
+
+**结论：都不是固定的。** UMA 明确采用「库 + 选择 + 项目覆盖」的模型，而不是绑定一套设计系统或一个技术栈。
+
+### 10.1 内置设计资产库（实证规模）
+
+| 资产 | 数量 | 来源/内容 |
+|---|---|---|
+| 设计系统 `uma-design-systems/systems/` | **507** 套 | OpenDesign 源归档；每套含 `DESIGN.md`、`tokens.css`、`design-tokens.json`、`tailwind-v4.css`、`components.html`、`components.manifest.json`、`USAGE.md` |
+| DESIGN.md 参考 `uma-design-md/brands/` | **84** 套 | awesome-design-md 源归档（品牌级交互配方） |
+| 品牌身份元数据 | **445** 个 | Simple Icons（CC0） |
+| 设计数据表 `uma-design-system/data/` | **35** 个 CSV | colors 193 / google-fonts 1935 / icons 106 / products 193 / landing 35 / app-interface 33 / charts 26 / motion 18 … |
+
+即：不是「UMA 只有一套设计语言」，而是「507 套可选 + 项目自有品牌优先」。
+
+### 10.2 选择优先级（README 原文语义）
+
+```
+1. 用户明确选择（点名某系统 / 上传设计稿 / 指定品牌）
+2. 复制来的设计提示词、自然语言风格描述
+3. Agent 按产品类型、受众、信息密度、已有品牌自行选择
+   —— 且「已确认品牌与现有组件优先于内置灵感」
+```
+
+选择结果**记录到 `DESIGN.md`**，跨页面复用；`design_project_create` 在 `.design/<project>/` 写本项目专属的 `design` / `tokens` / `components`（不复制内部参考文件）。后续会话通过 Session 投影恢复「选定项目」。
+
+### 10.3 项目级覆盖机制
+
+- `design-system/MASTER.md` —— 项目级设计主文件（`design_context` 优先读取）
+- `design-system/<project>/MASTER.md` + 页面覆盖文件 —— 多包/多产品细分覆盖
+- `.design/<project>/` —— 由 `design_project_create` 生成的三件套契约
+- 读取有硬约束：单项目 32KB、单次 96KB、非普通文件/符号链接/路径越界/二进制一律拒绝并标为不完整
+
+### 10.4 技术栈同样不固定
+
+- `design_context` **从执行目录读取项目声明的依赖与框架**，不预设栈；「正式修改使用现有框架」，单文件 HTML 只在明确原型请求时使用。
+- 设计系统资产同时提供 **CSS 变量（tokens.css）与 Tailwind v4（tailwind-v4.css）两种交付格式**，按项目现状选用。
+- 编码侧同理：`coding_inspect` 标准模式按项目清单识别语言/框架，从 **14 篇双语指南 / 23 条条件化规则 / 12 组官方来源** 中选择；**仓库现有约定优先于不兼容的风格偏好**，且「选择规范不代表合规通过」。
+
+### 10.5 团队流程中的三条硬约束
+
+1. 设计动作以 `design_begin` 开始、`design_stop` 结束，设计决策交接给前端时须说明「版式与组件应如何呈现」，并在运行页面上核对。
+2. 门禁的 `uiux` 工件必须含「令牌、状态、响应式」三章节，否则不算就绪——**设计系统选择的产物要落到文档里**。
+3. 总监提示词明确：尊重用户选择与**已批准的品牌**；不得擅自更改业务规则或选用不兼容技术栈（`uma-team` 技能同款约束）。
+
+### 10.6 一致性怎么保证（不固定但不漂移）
+
+- 选择一次性记录在 `DESIGN.md` + `.design/<project>/`，后续页面复用而非重新选型。
+- 项目级 `MASTER.md` 覆盖优先级高于内置库，保证「同一项目一套语言」。
+- 交接必须携带设计决策（令牌/组件/状态），评审用运行截图核对——不靠口头一致。
+
+---
+
 ## 附：与「官方直接装」的关系
 
 团队功能全部组件**符合官方插件标准**（§见 WINDOWS-DEV.md 3d）：官方部分（subagent 家族、agent-team）本就是上游 workspace 成员；UMA 增值包经未改动 Loader 加载。若想在官方 dsh（非 UMA 打包版）上复现团队功能，最小配置是官方 README 给出的两行：
