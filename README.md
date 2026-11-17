@@ -1,0 +1,142 @@
+# uma-window — UMA Studio 的 Windows 版本（官方 dsh 基线 + UMA 插件层）
+
+把 UMA Studio（Mac）的功能面 1:1 搬到 Windows：**不改写桌面应用**，而是在官方开源
+[`deepseek-ai/deepseek-harness`](https://github.com/deepseek-ai/deepseek-harness)（pinned `39163dd`，v0.2.2-rc.3）之上，
+叠加 UMA 的插件层、产品配置、品牌与本地化，由 GitHub Actions 在 `windows-latest` 上出包。
+
+功能面的 95% 是插件（23 个包：40 个工具 / 20 个技能 / 6 个 UI 面板 / 22 条产品开关），
+壳层只有 5 段补丁（触及 11 个上游文件）。详见 [PLAN.md](PLAN.md) 的范围边界一节。
+
+---
+
+## 一、文档索引（全部在本仓库，clone 即得）
+
+| 文档 | 给谁看 | 内容 |
+|---|---|---|
+| **[WINDOWS-DEV.md](WINDOWS-DEV.md)** | **Windows 开发者（先读这篇）** | 环境准备、与 CI 逐步一致的出包流程、三种迭代方式、插件两条装载路线、提交纪律 |
+| [PLAN.md](PLAN.md) | 所有人 | 目标与验收标准、阶段进度（Phase 1–4）、关键事实与范围边界、风险与取舍 |
+| **[notes/uma-team-feature-report.md](notes/uma-team-feature-report.md)** | 想理解 UMA 产品机制的人 | 开发团队功能全链路：官方协作原语 + UMA 五项增值、任务板机制、财务预算、交付门禁、编码证据链、设计系统与技术栈的选择机制 |
+| [notes/phase4-acceptance.md](notes/phase4-acceptance.md) | 做真机验收的人 | 缺口分析（11 个上游未发布包）、门禁说明、9 步真机验收清单、复跑方式 |
+| [notes/main-js-diff-checklist.md](notes/main-js-diff-checklist.md) | 想核对壳层差异的人 | Mac 主进程与官方的 IPC/能力差异清单（50 通道 vs 42） |
+| [notes/main-js-regions.txt](notes/main-js-regions.txt) | 同上 | Mac `lib/main.js` 的打包 region 索引（定位实现片段） |
+| [notes/worklog/](notes/worklog/) | 接手的人 | 逐日工作日志：决策、踩坑、修复（Phase 1→4 全过程） |
+| [notes/upstream-locale-0.2.2-rc.3.ts](notes/upstream-locale-0.2.2-rc.3.ts) | 改 locale 的人 | 上游原版 locale 留档（对照 UMA 232 键） |
+
+### 阅读顺序建议
+
+1. 只想跑起来出包 → **WINDOWS-DEV.md** 第 1–2 节
+2. 要改功能 → **WINDOWS-DEV.md** 第 3 节 + **notes/uma-team-feature-report.md**（理解机制再动手）
+3. 要判断能不能做 / 该不该做 → **PLAN.md** 范围边界 + **notes/phase4-acceptance.md**
+
+---
+
+## 二、仓库结构
+
+```
+uma-windows-port/
+├── README.md                    ← 本文件（文档总入口）
+├── WINDOWS-DEV.md               ← Windows 开发指南（出包 + 迭代）
+├── PLAN.md                      ← 计划与验收
+├── patches/                     ← 5 段壳层补丁（对上游 TS 源码的 diff，必须 LF）
+│   ├── uma-phase1.patch         ← 注入 hook / asarUnpack / 产品补丁透传
+│   ├── uma-phase2.patch         ← 产品身份 / 协议 / 数据根 ~/.uma / 图标
+│   ├── uma-phase2b.patch        ← 8 语 locale
+│   ├── uma-phase2c.patch        ← About 对话框
+│   └── uma-phase3.patch         ← 更新 feed（已挂起，不验收）
+├── uma-assets/                  ← 功能面本体（全部随包分发）
+│   ├── packages/                ← 23 个插件包：12 UMA 自有 + 11 上游未发布的一等包
+│   ├── deps/                    ← 9 个三方依赖池（树里缺失才补）
+│   ├── dsh-skill-uma/           ← 技能容器 resources.umadb（20 技能 / 2895 文件，AES-256-GCM）
+│   ├── brand/                   ← 图标（ico/png）
+│   ├── renderer/                ← 欢迎页 / 更新页 / 强制更新帧
+│   ├── shell/                   ← 托盘与菜单资源
+│   ├── packages.extras.json     ← 抽取清单：逐文件 SHA-256 与体积（可追溯）
+│   └── uma-platform.patch.mac.yml  ← Mac 原始 22 开关留档（真正随包的是 phase1 生成的 win32 版）
+├── scripts/
+│   ├── inject-uma.mjs           ← 打包期注入：复制包 → 挂载 → 重算 desktop-runtime.json
+│   ├── verify-uma-platform.mjs  ← 合成门禁（源码模式 / --tree 模式）
+│   ├── extract-mac-extras.mjs   ← 从 Mac app.asar 按闭包抽取（换 Mac 版本时用）
+│   ├── inspect-skill-container.mjs ← 技能容器检查
+│   ├── build-ico.mjs            ← 零依赖 PNG→ICO
+│   ├── locale-port.mjs          ← locale 机械抽取
+│   └── overlay-renderer.mjs     ← renderer 覆盖
+├── notes/                       ← 分析、验收、工作日志（本文件索引）
+├── .github/workflows/build-win.yml ← CI：出 Windows 包
+└── deepseek-harness/            ← 官方源码（gitignore，本地 clone 后应用补丁）
+```
+
+---
+
+## 三、Windows 首次上手（5 步）
+
+完整版见 [WINDOWS-DEV.md](WINDOWS-DEV.md)。要点：
+
+```powershell
+# 1) 关闭换行转换（关键：补丁必须 LF）
+git config --global core.autocrlf false
+
+# 2) 取两个仓库
+git clone git@github.com:heyailab/uma-window.git
+git clone https://github.com/deepseek-ai/deepseek-harness.git
+cd deepseek-harness && git checkout 39163dd30f703a79079e2d2446545cff3c453738
+
+# 3) 顺序应用 5 段补丁（顺序不可乱）
+foreach ($p in "uma-phase1","uma-phase2","uma-phase2b","uma-phase2c","uma-phase3") {
+  git apply --check ..\uma-window\patches\$p.patch
+  git apply ..\uma-window\patches\$p.patch
+}
+
+# 4) 写 apps/desktop/.env.windows（内容见 WINDOWS-DEV.md 第 2 节）
+pnpm install
+node ..\uma-window\scripts\verify-uma-platform.mjs     # 秒级门禁
+
+# 5) 出包（约 1–2 小时；或直接 push 让 Actions 出）
+pnpm run package:desktop:win:x64:unsigned
+```
+
+---
+
+## 四、门禁（push 前先跑，秒级）
+
+```bash
+node scripts/verify-uma-platform.mjs          # 源码模式：开关 / 层引用 / 工具 / 客户端组合
+node scripts/verify-uma-platform.mjs --tree <已注入的树>   # 注入后：检查真实 node_modules
+node --experimental-sqlite scripts/inspect-skill-container.mjs   # 20 技能 / 2895 文件
+```
+
+当前基线：**22 开关（8 启用 / 14 禁用）· 40 工具 · 23 包 · 7 个客户端插件全挂载 · 8 语种齐全**。
+
+门禁能挡住的问题类型：开关指向不存在的插件 id（会被静默忽略）、层引用悬空、
+客户端包缺 `lib/client.js`（UI 静默不出现）、`dsh.client.inject` 目标不可解析、
+技能容器被误打进 asar。
+
+---
+
+## 五、范围边界（2026-11-17 定）
+
+| 项 | 决定 | 原因 |
+|---|---|---|
+| 自动更新链路 | **不做** | 目标改为「在官方 dsh 上对齐 UMA 功能面」；`uma-phase3.patch` 保留但不验收 |
+| UMA Operations（SSH 面板） | **不做** | Mac 专属菜单入口，Windows 本无入口；`uma_ssh_*` 工具带 `when` 门控，不出现 ≠ 报错 |
+| 23 个插件的装载方式 | **打包期注入** | 11 个一等包是桌面层首启依赖，运行期安装救不了首启；且需要离线确定性 |
+
+---
+
+## 六、已知坑
+
+1. **CRLF**：`.patch` 一旦被转成 CRLF，所有 hunk 都会 `patch does not apply`。
+   `.gitattributes` 已把 `*.patch`、`uma-assets/{packages,deps}` 标记 `-text`，别改。
+2. **别改错文件**：`uma-assets/uma-platform.patch.mac.yml` 是 Mac 留档，随包的 win32 版
+   由 `uma-phase1.patch` 生成。
+3. **注入早于 smoke**：`prepare:dsh` 的 runtime smoke 在注入之前跑，所以「构建通过」不代表
+   插件层完好——必须靠 `verify-uma-platform.mjs`。
+4. **技能容器必须留在 asar 外**（asarUnpack），否则 `node:sqlite` 打不开。
+
+---
+
+## 七、状态
+
+- Phase 1（插件层注入）：完成，CI 出包通过
+- Phase 2 / 2b / 2c（品牌、数据根、8 语、About）：完成
+- Phase 4（功能验收）：静态可证项全部闭环；**待真机 9 步验收**
+- Phase 3（更新）：挂起
