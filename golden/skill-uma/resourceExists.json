@@ -1,0 +1,42 @@
+{
+  "api": "resourceExists",
+  "source": "dsh-skill-uma/lib/types/resources.js (live)",
+  "cases": [
+    {
+      "name": "existing-skill",
+      "path": "/Users/evazhen/heycode/heywork/uma-assets/packages/dsh-skill-uma/assets/uma-code-review/SKILL.md",
+      "ok": true,
+      "value": {
+        "kind": "boolean",
+        "value": true
+      }
+    },
+    {
+      "name": "missing-in-container",
+      "path": "/Users/evazhen/heycode/heywork/uma-assets/packages/dsh-skill-uma/assets/uma-code-review/NO-SUCH-FILE.md",
+      "ok": true,
+      "value": {
+        "kind": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "outside-container",
+      "path": "/Users/evazhen/heycode/heywork/README.md",
+      "ok": true,
+      "value": {
+        "kind": "boolean",
+        "value": true
+      }
+    },
+    {
+      "name": "missing-outside",
+      "path": "/Users/evazhen/heycode/heywork/NO-SUCH-FILE.md",
+      "ok": true,
+      "value": {
+        "kind": "boolean",
+        "value": false
+      }
+    }
+  ]
+}

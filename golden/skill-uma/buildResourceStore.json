@@ -1,0 +1,35 @@
+{
+  "api": "buildResourceStore",
+  "source": "dsh-skill-uma/lib/types/resources.js (live)",
+  "cases": [
+    {
+      "name": "normal-build",
+      "sourceFiles": [
+        "a.md",
+        "sub/b.json"
+      ],
+      "ok": true,
+      "value": {
+        "kind": "number",
+        "value": 2
+      },
+      "outputCreated": true
+    },
+    {
+      "name": "output-exists",
+      "ok": false,
+      "error": {
+        "kind": "error",
+        "message": "Resource output must be new and outside assets"
+      }
+    },
+    {
+      "name": "output-inside-root",
+      "ok": false,
+      "error": {
+        "kind": "error",
+        "message": "Resource output must be new and outside assets"
+      }
+    }
+  ]
+}

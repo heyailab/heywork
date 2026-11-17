@@ -1,0 +1,57 @@
+{
+  "api": "readResourceFile",
+  "source": "dsh-skill-uma/lib/types/resources.js (live)",
+  "cases": [
+    {
+      "name": "skill-utf8",
+      "path": "/Users/evazhen/heycode/heywork/uma-assets/packages/dsh-skill-uma/assets/uma-code-review/SKILL.md",
+      "encoding": "utf8",
+      "ok": true,
+      "value": {
+        "kind": "string",
+        "value": "---\nname: uma-code-review\ndescription: Review local code changes for reproducible bugs, regressions, lifecycle errors and security defects. Use when the user asks for code review or wants to check a diff.\n---\n\n# UMA code review\n\nReview the actual selected workspace. Review is read-only unless the user separately authorizes fixes.\n\n## Workflow\n\n1. Read repository instructions and identify the requested comparison: current uncommitted changes, a named commit/range or a specified file. If no comparison is supplied, inspect unstaged, staged and relevant untracked source changes separately. Record branch, base and local-change scope. Do not silently compare against a guessed main branch or attribute all dirty files to the current task.\n2. Read both the diff and the surrounding callers, tests and error paths. Consult project Wiki and associated knowledge, then verify claims against source. Unavailable/stale knowledge is a limitation rather than evidence that no policy applies.\n3. Focus on concrete regressions: incorrect results, missing authorization, injection, data loss, incompatible persistence, races, missing cancellation/disposal and misleading success. Differentiate introduced defects from pre-existing defects. Do not produce style-only findings unless an explicit review standard makes them actionable.\n4. For each finding, give severity, the smallest useful file/line location, triggering conditions, consequence and a deterministic reproduction or source-based explanation. Label unverified hypotheses. Use configured LSP navigation when available; otherwise disclose the scope of text-based tracing.\n5. If authorized to run checks, select focused commands from the repository's own scripts and record their actual exit status/output. Preserve unrelated changes; do not install, stage, reset, restore, commit or push. Report checks not run and why.\n6. Return findings first, ordered by severity; then assumptions, coverage and validation. If no actionable defect was found, say so with the inspected scope and residual uncertainty. A clean review is not proof of release readiness.\n\n## Result\n\nReturn findings with file locations and reproduction evidence, followed by the comparison scope and checks actually run. Propose fixes separately; do not apply them during a review-only task.\n"
+      }
+    },
+    {
+      "name": "skill-buffer",
+      "path": "/Users/evazhen/heycode/heywork/uma-assets/packages/dsh-skill-uma/assets/uma-code-review/SKILL.md",
+      "encoding": null,
+      "ok": true,
+      "value": {
+        "kind": "buffer",
+        "length": 2309,
+        "base64": "LS0tCm5hbWU6IHVtYS1jb2RlLXJldmlldwpkZXNjcmlwdGlvbjogUmV2aWV3IGxvY2FsIGNvZGUgY2hhbmdlcyBmb3IgcmVwcm9kdWNpYmxlIGJ1Z3MsIHJlZ3Jlc3Npb25zLCBsaWZlY3ljbGUgZXJyb3JzIGFuZCBzZWN1cml0eSBkZWZlY3RzLiBVc2Ugd2hlbiB0aGUgdXNlciBhc2tzIGZvciBjb2RlIHJldmlldyBvciB3YW50cyB0byBjaGVjayBhIGRpZmYuCi0tLQoKIyBVTUEgY29kZSByZXZpZXcKClJldmlldyB0aGUgYWN0dWFsIHNlbGVjdGVkIHdvcmtzcGFjZS4gUmV2aWV3IGlzIHJlYWQtb25seSB1bmxlc3MgdGhlIHVzZXIgc2VwYXJhdGVseSBhdXRob3JpemVzIGZpeGVzLgoKIyMgV29ya2Zsb3cKCjEuIFJlYWQgcmVwb3NpdG9yeSBpbnN0cnVjdGlvbnMgYW5kIGlkZW50aWZ5IHRoZSByZXF1ZXN0ZWQgY29tcGFyaXNvbjogY3VycmVudCB1bmNvbW1pdHRlZCBjaGFuZ2VzLCBhIG5hbWVkIGNvbW1pdC9yYW5nZSBvciBhIHNwZWNpZmllZCBmaWxlLiBJZiBubyBjb21wYXJpc29uIGlzIHN1cHBsaWVkLCBpbnNwZWN0IHVuc3RhZ2VkLCBzdGFnZWQgYW5kIHJlbGV2YW50IHVudHJhY2tlZCBzb3VyY2UgY2hhbmdlcyBzZXBhcmF0ZWx5LiBSZWNvcmQgYnJhbmNoLCBiYXNlIGFuZCBsb2NhbC1jaGFuZ2Ugc2NvcGUuIERvIG5vdCBzaWxlbnRseSBjb21wYXJlIGFnYWluc3QgYSBndWVzc2VkIG1haW4gYnJhbmNoIG9yIGF0dHJpYnV0ZSBhbGwgZGlydHkgZmlsZXMgdG8gdGhlIGN1cnJlbnQgdGFzay4KMi4gUmVhZCBib3RoIHRoZSBkaWZmIGFuZCB0aGUgc3Vycm91bmRpbmcgY2FsbGVycywgdGVzdHMgYW5kIGVycm9yIHBhdGhzLiBDb25zdWx0IHByb2plY3QgV2lraSBhbmQgYXNzb2NpYXRlZCBrbm93bGVkZ2UsIHRoZW4gdmVyaWZ5IGNsYWltcyBhZ2FpbnN0IHNvdXJjZS4gVW5hdmFpbGFibGUvc3RhbGUga25vd2xlZGdlIGlzIGEgbGltaXRhdGlvbiByYXRoZXIgdGhhbiBldmlkZW5jZSB0aGF0IG5vIHBvbGljeSBhcHBsaWVzLgozLiBGb2N1cyBvbiBjb25jcmV0ZSByZWdyZXNzaW9uczogaW5jb3JyZWN0IHJlc3VsdHMsIG1pc3NpbmcgYXV0aG9yaXphdGlvbiwgaW5qZWN0aW9uLCBkYXRhIGxvc3MsIGluY29tcGF0aWJsZSBwZXJzaXN0ZW5jZSwgcmFjZXMsIG1pc3NpbmcgY2FuY2VsbGF0aW9uL2Rpc3Bvc2FsIGFuZCBtaXNsZWFkaW5nIHN1Y2Nlc3MuIERpZmZlcmVudGlhdGUgaW50cm9kdWNlZCBkZWZlY3RzIGZyb20gcHJlLWV4aXN0aW5nIGRlZmVjdHMuIERvIG5vdCBwcm9kdWNlIHN0eWxlLW9ubHkgZmluZGluZ3MgdW5sZXNzIGFuIGV4cGxpY2l0IHJldmlldyBzdGFuZGFyZCBtYWtlcyB0aGVtIGFjdGlvbmFibGUuCjQuIEZvciBlYWNoIGZpbmRpbmcsIGdpdmUgc2V2ZXJpdHksIHRoZSBzbWFsbGVzdCB1c2VmdWwgZmlsZS9saW5lIGxvY2F0aW9uLCB0cmlnZ2VyaW5nIGNvbmRpdGlvbnMsIGNvbnNlcXVlbmNlIGFuZCBhIGRldGVybWluaXN0aWMgcmVwcm9kdWN0aW9uIG9yIHNvdXJjZS1iYXNlZCBleHBsYW5hdGlvbi4gTGFiZWwgdW52ZXJpZmllZCBoeXBvdGhlc2VzLiBVc2UgY29uZmlndXJlZCBMU1AgbmF2aWdhdGlvbiB3aGVuIGF2YWlsYWJsZTsgb3RoZXJ3aXNlIGRpc2Nsb3NlIHRoZSBzY29wZSBvZiB0ZXh0LWJhc2VkIHRyYWNpbmcuCjUuIElmIGF1dGhvcml6ZWQgdG8gcnVuIGNoZWNrcywgc2VsZWN0IGZvY3VzZWQgY29tbWFuZHMgZnJvbSB0aGUgcmVwb3NpdG9yeSdzIG93biBzY3JpcHRzIGFuZCByZWNvcmQgdGhlaXIgYWN0dWFsIGV4aXQgc3RhdHVzL291dHB1dC4gUHJlc2VydmUgdW5yZWxhdGVkIGNoYW5nZXM7IGRvIG5vdCBpbnN0YWxsLCBzdGFnZSwgcmVzZXQsIHJlc3RvcmUsIGNvbW1pdCBvciBwdXNoLiBSZXBvcnQgY2hlY2tzIG5vdCBydW4gYW5kIHdoeS4KNi4gUmV0dXJuIGZpbmRpbmdzIGZpcnN0LCBvcmRlcmVkIGJ5IHNldmVyaXR5OyB0aGVuIGFzc3VtcHRpb25zLCBjb3ZlcmFnZSBhbmQgdmFsaWRhdGlvbi4gSWYgbm8gYWN0aW9uYWJsZSBkZWZlY3Qgd2FzIGZvdW5kLCBzYXkgc28gd2l0aCB0aGUgaW5zcGVjdGVkIHNjb3BlIGFuZCByZXNpZHVhbCB1bmNlcnRhaW50eS4gQSBjbGVhbiByZXZpZXcgaXMgbm90IHByb29mIG9mIHJlbGVhc2UgcmVhZGluZXNzLgoKIyMgUmVzdWx0CgpSZXR1cm4gZmluZGluZ3Mgd2l0aCBmaWxlIGxvY2F0aW9ucyBhbmQgcmVwcm9kdWN0aW9uIGV2aWRlbmNlLCBmb2xsb3dlZCBieSB0aGUgY29tcGFyaXNvbiBzY29wZSBhbmQgY2hlY2tzIGFjdHVhbGx5IHJ1bi4gUHJvcG9zZSBmaXhlcyBzZXBhcmF0ZWx5OyBkbyBub3QgYXBwbHkgdGhlbSBkdXJpbmcgYSByZXZpZXctb25seSB0YXNrLgo="
+      }
+    },
+    {
+      "name": "design-system-manifest",
+      "path": "/Users/evazhen/heycode/heywork/uma-assets/packages/dsh-skill-uma/assets/uma-design-systems/systems/airbnb/manifest.json",
+      "encoding": "utf8",
+      "ok": true,
+      "value": {
+        "kind": "string",
+        "value": "{\n  \"schemaVersion\": \"uma-design-system-reference/v1\",\n  \"id\": \"airbnb\",\n  \"name\": \"Airbnb\",\n  \"category\": \"E-Commerce & Retail\",\n  \"description\": \"Bundled OpenDesign package for Airbnb, derived from curated DESIGN.md, tokens.css, and components.html fixtures.\",\n  \"source\": {\n    \"type\": \"bundled\",\n    \"origin\": \"OpenDesign curated bundled fixture\"\n  },\n  \"files\": {\n    \"design\": \"DESIGN.md\",\n    \"tokens\": \"tokens.css\",\n    \"components\": \"components.html\",\n    \"designTokens\": \"design-tokens.json\",\n    \"tailwind\": \"tailwind-v4.css\"\n  },\n  \"usage\": \"USAGE.md\",\n  \"componentsManifest\": \"components.manifest.json\",\n  \"importMode\": \"normalized\",\n  \"craft\": {\n    \"applies\": [],\n    \"suggested\": [\n      \"color\",\n      \"accessibility-baseline\"\n    ],\n    \"exemptions\": []\n  },\n  \"sourceRole\": \"reference\"\n}\n"
+      }
+    },
+    {
+      "name": "directory-as-file",
+      "path": "/Users/evazhen/heycode/heywork/uma-assets/packages/dsh-skill-uma/assets/uma-code-review",
+      "encoding": "utf8",
+      "ok": false,
+      "error": {
+        "kind": "error",
+        "message": "Resource is a directory"
+      }
+    },
+    {
+      "name": "missing-outside",
+      "path": "/Users/evazhen/heycode/heywork/NO-SUCH-FILE.md",
+      "encoding": "utf8",
+      "ok": false,
+      "error": {
+        "kind": "error",
+        "message": "ENOENT: no such file or directory, open '/Users/evazhen/heycode/heywork/NO-SUCH-FILE.md'"
+      }
+    }
+  ]
+}

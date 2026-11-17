@@ -1,0 +1,42 @@
+{
+  "api": "isBundledPath",
+  "source": "dsh-skill-uma/lib/types/resources.js (live)",
+  "cases": [
+    {
+      "name": "container-file",
+      "path": "/Users/evazhen/heycode/heywork/uma-assets/packages/dsh-skill-uma/assets/uma-code-review/SKILL.md",
+      "ok": true,
+      "value": {
+        "kind": "boolean",
+        "value": true
+      }
+    },
+    {
+      "name": "container-dir",
+      "path": "/Users/evazhen/heycode/heywork/uma-assets/packages/dsh-skill-uma/assets/uma-code-review",
+      "ok": true,
+      "value": {
+        "kind": "boolean",
+        "value": true
+      }
+    },
+    {
+      "name": "assets-root",
+      "path": "/Users/evazhen/heycode/heywork/uma-assets/packages/dsh-skill-uma/assets",
+      "ok": true,
+      "value": {
+        "kind": "boolean",
+        "value": true
+      }
+    },
+    {
+      "name": "outside-assets",
+      "path": "/Users/evazhen/heycode/heywork/README.md",
+      "ok": true,
+      "value": {
+        "kind": "boolean",
+        "value": false
+      }
+    }
+  ]
+}

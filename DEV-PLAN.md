@@ -43,7 +43,7 @@
 
 | 阶段 | 名称 | 核心产出 | 验收标准 | 依赖 |
 |---|---|---|---|---|
-| **P0** | 规格冻结 | 8 个服务端包的完整 specs | 每个工具七段齐全，无实现细节 | 无 |
+| **P0 ✅** | 规格冻结 | 8 个服务端包的完整 specs（2,843 行，已入库 `c35d38b`） | 八份全部 7/7 段齐全，无算法描述 | 无 |
 | **P1** | 数据底座 | 重写的容器读取层 + design 工具族 | golden 全过 + 20 技能/507 系统可读 | P0 |
 | **P2** | 交付链 | workflow + delivery + budget 重写 | artifact/gate/budget golden 全过 | P1 |
 | **P3** | 一等包 | knowledge + wiki + coding-workbench 重写 | 40 工具在册 | P1,P2 |

@@ -1,0 +1,42 @@
+{
+  "api": "resourceIsDirectory",
+  "source": "dsh-skill-uma/lib/types/resources.js (live)",
+  "cases": [
+    {
+      "name": "skill-dir",
+      "path": "/Users/evazhen/heycode/heywork/uma-assets/packages/dsh-skill-uma/assets/uma-code-review",
+      "ok": true,
+      "value": {
+        "kind": "boolean",
+        "value": true
+      }
+    },
+    {
+      "name": "skill-file",
+      "path": "/Users/evazhen/heycode/heywork/uma-assets/packages/dsh-skill-uma/assets/uma-code-review/SKILL.md",
+      "ok": true,
+      "value": {
+        "kind": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "assets-root",
+      "path": "/Users/evazhen/heycode/heywork/uma-assets/packages/dsh-skill-uma/assets",
+      "ok": true,
+      "value": {
+        "kind": "boolean",
+        "value": true
+      }
+    },
+    {
+      "name": "missing-outside",
+      "path": "/Users/evazhen/heycode/heywork/NO-SUCH-FILE.md",
+      "ok": false,
+      "error": {
+        "kind": "error",
+        "message": "ENOENT: no such file or directory, stat '/Users/evazhen/heycode/heywork/NO-SUCH-FILE.md'"
+      }
+    }
+  ]
+}
