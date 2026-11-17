@@ -1,5 +1,10 @@
 # uma-window — UMA Studio 的 Windows 版本（官方 dsh 基线 + UMA 插件层）
 
+> **方向变更（2026-11-17）**：目标从「照搬/移植插件包」转为「理解完整机制后 1:1 重写功能」——
+> 不加密的数据（技能 / 设计系统 / locale / 品牌）直接使用，其余 TS 逻辑自研实现。
+> 新方向见 **[REWRITE-PLAN.md](REWRITE-PLAN.md)**；本文件描述的整合路线完整保留为**回滚基线与行为对照**，
+> 两套产物都不删。
+
 把 UMA Studio（Mac）的功能面 1:1 搬到 Windows：**不改写桌面应用**，而是在官方开源
 [`deepseek-ai/deepseek-harness`](https://github.com/deepseek-ai/deepseek-harness)（pinned `39163dd`，v0.2.2-rc.3）之上，
 叠加 UMA 的插件层、产品配置、品牌与本地化，由 GitHub Actions 在 `windows-latest` 上出包。
@@ -19,6 +24,7 @@
 
 | 文档 | 给谁看 | 内容 |
 |---|---|---|
+| **[REWRITE-PLAN.md](REWRITE-PLAN.md)** | **决定新方向后所有人（先读）** | 从「整合移植」转向「理解机制后 1:1 重写」：分层决策（数据直用 / 官方复用 / 自研重写）、specs+golden 方法论、M1–M3 里程碑、验收与风险 |
 | **[WINDOWS-DEV.md](WINDOWS-DEV.md)** | **Windows 开发者（先读这篇）** | 环境准备、与 CI 逐步一致的出包流程、三种迭代方式、插件两条装载路线、提交纪律 |
 | [PLAN.md](PLAN.md) | 所有人 | 目标与验收标准、阶段进度（Phase 1–4）、关键事实与范围边界、风险与取舍 |
 | **[notes/uma-team-feature-report.md](notes/uma-team-feature-report.md)** | 想理解 UMA 产品机制的人 | 开发团队功能全链路：官方协作原语 + UMA 五项增值、任务板机制、财务预算、交付门禁、编码证据链、设计系统与技术栈的选择机制 |
