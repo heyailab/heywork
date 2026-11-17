@@ -112,6 +112,26 @@ UI 面板声明 `dsh.client`（`packages/client/*` 样例）、挂载到桌面�
 `apps/desktop/src/project-manager.ts` 的 `UMA_DESKTOP_BUNDLES` 或层 `cordis.patch.yml` 里加 id。
 改完跑 `node scripts/verify-uma-platform.mjs`，门禁会校验新引用是否悬空。
 
+### 3d. 插件的两条装载路线（都走官方机制，只是时机不同）
+
+UMA 插件**符合官方标准**——23 个包在 Windows 构建里全部经未改动的官方 Loader 加载，
+API 面（`defineTool` / `dsh.client` / `ctx.subprocess.spawn` / home-paths 表达式 / 凭据键）与
+上游公开包一致。区别只在「怎么进树」：
+
+1. **打包期整合（现状，23 个核心包走这条）**：`inject-uma.mjs` 把包复制进
+   `node_modules` + 层 yml 挂载 + 重算 `desktop-runtime.json`。理由：桌面层引用
+   `dsh-uma-base`/`uma-web` 挂载的 11 个一等包，缺一个首次启动即失败；且需要离线确定性。
+   新写功能想随包分发也走这条（3c）。
+2. **运行期安装（官方插件管理器，适合增量功能）**：`plugin-manager` 服务 + 工具
+   在 base/web-app 层挂载，桌面组合里**本来就有**——`installBundle(spec)` 支持
+   npm 名 / git 仓库 / 本地目录三种 spec，装进 profile 目录
+   （`~/.uma/dsh/profiles/...` 的 dependencies，不在应用安装目录内），支持
+   enable/disable/remove/update。符合官方格式的新插件（含你自己新写的）可以直接
+   用这条路装，不动应用本体；UI 入口是设置里的插件管理器面板。
+   注意：单个运行期安装的包不会自动带上 UMA 的层接线（层 patch 仍在 profile 的
+   cordis.patch.yml 里）——跨包联动仍要写进层配置或打包期整合。
+
+
 ## 4. 提交纪律
 
 - 改壳层 → 重新生成对应 patch：在 `deepseek-harness` 里 `git diff > ../patches/uma-phaseN.patch`
