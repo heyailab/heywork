@@ -19,8 +19,19 @@
 | `scripts/` | 注入、校验（平台合成 + 容器内容）、Mac 包事实读取、抽取、locale 移植等 10 个脚本 | Node ESM |
 | `.github/workflows/build-win.yml` | 与下文「完整出包」完全相同的步骤 | GitHub Actions |
 
-**不在仓库里**：官方 dsh 源码（`.gitignore` 排除，CI 按 pinned commit 拉取）——所以本机要先自己 clone；
-以及 UMA 私有包的 TypeScript 原始源码（DeepSeek 未公开，Mac 包发布的本来就是 `lib` 编译形态，功能等价、可改可跑）。
+**不在仓库里**：官方 dsh 源码（`.gitignore` 排除，CI 按 pinned commit 拉取）——所以本机要先自己 clone。
+
+**关于「源码」的准确口径**（2026-11-17 盘点）：23 个包的本体 100% 在仓库（`uma-assets/packages/`，
+2,750 个文件，逐文件 SHA-256 见 `packages.extras.json`），但**不都是 TS 源码**：
+
+| 形态 | 范围 | 能不能改 |
+|---|---|---|
+| `lib/*.js` 编译产物（未混淆、无 sourcemap） | 绝大多数包，含 `dsh-skill-uma`（仅 3 个 js） | **能**，直接改 js 再出包（见 §3a）；不需要 TS 构建链 |
+| `src/*.ts` 原始源码 | 仅 3 个包附带：`dsh-api-account-controller`(2)、`dsh-deepseek-account-platform`(6)、`dsh-worktree`(8)，共 16 个文件 | 能，但改完要自己同步回 `lib`（没有构建链自动编译） |
+| `resources.umadb` 加密技能容器 | `dsh-skill-uma` 内，20 个技能的 Markdown 文本 | 加密密钥/算法写在同包 `lib/types/resources.js` 里（非黑盒）；用 `scripts/inspect-skill-container.mjs` 可读 |
+
+其余在包里看到的 ~332 个 `.ts` 是三方依赖 `zod/src/` 的公开源码，不是 UMA 私有代码。
+DeepSeek 发布的就是编译形态，我们没有原始 TS；这不影响功能对齐与迭代（改 `lib` 重出包即可）。
 
 ## 1. 环境准备（Windows）
 
