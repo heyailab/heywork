@@ -1,5 +1,7 @@
 # HeyWork — 理解机制后 1:1 重写的 Windows 桌面应用
 
+> **执行计划见 [DEV-PLAN.md](DEV-PLAN.md)**（唯一执行入口：P0 规格冻结 → P5 集成出包）。
+>
 > 起点：2026-11-17，从 `uma-windows-port` 完整复制（含 git 历史 `579d57a`）。
 > 新项目名 `heywork`，对外身份 `uma` → `hey`。
 > 旧仓库 `heyailab/uma-window` 与其全部产物**保留**作回滚基线与行为对照，不再改动。
