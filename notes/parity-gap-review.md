@@ -303,14 +303,31 @@ node scripts/inspect-mac-manifest.mjs
 | 8 个服务端包（base / design / task-budget / delivery / guidance / skill-uma / workflow / web） | 约 6,300 行 | tsc 直出或 esbuild 轻度打包，JSDoc + 变量名保留 | **可还原成可读 TS**，类型靠推断，逻辑可逐行等价 |
 | 4 个 UI 包（3 × client-ui-uma + remotes） | 50 行但单行 25K–258K 字符 | 压缩 bundle | **不可还原**，硬转只是给压缩代码标 `any` |
 
-**已做样本**：`uma-assets/packages/dsh-skill-uma/src/` —— 还原了 `types/resources.ts`（194 行）、
-`types/index.ts`（153 行）、`index.ts`（10 行），导出面与 `lib/index.js` 逐字一致，
-三个文件均通过本地 TypeScript `transpileModule` 语法校验。还原依据：
+**已完成全部 8 个服务端包的还原**（2026-11-17）：每个包的 `src/` 下是还原的 TypeScript，
+共 **45 个 `.ts` / 7,554 行 + 8 份 README**（`dsh-uma-web` 是配置壳，只有 README）。
+4 个 UI 包保持 lib 原样。还原依据：
 
 - `lib/types/*.js` 是 tsc 直出（注释、命名、函数签名完整）；
 - `lib/index.js` 是 esbuild bundle，`//#region lib/types/...` 标记保留了原始模块边界；
 - 推断部分：`interface` / 类型注解 / 泛型参数由调用点反推，名字可能与原始定义不同；
 - 等价部分：控制流、字符串、加解密参数、错误文本与 `lib` 逐行核对一致。
 
+**独立验收结果**（不依赖各 agent 自报）：
+
+| 检查项 | 结果 |
+|---|---|
+| `git status`：只新增 `src/`，`lib/` 与 `package.json` 零改动 | 通过 |
+| 45 个 `.ts` 用仓库内 TypeScript `transpileModule` 校验 | **0 语法错误** |
+| 17 个入口的运行时导出符号集合 vs 对应 lib | **17/17 完全一致** |
+| 1,393 个唯一运行时字符串字面量覆盖（7 个代码包） | 除 17 个 tsc 内联 helper 文本外全覆盖（见下） |
+
+关于那 17 个「缺失」字符串：全部来自 `dsh-uma-task-budget` 的 lib，是 tsc 为 `using` 语法内联的
+`__esDecorate` / `__disposeResources` helper 的错误文本（如 `Function expected`、`SuppressedError`）。
+还原件把它写回 TS 原生 `using` 声明，这些文本由编译器重新生成，属于**正确的反向编译**，不是遗漏。
+该处理已在 `dsh-uma-task-budget/src/README.md` 第 5 条记录。
+
 **注意**：`src` 是只读参考 + 改动草稿，不是构建输入。`package.json` 仍指向 `lib/index.js`，
-改 `src` 必须手动同步回 `lib`，否则两边分叉。完整说明见该目录的 `README.md`。
+改 `src` 必须手动同步回 `lib`，否则两边分叉。每份 `src/README.md` 都记录了还原边界、
+hash 文件名映射（如 `rules-B-6_mXU8.js` → `rules.ts`）以及「可疑但逐字保留」的代码点，
+例如 design 包 `design_project_create` 返回体 `system` 硬编码 `'UMA'`（非入参）等——
+这类问题只登记、不擅自修正。

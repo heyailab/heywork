@@ -28,8 +28,14 @@
 | `src/types/index.ts` | tsc 直出，87 行 | 高 | 7 个 interface 为推断；导出面一致 |
 | `src/index.ts` | esbuild bundle 入口 | 高 | 由 `//#region` 边界反推模块拆分，导出面一致 |
 
-## 样本范围
+## 还原范围（2026-11-17 全部完成）
 
-本目录只覆盖 `dsh-skill-uma`（403 行 JS）一个包，用于评估「还原到 TS 级别」的可行性与质量。
-UMA 自有 12 包中另有 7 个服务端包可做同等还原（合计约 6,000 行）；
-4 个 UI 客户端包是压缩成单行的 bundle（最长单行 258K 字符），**不具备有意义的还原条件**。
+UMA 自有 12 个包的处理结果：
+
+- **8 个服务端包已全部还原**（含本包）：`dsh-skill-uma`、`dsh-uma-base`、`dsh-tool-uma-design`、
+  `dsh-uma-task-budget`、`dsh-util-uma-delivery`、`dsh-uma-guidance`、`dsh-tool-uma-workflow`、
+  `dsh-uma-web`（纯配置壳，仅 README）。合计 45 个 `.ts` 文件 / 7,554 行，8 份 `src/README.md`。
+- **4 个 UI 客户端包不还原**：3 个 `client-ui-uma-*` + `dsh-client-uma-remotes`，
+  压缩成单行的 bundle（最长单行 258K 字符），**不具备有意义的还原条件**，保持 lib 原样。
+
+所有还原件共用同一约定：`src` 只读参考，运行时只认 `lib`，改 `src` 需手动同步回 `lib`。
