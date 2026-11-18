@@ -1,0 +1,7 @@
+{
+  "name": "@heywork/ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "HeyWork client UI modules — rewritten from mounting-contract specs, verified with a mock ModuleLoader/ctx harness"
+}
