@@ -1,0 +1,11 @@
+{
+  "name": "@heywork/knowledge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "description": "HeyWork durable local knowledge Service + typert Remote — rewritten from behavior spec",
+  "scripts": {
+    "test": "node --experimental-sqlite test-knowledge.mjs"
+  }
+}

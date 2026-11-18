@@ -1,0 +1,8 @@
+{
+  "name": "@heywork/wiki",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "description": "HeyWork repository-Wiki tool family (10 tools) — rewritten from specs/wiki.md"
+}
