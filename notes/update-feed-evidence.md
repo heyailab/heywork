@@ -191,8 +191,11 @@ beta5 下载完又是两份共存 → **累计约 840 MB 残留**。
 `held` 可能是 beta5 发布后被临时暂停分发（如发现问题紧急回滚），
 或分发窗口的常态机制。**当前不区分这两者**。判定方法：定期跑
 `scripts/probe-feed-status.mjs`，观察 `x-uma-download-state` 是否从 `held` 变化，
-以及官网 latest dmg 的 `last-modified` 是否更新到 beta5。若长期 held 且官网
+以及官网 latest dmg 的 `last-modified` 是否更新。若长期 held 且官网
 始终 beta4，则倾向"beta5 被撤回"；若状态恢复，则为临时窗口。
+
+> **更新：本节假设已在 §9 被 beta6 的实际发布证伪**（held 是发布窗口状态位，非撤回）。
+> 此处保留原文作为推理过程记录，结论以 §9 为准。
 
 ### 7.5 对用户质疑的记录（重要）
 
@@ -225,3 +228,47 @@ beta5 下载完又是两份共存 → **累计约 840 MB 残留**。
 > 由 GitHub 重定向到带签名的 CDN（已实测返回 206 并可取数据）。
 
 **注意**：这是 macOS 安装包，Windows 上只能留存/解包分析，不能安装运行。
+
+---
+
+## 9. beta6 出现 —— §7 假设的裁决（2026-11-18 16:37，重要更新）
+
+> **结论：§7 的"撤回/暂停分发"假设被推翻。** 新结论：`x-uma-download-state: held`
+> 是**发布窗口的状态位**，会随版本发布节奏切换；feed URL 从头到尾没变过。
+
+### 9.1 新事实（实测）
+
+| 项 | 值 | 证据 |
+|---|---|---|
+| 当前安装版本 | `1.0.0-beta6.20261118.3` | `defaults read .../CFBundleShortVersionString` |
+| beta6 下载完成 | 11-18 16:37:56 | 缓存文件 mtime |
+| beta6 zip | `uma-studio-1.0.0-beta6.20261118.3-mac-arm64.zip`，418,451,330 字节 | pending/ 目录 |
+| beta6 SHA-512 | `DHG0AfCJqumnxQ1uXx/NG++9F7xfxJlCKXqCNmObH5lvn4TVXvsFIyLcrkIdsVVd7PC3GopHXkT3kn/Cx2/z4g==` | update-info.json |
+| beta6 feed URL | `https://studio.umayun.com/uma-studio/feeds/mac-arm64/`（**与 beta5 逐字相同**） | beta6 包内 app-update.yml |
+| 官网 latest dmg | 11-18 06:58 更新（原 11-17 21:51），大小 301,174,251（原 302,398,024）。**推断为 beta6**（时间/大小吻合），但 dmg 下载超时未挂载验版本，未证实 | curl HEAD + 部分下载 |
+| 现在外部 curl feed | 仍 `410 held` | probe-feed-status.mjs |
+
+### 9.2 裁决
+
+- **用户质疑是对的**：beta4 用户确实能升上来——16:37 这次就是从 beta5 升 beta6 成功的。
+  不存在"关了导致用户升不了"。
+- **held 是状态机，不是关闭**：beta5 时 held（外部 curl 410），beta6 发布时放开，
+  应用内检查器拿到签名 URL 下载成功。之后可能再 held。
+- **feed URL 恒定**：beta5/beta6 的 `app-update.yml` 地址逐字相同，变的只是版本号和状态位。
+  之前"换地址了/服务退役"的推断不成立。
+- **外部 curl 永远 410 held**：因为 held 是默认/稳态，只有发布窗口内应用内检查器能拿到签名 URL。
+  这解释了为什么我从外部复现不了——不是缺签名算法，是请求时机/通道不对。
+
+### 9.3 对 Windows 下载的实际影响（不变）
+
+- beta5/beta6 都是 macOS 包，Windows 上无法运行，只能分析用。
+- 官方 feed 对外部始终 410 held → Windows 要留存分析版，仍得走我们自己的 Release 备份
+  （beta5 已在旧仓库 `uma-window` 的 `uma-beta5-archive`，见 §8）。
+- 若也要备份 beta6，用 `scripts/upload-release-asset.sh` 传（把 ZIP 常量改成 beta6 文件名即可），
+  或用新仓库的 deploy key / token 重新配一份。
+
+### 9.4 状态收敛
+
+§7.4 的"待观察假设"至此**已证伪并收敛**：不再是"撤回"，而是"发布窗口状态位"。
+`scripts/probe-feed-status.mjs` 仍可保留观察，但判读标准改为：
+held 是常态，短暂放开对应新版本发布；不要再把 held 解读为"产品下线/永久关闭"。

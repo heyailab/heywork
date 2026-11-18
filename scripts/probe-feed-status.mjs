@@ -40,7 +40,9 @@ console.log('feed manifest:', `HTTP ${feed.code}`, `state=${feed.state}`)
 console.log('beta5 zip    :', `HTTP ${zip.code}`, `state=${zip.state}`)
 console.log('latest dmg   :', `HTTP ${dmg.code}`, `last-modified=${dmg.lastModified}`, `size=${dmg.length}`)
 
+// 判读标准（§9 裁决后）：held 是发布窗口的常态/稳态，不是下线。
+// 新版本发布时应用内检查器会短暂拿到签名 URL 下载；外部 curl 预期恒为 410 held。
 const verdict = feed.state === 'held'
-  ? 'held 仍在持续 → 假设未变，继续观察（见 notes/update-feed-evidence.md §7.4）'
-  : `state 已变为 ${feed.state} → 状态发生变化，需重新评估 §7.4 假设`
+  ? 'held（常态）→ 无新版本在发布窗口内；有新版本时应用内更新器仍可下载（见 notes/update-feed-evidence.md §9）'
+  : `state=${feed.state} → 发布窗口可能开启，可尝试应用内更新检查`
 console.log('判定:', verdict)
