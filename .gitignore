@@ -4,3 +4,5 @@ dist/
 notes/_regions.txt
 *.log
 node_modules/
+# build-profile.mjs 的生成物（含 9MB 技能容器），到新机器重新生成
+profile-build/

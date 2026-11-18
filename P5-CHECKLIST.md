@@ -91,28 +91,41 @@ corepack pnpm vitest run packages/boot/plugin-manager/tests/heywork-probe.spec.t
 
 ---
 
-## 4. 组装 heywork profile bundle（目前唯一缺口）
+## 4. 组装 heywork profile bundle（脚本已完成 ✅）
 
-**现状**：9 个 `@heywork/*` 包已重写好（在 `packages/heywork-*/`），
-但还没有脚本把它们组装成 V1-PLAN §3 要求的 profile 目录结构。
+`scripts/build-profile.mjs` 已写好并在 Mac 上验证通过（纯 Node，不依赖 pnpm）。
+到 Windows 直接运行：
 
-```
-profile 目录/
-├── package.json          ← dsh.profile.bundles 加 heywork
-├── cordis.patch.yml      ← 挂载 heywork 各插件 + 22 开关（从原 uma-platform.patch.mac.yml 折算）
-├── compatibility.json    ← 版本豁免
-└── node_modules/@heywork/*  ← 重写的 9 个包
+```powershell
+node scripts\build-profile.mjs        # 生成 profile-build/ 并自校验
+node scripts\build-profile.mjs --verify-only   # 只校验不重建
 ```
 
-到 Windows 后第一件事是补一个 `scripts/build-profile.mjs`（纯 Node 文件操作，不依赖 pnpm），
-把上面结构生成出来，再用官方 `plugin_manager.installBundle(spec)` 装进 profile。
-**这是 P5 的第一个开发任务，不是环境问题**——不要把"没有 bundle 脚本"误判成卡住。
+生成结构（格式依据官方 `profile.ts:198` 与 `manager.spec.ts:52` 实证）：
 
-组装时要带上：
-- 9 个 `@heywork/*` 包（服务端逻辑 + UI 模块）
-- `uma-assets/packages/` 里 82 个客户端 UI 依赖 + 11 个一等包（官方开源 dsh 没有，见 `notes/p4-recon.md`）
-- `uma-assets/dsh-skill-uma/resources.umadb`（技能容器，必须 asarUnpack——`node:sqlite` 打不开 asar 内路径）
-- `uMA-design-system/data` 等容器虚拟路径保持 `uma-*`（冻结契约，见 `HEYWORK.md`）
+```
+profile-build/
+├── package.json          ← dsh.profile.bundles: ["heywork"]
+├── cordis.patch.yml      ← 用户 patch 层（空 []）
+├── pnpm-workspace.yaml   ← hoisted linker（官方模板逐字）
+├── cordis.yml            ← []
+├── compatibility.json    ← 版本豁免（默认空）
+└── node_modules/heywork/ ← bundle
+    ├── package.json      ← dsh.bundle.patch: './cordis.patch.yml'
+    ├── cordis.patch.yml  ← 8 个 host 插件行（skill/design/workflow/budget/knowledge/task-query/wiki/coding）
+    └── node_modules/@heywork/*
+        ├── 9 个重写包
+        ├── skill/resources.umadb  ← 技能容器（9.1MB，实测可读 20 技能）
+        └── ui/src/*.client.js     ← 7 个 UI 模块 + barrel（已补 dsh.client 声明）
+```
+
+用官方 `plugin_manager.installBundle(spec)` 把这个 bundle 装进 profile，或把 `profile-build/`
+直接作为 profile 目录。自校验覆盖：profile 清单、bundle patch ≥8 行、10 个包齐全、
+技能容器存在、UI barrel import 7 个模块。
+
+**待真机验证的点**（静态无法证伪）：cordis 对 `export function apply` 的加载是否成功、
+UI client 声明格式是否被官方 Loader 接受、bundle patch 的 `!!js` 表达式（本项目暂未用）。
+若挂载失败，优先查 §3 探针；探针过但插件不出现，多半是 patch row 的 name/入口格式问题。
 
 ---
 
@@ -175,5 +188,7 @@ SSH 中文路径、沙箱 ACL、PATHEXT 解析这些平台行为只能在此真�
 
 ## 8. 一句话状态
 
-P0–P4 全绿、静态证据充分；**P5 唯一实质工作是 §4 的 bundle 组装脚本 + §3 的端到端探针**，
-其余都是环境问题（Node/pnpm/出包）。到了 Windows 先把这两件事做掉，再跑 §6 的 11 步。
+P0–P4 全绿、静态证据充分；**§4 的 bundle 组装脚本已在 Mac 完成并验证**，
+Windows 端剩两件事：① 跑 §3 端到端探针（验证 V1 挂载假设）② 出包 + §6 的 11 步真机验收。
+其余都是环境问题（Node 24 / pnpm 11 / 出包）。静态无法证伪的部分（cordis 加载、UI entry、
+像素/时序）已逐项标注为"需真机确认"，不要用推断代替。
