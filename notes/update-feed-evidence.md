@@ -98,7 +98,51 @@ bash scripts/watch-update.sh watch 120    # 或直接监测 120 秒（轮询，�
 原理：electron-updater 下载时先写 `pending/temp-<fileName>`，完成后改名为 `<fileName>`
 并更新 `update-info.json`。临时文件名里就有完整版本+架构，无需抓包。
 
-## 5. 对 HeyWork 项目的意义
+## 5. 更新包形态与缓存行为（实测）
+
+### 5.1 是完整安装包，不是增量
+
+拆开 beta5 的 zip 验证：
+
+| 项 | 值 |
+|---|---|
+| 条目数 | 7,637 个文件 |
+| 解压后总大小 | 1,173,700,523 字节（1.09 GB） |
+| Electron 框架 | `Electron Framework.framework/Versions/A/Electron Framework` = 201,521,216 字节（完整） |
+| 压缩后 | 420,140,017 字节（400.7 MiB） |
+
+包内那些 `.patch` 文件（`0001-disable-external-updates.patch` 等）是 libreoffice-kit 源码自带的
+补丁素材，**不是更新用的 delta**。整个包是可独立安装的完整 `.app`，不依赖旧版本。
+
+feed 里的 `current.blockmap` 是 electron-updater 用来做**分块断点续传**的，
+不是增量更新——下载时可复用相同块，但最终产物是完整 zip。
+
+### 5.2 装完不删更新包，且留两份
+
+实测缓存目录（beta5 安装前后都在）：
+
+```
+~/Library/Caches/uma-studio-updater/
+├── update.zip              ← 根级副本，装完不删（420 MB）
+├── current.blockmap        ← 根级，装完不删
+└── pending/
+    ├── uma-studio-1.0.0-beta5.20261118.3-mac-arm64.zip   ← 正式下载包（420 MB）
+    ├── current.blockmap    ← 又一份
+    └── update-info.json
+```
+
+证据：beta4 那次的 `update.zip` 从 11/17 15:03 一直留到 11/18 08:24（近 17 小时），
+beta5 下载完又是两份共存 → **累计约 840 MB 残留**。
+
+原因（与之前 UMA 移植里的分析一致）：
+- electron-updater 只清 `pending/`，且仅在切换更新通道时触发（`discard`）
+- 根级的 `update.zip` + `current.blockmap` 从没人清
+- Mac 官方版没有我们 Windows 移植里加的 `cache-sweep.ts` 修复
+
+手动清理：删 `~/Library/Caches/uma-studio-updater/update.zip` 和根级 `current.blockmap` 即可
+（pending 那份可保留作回滚）。
+
+## 6. 对 HeyWork 项目的意义
 
 1. **没有 Windows 版是事实**：官网只有 macOS 下载，Windows feed 返回 410。V1 方向（在官方 dsh 上自建 Windows 功能面）正确。
 2. **更新链路不在 V1 范围**：用户已决定更新用官方默认/不做，本文件仅作机制留档。
