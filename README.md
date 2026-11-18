@@ -1,5 +1,8 @@
 # heywork — HeyWork 的 Windows 版本（官方 dsh 基线 + 重写功能面）
 
+> **回 Windows 接着开发 → 先读 [P5-CHECKLIST.md](P5-CHECKLIST.md)**（环境、迁移、打包、11 步真机验收）。
+> P0–P4 已全部完成并推送。
+
 > **V1 路线（2026-11-18 定）**：纯官方 dsh 壳、**零壳补丁**，账号/反馈/更新全用官方默认；
 > 只维护重写的 `heywork` 插件层，跟随官方升级。见 **[V1-PLAN.md](V1-PLAN.md)**。
 

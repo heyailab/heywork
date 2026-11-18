@@ -48,7 +48,7 @@
 | **P2 ✅** | 交付链 | workflow / delivery / budget 三包（`5b93089`，自测 74+23+全过，exit=0） | artifact/gate/budget 行为对齐 spec | P1 ✅ |
 | **P3 ✅** | 一等包 | 4 份 spec（`0c70647`，1,970 行）+ 4 包重写（`fb5a4b7`，6,837 行，全自测 exit=0） | 40 工具全在册 | P1,P2 ✅ |
 | **P4 ✅** | UI 面板 | 82 包抽取（`811d831`，401/401 依赖闭合）+ 7 spec（`0e4c83a`）+ 7 模块重写（`1b873c2`，152 断言 + 17/17 slot 覆盖） | 静态挂载契约全过；像素/时序待 P5 真机 | P3 ✅ |
-| **P5** | 集成出包 | profile bundle 打包 + Windows 真机验证 | 装包后 9 步验收 | P1-P4 |
+| **P5** | 集成出包 | profile bundle 打包 + Windows 真机验证 | 11 步验收全过（见 [P5-CHECKLIST.md](P5-CHECKLIST.md)） | P1-P4 ✅ |
 
 ## 3. P0 — 规格冻结（现在开始）
 
@@ -142,7 +142,8 @@ P1 做完，你就有了**第一个不依赖任何旧 lib 的自研组件**—�
 
 | 文档 | 作用 |
 |---|---|
-| **本文件（DEV-PLAN.md）** | **唯一执行入口** |
+| **[P5-CHECKLIST.md](P5-CHECKLIST.md)** | **P5 执行清单（回 Windows 后照此走）** |
+| **本文件（DEV-PLAN.md）** | **P0–P4 执行入口；P5 见上方清单** |
 | `HEYWORK.md` | 项目总纲、命名边界 |
 | `V1-PLAN.md` | V1 路线背景、升级影响分析 |
 | `REWRITE-PLAN.md` | 重写方法论详述、A/B/C 分层 |
