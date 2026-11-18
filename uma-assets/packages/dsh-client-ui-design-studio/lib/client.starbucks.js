@@ -470,7 +470,7 @@ window.__ModuleLoader__.load({id:`@deepseek-ai/dsh-client-ui-design-studio`,chun
               with mobile order, and let the third place come to you.
             </p>
           </div>
-          <div role="group" class="hey-preview-form form">
+          <div role="group" class="uma-preview-form form">
             <div class="field">
               <label for="email">Work email</label>
               <input id="email" type="email" placeholder="you@starbucks.com" autocomplete="email" required />

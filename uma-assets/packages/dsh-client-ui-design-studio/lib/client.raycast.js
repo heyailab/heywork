@@ -530,14 +530,14 @@ Raycast's shadow system is the most macOS-native on the web. Multi-layer shadows
       }
     </style>
 
-    <style data-hey-responsive-repair>
+    <style data-uma-responsive-repair>
       /* Grid and flex children may shrink; long labels wrap within their own column. */
       :where(*) { min-width: 0; }
       :where(h1, h2, h3, p, a, span, strong, label, code) { overflow-wrap: anywhere; }
       :where(input, select, textarea) { max-width: 100%; }
     </style>
-<style data-hey-layout-repair>.hey-preview-form > div { flex-wrap: wrap; } .hey-preview-form button { flex-shrink: 0; max-width: 100%; white-space: normal; }</style>
-<style data-hey-form-layout>.hey-form-layout { display:grid;grid-template-columns:1.1fr 1fr;gap:var(--space-12);align-items:start; } @media (max-width: 1023px) { .hey-form-layout { grid-template-columns: minmax(0, 1fr); } }</style>
+<style data-uma-layout-repair>.uma-preview-form > div { flex-wrap: wrap; } .uma-preview-form button { flex-shrink: 0; max-width: 100%; white-space: normal; }</style>
+<style data-uma-form-layout>.uma-form-layout { display:grid;grid-template-columns:1.1fr 1fr;gap:var(--space-12);align-items:start; } @media (max-width: 1023px) { .uma-form-layout { grid-template-columns: minmax(0, 1fr); } }</style>
 </head>
   <body>
     <main class="container">
@@ -621,7 +621,7 @@ Raycast's shadow system is the most macOS-native on the web. Multi-layer shadows
 
       <!-- FORM -->
       <section data-od-id="form">
-        <div class="hey-form-layout">
+        <div class="uma-form-layout">
           <div class="stack-4">
             <p class="eyebrow">Form components</p>
             <h2>Inputs on the void.</h2>
@@ -632,7 +632,7 @@ Raycast's shadow system is the most macOS-native on the web. Multi-layer shadows
               never the brand red.
             </p>
           </div>
-          <div role="group" class="hey-preview-form"
+          <div role="group" class="uma-preview-form"
             style="display:flex;flex-direction:column;gap:var(--space-4);max-width:420px;background:var(--surface);padding:var(--space-6);border-radius:var(--radius-lg);box-shadow:var(--elev-ring)"
           >
             <div class="field">

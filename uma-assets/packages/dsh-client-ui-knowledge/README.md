@@ -26,11 +26,11 @@ Manage team standards and project materials from the desktop sidebar. Import fil
 
 The Development experience tab offers collection selection, search, state filters, pagination, details, editing, review, withdrawal, export, history, restoration as a new candidate and batch withdrawal/deletion with individual outcomes. Failed forms retain drafts; revision conflicts preserve other edits. The tab opens the installation-wide library by default. Project collections can also enable copies of failed-to-passing check transitions. Reviewed means an operator inspected the experience, not that current code passed acceptance. Capture and retrieval preserve collection scope without silently enabling team sharing.
 
-The single HeyWork knowledge sidebar entry contains **Reference library** and **Project Wiki**. The library keeps team/project collections; the Wiki reader is contributed through `main.knowledge.wiki`. Switching sections retains the library navigation source. If the Wiki provider is disabled, the page returns to the library rather than showing an empty panel. On macOS, the empty space in the top navigation row drags the window. The library and Wiki buttons remain clickable. Tab hover emphasis applies only to hover-capable pointers; the active section remains emphasized on touch devices.
+The single UMA Studio knowledge sidebar entry contains **Reference library** and **Project Wiki**. The library keeps team/project collections; the Wiki reader is contributed through `main.knowledge.wiki`. Switching sections retains the library navigation source. If the Wiki provider is disabled, the page returns to the library rather than showing an empty panel. On macOS, the empty space in the top navigation row drags the window. The library and Wiki buttons remain clickable. Tab hover emphasis applies only to hover-capable pointers; the active section remains emphasized on touch devices.
 
 Open **Knowledge base** in the desktop sidebar. Create a project collection for one existing workspace, or a team collection for explicitly selected workspaces. In short windows the editor scrolls between its fixed header and footer actions. Document previews and note forms scroll below their fixed headers. Import local sources, wait for actual ready states, then use **Retrieval test** to inspect evidence. Documents can be disabled, archived and restored; historical snapshots remain readable.
 
-**Built-in technical standards** opens the guide browser from the HEY library header, including while viewing a collection. Filter by topic, technical language and content language, preview the original summary and source/license links, select guides and explicitly choose an existing target collection. Version/language document names keep imports traceable. Each guide goes through `createNoteIfAbsent`; an existing name is preserved even if its document was edited, disabled, archived or follows a local file. Normal note editing is unchanged.
+**Built-in technical standards** opens the guide browser from the UMA library header, including while viewing a collection. Filter by topic, technical language and content language, preview the original summary and source/license links, select guides and explicitly choose an existing target collection. Version/language document names keep imports traceable. Each guide goes through `createNoteIfAbsent`; an existing name is preserved even if its document was edited, disabled, archived or follows a local file. Normal note editing is unchanged.
 
 The result reports queued, unchanged/skipped and failed items individually. Cancelling stops remaining submissions; already admitted jobs remain visible and continue through normal parsing. Queue admission is not ready status. Import never changes collection enabling or workspace association. After the user enables and associates a ready collection, the existing development-context retrieval supplies relevant evidence to the team; opening this dialog alone makes no model request.
 
@@ -38,7 +38,7 @@ Desktop selection reuses the existing native file/directory bridges. Local sourc
 
 | Field | Default | Meaning |
 |---|---|---|
-| `showBuiltinStandards` | Enabled by the HEY bundle | Built-in technical standards entry in the library header |
+| `showBuiltinStandards` | Enabled by the UMA bundle | Built-in technical standards entry in the library header |
 | `refreshMs` | 2000 | Metadata/progress refresh while this page is open |
 
 <a id="understand-the-implementation"></a>
@@ -62,7 +62,7 @@ The page and its editors use the shared [UI primitives](../ui-primitives/README.
 
 #### What the model sees
 
-Reading collections, importing ordinary documents and full-text retrieval tests do not submit chat prompts. **Ask in a conversation** stages an explicit question in a standard development Session; its `HEY_KNOWLEDGE_BASE` marker narrows retrieval to the selected associated collection.
+Reading collections, importing ordinary documents and full-text retrieval tests do not submit chat prompts. **Ask in a conversation** stages an explicit question in a standard development Session; its `UMA_KNOWLEDGE_BASE` marker narrows retrieval to the selected associated collection.
 
 #### Token effect
 

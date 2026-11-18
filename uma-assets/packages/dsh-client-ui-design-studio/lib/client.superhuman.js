@@ -631,7 +631,7 @@ Superhuman's elevation system is remarkably restrained on the marketing site. De
               <span class="body-xs body-muted">to submit.</span>
             </div>
           </div>
-          <div role="group" class="hey-preview-form form">
+          <div role="group" class="uma-preview-form form">
             <div class="field">
               <label for="email">Work email</label>
               <input

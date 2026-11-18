@@ -611,7 +611,7 @@ The dembrandt sweep detected 30 breakpoints between 320px and 2120px — an unus
               is a 2px PlayStation Blue ring; no border-color change.
             </p>
           </div>
-          <div role="group" class="hey-preview-form form">
+          <div role="group" class="uma-preview-form form">
             <div class="field">
               <label for="psn">PSN ID</label>
               <input id="psn" type="text" placeholder="enter your PSN ID" autocomplete="username" required />

@@ -307,15 +307,15 @@ Binance.US uses a whisper-light shadow system. Card shadows are barely perceptib
         max-width: var(--container-max);
         margin-inline: auto;
         padding-inline: var(--container-gutter-desktop);
-        --hey-preview-gutter: var(--container-gutter-desktop);
+        --uma-preview-gutter: var(--container-gutter-desktop);
       }
       section { padding-block: var(--section-y-desktop); }
       @media (max-width: 1023px) {
-        .container { padding-inline: var(--container-gutter-tablet); --hey-preview-gutter: var(--container-gutter-tablet); }
+        .container { padding-inline: var(--container-gutter-tablet); --uma-preview-gutter: var(--container-gutter-tablet); }
         section { padding-block: var(--section-y-tablet); }
       }
       @media (max-width: 639px) {
-        .container { padding-inline: var(--container-gutter-phone); --hey-preview-gutter: var(--container-gutter-phone); }
+        .container { padding-inline: var(--container-gutter-phone); --uma-preview-gutter: var(--container-gutter-phone); }
         section { padding-block: var(--section-y-phone); }
       }
 
@@ -559,7 +559,7 @@ Binance.US uses a whisper-light shadow system. Card shadows are barely perceptib
       .stat-label { font-size: var(--text-sm); font-weight: 500; color: rgba(255, 255, 255, 0.7); }
     </style>
 
-    <style data-hey-responsive-repair>
+    <style data-uma-responsive-repair>
       /* Grid and flex children may shrink; long labels wrap within their own column. */
       :where(*) { min-width: 0; }
       :where(h1, h2, h3, p, a, span, strong, label, code) { overflow-wrap: anywhere; }
@@ -685,7 +685,7 @@ Binance.US uses a whisper-light shadow system. Card shadows are barely perceptib
         </div>
       </section>
 
-      <section data-od-id="trust" class="section-dark" style="margin-inline: calc(var(--hey-preview-gutter) * -1); padding-inline: var(--hey-preview-gutter);">
+      <section data-od-id="trust" class="section-dark" style="margin-inline: calc(var(--uma-preview-gutter) * -1); padding-inline: var(--uma-preview-gutter);">
         <div class="stack-6">
           <div class="stack-3">
             <p class="eyebrow">Trusted by millions</p>
@@ -726,7 +726,7 @@ Binance.US uses a whisper-light shadow system. Card shadows are barely perceptib
               
             </p>
           </div>
-          <div role="group" class="hey-preview-form form">
+          <div role="group" class="uma-preview-form form">
             <div class="field">
               <label for="email">Email address</label>
               <input id="email" type="email" placeholder="you@example.com" autocomplete="email" required />

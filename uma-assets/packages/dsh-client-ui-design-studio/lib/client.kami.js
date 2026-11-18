@@ -551,7 +551,7 @@ Forbidden:
       }
     </style>
 
-    <style data-hey-responsive-repair>
+    <style data-uma-responsive-repair>
       /* Grid and flex children may shrink; long labels wrap within their own column. */
       :where(*) { min-width: 0; }
       :where(h1, h2, h3, p, a, span, strong, label, code) { overflow-wrap: anywhere; }

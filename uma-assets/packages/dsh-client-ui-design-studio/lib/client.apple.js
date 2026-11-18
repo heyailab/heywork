@@ -823,7 +823,7 @@ Depth is intentionally restrained. Apple favors tonal contrast, surface stepping
               </p>
             </div>
 
-            <div role="group" class="hey-preview-form form">
+            <div role="group" class="uma-preview-form form">
               <div class="field">
                 <label for="email">Apple ID email</label>
                 <input

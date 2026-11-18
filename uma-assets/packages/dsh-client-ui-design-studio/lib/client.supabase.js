@@ -511,7 +511,7 @@ The green accent (\`#3ecf8e\`) appears selectively — in the Supabase logo, in 
        * DESIGN.md §4: "Green: #00c573 — Supabase-branded links." We
        * bind link color to the interactive-green variant (which is
        * \`--accent-hover\` in this brand's mapping — see tokens.css §4)
-       * because that's the documented interactive .hey-preview-form of the accent. */
+       * because that's the documented interactive .uma-preview-form of the accent. */
       a {
         color: var(--accent-hover);
         text-decoration: none;
@@ -669,7 +669,7 @@ The green accent (\`#3ecf8e\`) appears selectively — in the Supabase logo, in 
       }
       .icon { width: 16px; height: 16px; flex-shrink: 0; }
     </style>
-  <style data-hey-responsive-repair>
+  <style data-uma-responsive-repair>
       /* Grid and flex children may shrink; long labels wrap within their own column. */
       :where(*) { min-width: 0; }
       :where(h1, h2, h3, p, a, span, strong, label, code) { overflow-wrap: anywhere; }
@@ -832,7 +832,7 @@ The green accent (\`#3ecf8e\`) appears selectively — in the Supabase logo, in 
             </p>
           </div>
 
-          <div role="group" class="hey-preview-form form">
+          <div role="group" class="uma-preview-form form">
             <div class="row-between">
               <p class="eyebrow">// launch kit</p>
               <span class="badge badge-success">

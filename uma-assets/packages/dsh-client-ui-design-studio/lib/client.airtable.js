@@ -497,7 +497,7 @@ Breakpoints: 425–1664px (23 breakpoints)`,"components":`<!doctype html>
               </li>
             </ul>
           </div>
-          <div role="group" class="hey-preview-form form">
+          <div role="group" class="uma-preview-form form">
             <div class="field">
               <label for="email">Work email</label>
               <input id="email" type="email" placeholder="you@company.com" autocomplete="email" required />

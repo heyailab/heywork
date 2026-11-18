@@ -448,13 +448,13 @@ Framer's elevation system is inverted from traditional light-theme designs. Inst
       }
     </style>
 
-    <style data-hey-responsive-repair>
+    <style data-uma-responsive-repair>
       /* Grid and flex children may shrink; long labels wrap within their own column. */
       :where(*) { min-width: 0; }
       :where(h1, h2, h3, p, a, span, strong, label, code) { overflow-wrap: anywhere; }
       :where(input, select, textarea) { max-width: 100%; }
     </style>
-<style data-hey-layout-repair>.hero-glow::before { inset-inline: 0; }</style>
+<style data-uma-layout-repair>.hero-glow::before { inset-inline: 0; }</style>
 </head>
   <body>
     <main class="container">
@@ -544,7 +544,7 @@ Framer's elevation system is inverted from traditional light-theme designs. Inst
               <span class="body-sm" style="color: var(--meta)">Updated <time datetime="2026-05-18">2026-05-18</time></span>
             </div>
           </div>
-          <div role="group" class="hey-preview-form form">
+          <div role="group" class="uma-preview-form form">
             <div class="field">
               <label for="email">Work email</label>
               <input id="email" type="email" placeholder="you@studio.com" autocomplete="email" required />

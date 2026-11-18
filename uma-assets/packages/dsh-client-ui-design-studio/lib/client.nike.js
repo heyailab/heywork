@@ -545,7 +545,7 @@ Nike's elevation philosophy is radically flat. There are no card shadows, no hov
         color: var(--muted);
       }
 
-      /* ─── Layout helpers — hero, features, .hey-preview-form ───────────────── */
+      /* ─── Layout helpers — hero, features, .uma-preview-form ───────────────── */
       .hero-grid {
         display: grid;
         grid-template-columns: 1.4fr 1fr;
@@ -602,7 +602,7 @@ Nike's elevation philosophy is radically flat. There are no card shadows, no hov
         border-radius: var(--radius-pill);
       }
     </style>
-  <style data-hey-responsive-repair>
+  <style data-uma-responsive-repair>
       /* Grid and flex children may shrink; long labels wrap within their own column. */
       :where(*) { min-width: 0; }
       :where(h1, h2, h3, p, a, span, strong, label, code) { overflow-wrap: anywhere; }
@@ -694,7 +694,7 @@ Nike's elevation philosophy is radically flat. There are no card shadows, no hov
               every sport.
             </p>
           </div>
-          <div role="group" class="hey-preview-form form">
+          <div role="group" class="uma-preview-form form">
             <div class="field">
               <label for="email">Email address</label>
               <input id="email" type="email" placeholder="you@nike.com" autocomplete="email" required />

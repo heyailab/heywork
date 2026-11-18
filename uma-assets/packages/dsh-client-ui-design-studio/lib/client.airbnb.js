@@ -1190,13 +1190,13 @@ All interactive elements meet or exceed 44×44px. The circular icon button famil
       .icon { width: 16px; height: 16px; flex-shrink: 0; }
     </style>
 
-    <style data-hey-responsive-repair>
+    <style data-uma-responsive-repair>
       /* Grid and flex children may shrink; long labels wrap within their own column. */
       :where(*) { min-width: 0; }
       :where(h1, h2, h3, p, a, span, strong, label, code) { overflow-wrap: anywhere; }
       :where(input, select, textarea) { max-width: 100%; }
     </style>
-<style data-hey-layout-repair>.nav-row { flex-wrap: wrap; } .tabs { flex-wrap: wrap; flex-shrink: 0; max-width: 100%; gap: clamp(12px, 4vw, 32px); } .tab { flex-shrink: 0; } .tab-new { right: 0; }</style>
+<style data-uma-layout-repair>.nav-row { flex-wrap: wrap; } .tabs { flex-wrap: wrap; flex-shrink: 0; max-width: 100%; gap: clamp(12px, 4vw, 32px); } .tab { flex-shrink: 0; } .tab-new { right: 0; }</style>
 </head>
   <body>
     <main class="container">
@@ -1572,7 +1572,7 @@ All interactive elements meet or exceed 44×44px. The circular icon button famil
             </p>
           </div>
 
-          <div role="group" class="hey-preview-form form">
+          <div role="group" class="uma-preview-form form">
             <div class="field">
               <label for="email">Travel notes email</label>
               <input

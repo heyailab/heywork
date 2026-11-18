@@ -386,7 +386,7 @@ The Meta Store favors a primarily flat elevation model. Most surface differentia
         box-shadow: inset 0 0 0 2px transparent;
       }
 
-      /* ─── Inputs — Dolly .hey-preview-form pattern ────────────────────────── */
+      /* ─── Inputs — Dolly .uma-preview-form pattern ────────────────────────── */
       .field { display: flex; flex-direction: column; gap: var(--space-2); }
       .field label { font-size: var(--text-sm); font-weight: 500; color: var(--fg); }
       .field input {
@@ -571,7 +571,7 @@ The Meta Store favors a primarily flat elevation model. Most surface differentia
               written by the people who built them. No marketing copy, no tracking pixels.
             </p>
           </div>
-          <div role="group" class="hey-preview-form form">
+          <div role="group" class="uma-preview-form form">
             <div class="field">
               <label for="email">Work email</label>
               <input id="email" type="email" placeholder="you@company.com" autocomplete="email" required />

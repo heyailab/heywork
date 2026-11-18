@@ -602,7 +602,7 @@ What makes Lovable's visual system distinctive is its opacity-driven depth model
               ring blue at 50% for keyboard focus. Form is page is craft.
             </p>
           </div>
-          <div role="group" class="hey-preview-form form">
+          <div role="group" class="uma-preview-form form">
             <div class="field">
               <label for="prompt">What do you want to build?</label>
               <textarea

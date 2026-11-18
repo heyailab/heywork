@@ -727,7 +727,7 @@ What makes Runway distinctive is its complete commitment to visual content as de
             </p>
           </div>
 
-          <div role="group" class="hey-preview-form form">
+          <div role="group" class="uma-preview-form form">
             <div class="field">
               <label for="email">Work email</label>
               <input

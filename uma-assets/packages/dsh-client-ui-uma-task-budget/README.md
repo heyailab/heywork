@@ -1,5 +1,5 @@
 ---
-description: "HEY session financial budget display and account-owned controls."
+description: "UMA session financial budget display and account-owned controls."
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-The HEY Web composition contributes a Task budget recovery action only to task-budget refusal messages; session headers have no budget button. The panel reads the authenticated Host service, shows settled spend, reservations, the shared root session and operations pause reasons, and updates the account-owned cap and state with the observed version.
+The UMA Web composition contributes a Task budget recovery action only to task-budget refusal messages; session headers have no budget button. The panel reads the authenticated Host service, shows settled spend, reservations, the shared root session and operations pause reasons, and updates the account-owned cap and state with the observed version.
 
 ## Table of Contents
 
@@ -19,7 +19,7 @@ The HEY Web composition contributes a Task budget recovery action only to task-b
 
 ## Use this package
 
-The [HEY Web bundle](../../bundle/hey-web/cordis.patch.yml) mounts this plugin. The plugin mounts and disposes its generated `hey-budget` Remote namespace; ordinary kernel Web profiles do not gain a HEY commercial dependency. The [Host budget service](../../credentials/hey-task-budget/README.md) owns account authorization, root resolution and financial admission.
+The [UMA Web bundle](../../bundle/uma-web/cordis.patch.yml) mounts this plugin. The plugin mounts and disposes its generated `uma-budget` Remote namespace; ordinary kernel Web profiles do not gain a UMA commercial dependency. The [Host budget service](../../credentials/uma-task-budget/README.md) owns account authorization, root resolution and financial admission.
 
 Amounts remain CNY decimal strings with up to six fractional digits, or an explicit null for no additional task cap. A version conflict refreshes current server facts while preserving edits for review; it never blindly resends the update. Closing the panel or changing account cancels its pending operations and removes stale account data. Pausing or closing blocks new admissions; already accepted calls can still settle. Budget refusal actions open the same editor and never replay inference, recommend a recharge as a budget fix, or sign out a newer account.
 
@@ -31,7 +31,7 @@ The UI uses existing Button and Modal primitives, focus management, theme tokens
 
 #### What the model sees
 
-None. The human invokes `hey-budget/read` and `hey-budget/update` through the refusal recovery action. The panel does not add model messages, tools, prompt sections or session events. Financial admission remains a Host and server responsibility.
+None. The human invokes `uma-budget/read` and `uma-budget/update` through the refusal recovery action. The panel does not add model messages, tools, prompt sections or session events. Financial admission remains a Host and server responsibility.
 
 #### Token effect
 

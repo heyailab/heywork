@@ -712,7 +712,7 @@ Shadcn/ui-inspired design with minimal, clean components, monochrome palette, an
             </p>
           </div>
 
-          <div role="group" class="hey-preview-form form">
+          <div role="group" class="uma-preview-form form">
             <div class="row-between">
               <p class="eyebrow">Join the registry preview</p>
               <span class="badge badge-success">

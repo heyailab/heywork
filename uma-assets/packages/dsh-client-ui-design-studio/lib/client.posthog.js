@@ -533,7 +533,7 @@ PostHog's elevation system is remarkably minimal — only one shadow definition 
        * Hand-drawn Max-style hedgehog rendered as a thick-stroke SVG
        * — the brand's anti-corporate signature per DESIGN.md §4 Image
        * Treatment. Sketchy, deliberate, never polished. Reused in the
-       * hero panel, the nav lockup, and the empty-state .hey-preview-form copy. */
+       * hero panel, the nav lockup, and the empty-state .uma-preview-form copy. */
       .hedgehog {
         color: var(--fg-2);
       }
@@ -682,7 +682,7 @@ PostHog's elevation system is remarkably minimal — only one shadow definition 
       }
     </style>
 
-    <style data-hey-responsive-repair>
+    <style data-uma-responsive-repair>
       /* Grid and flex children may shrink; long labels wrap within their own column. */
       :where(*) { min-width: 0; }
       :where(h1, h2, h3, p, a, span, strong, label, code) { overflow-wrap: anywhere; }
@@ -885,7 +885,7 @@ posthog.<span class="tok-fn">capture</span>(
             </p>
           </div>
 
-          <div role="group" class="hey-preview-form form">
+          <div role="group" class="uma-preview-form form">
             <div class="row-between">
               <p class="eyebrow" style="color: var(--fg-2)">Start free</p>
               <span class="pill pill-warn">1M events / mo</span>

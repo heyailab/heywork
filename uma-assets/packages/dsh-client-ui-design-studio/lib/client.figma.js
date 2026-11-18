@@ -380,7 +380,7 @@ What makes Figma distinctive beyond the variable font is its circle-and-pill geo
       .hero-actions { display: flex; gap: var(--space-3); margin-block-start: var(--space-6); flex-wrap: wrap; }
       .icon { width: 16px; height: 16px; flex-shrink: 0; }
     </style>
-  <style data-hey-form-layout>.hey-form-layout { display:grid;grid-template-columns:1.2fr 1fr;gap:var(--space-12);align-items:start; } @media (max-width: 1023px) { .hey-form-layout { grid-template-columns: minmax(0, 1fr); } }</style>
+  <style data-uma-form-layout>.uma-form-layout { display:grid;grid-template-columns:1.2fr 1fr;gap:var(--space-12);align-items:start; } @media (max-width: 1023px) { .uma-form-layout { grid-template-columns: minmax(0, 1fr); } }</style>
 </head>
   <body>
     <main class="container">
@@ -446,7 +446,7 @@ What makes Figma distinctive beyond the variable font is its circle-and-pill geo
 
       <!-- FORM / ACTIONS -->
       <section data-od-id="actions">
-        <div class="hey-form-layout">
+        <div class="uma-form-layout">
           <div class="stack-4">
             <p class="mono-label">Actions</p>
             <h2 style="font-size:var(--text-xl);line-height:1.35;letter-spacing:-0.01em;font-weight:540">All buttons use pill (50px) radius.</h2>

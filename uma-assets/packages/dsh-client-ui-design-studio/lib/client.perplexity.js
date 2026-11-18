@@ -443,14 +443,14 @@ Rules:
       .icon { width: 16px; height: 16px; flex-shrink: 0; }
     </style>
 
-    <style data-hey-responsive-repair>
+    <style data-uma-responsive-repair>
       /* Grid and flex children may shrink; long labels wrap within their own column. */
       :where(*) { min-width: 0; }
       :where(h1, h2, h3, p, a, span, strong, label, code) { overflow-wrap: anywhere; }
       :where(input, select, textarea) { max-width: 100%; }
     </style>
-<style data-hey-layout-repair>.hey-preview-form > div { flex-wrap: wrap; } .hey-preview-form button { flex-shrink: 0; max-width: 100%; white-space: normal; }</style>
-<style data-hey-form-layout>.hey-form-layout { display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:var(--space-12);align-items:start; } @media (max-width: 1023px) { .hey-form-layout { grid-template-columns: minmax(0, 1fr); } }</style>
+<style data-uma-layout-repair>.uma-preview-form > div { flex-wrap: wrap; } .uma-preview-form button { flex-shrink: 0; max-width: 100%; white-space: normal; }</style>
+<style data-uma-form-layout>.uma-form-layout { display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:var(--space-12);align-items:start; } @media (max-width: 1023px) { .uma-form-layout { grid-template-columns: minmax(0, 1fr); } }</style>
 </head>
   <body>
     <main class="container">
@@ -549,7 +549,7 @@ Rules:
 
       <!-- FORM — direct copy, no apology. DESIGN.md §8 voice. -->
       <section data-od-id="form">
-        <div class="hey-form-layout">
+        <div class="uma-form-layout">
           <div class="stack-4">
             <p class="eyebrow">form components</p>
             <h2>Keep the signal in.</h2>
@@ -559,7 +559,7 @@ Rules:
               defaulted on.
             </p>
           </div>
-          <div role="group" class="hey-preview-form" style="display:flex;flex-direction:column;gap:var(--space-4);max-width:420px">
+          <div role="group" class="uma-preview-form" style="display:flex;flex-direction:column;gap:var(--space-4);max-width:420px">
             <div class="field">
               <label for="email">Email</label>
               <input id="email" type="email" placeholder="you@domain.com" />

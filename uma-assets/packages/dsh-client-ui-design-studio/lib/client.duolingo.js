@@ -600,7 +600,7 @@ Shape language is friendly: 16–20px radii on cards, 12px on buttons, 9999px on
               Press <kbd>⌘</kbd> <kbd>K</kbd> to search the lesson library.
             </p>
           </div>
-          <div role="group" class="hey-preview-form form">
+          <div role="group" class="uma-preview-form form">
             <div class="field">
               <label for="email">Email</label>
               <input id="email" type="email" placeholder="you@duolingo.com" autocomplete="email" required />

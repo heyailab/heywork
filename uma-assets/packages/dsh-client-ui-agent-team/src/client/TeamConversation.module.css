@@ -1,0 +1,145 @@
+.message {
+  min-width: 0;
+  margin-block: 8px;
+  color: var(--dsw-alias-label-primary);
+  overflow-wrap: anywhere;
+  border: 0.5px solid var(--dsw-alias-border-l1);
+  border-radius: var(--dsw-radius-md);
+  background: var(--dsw-alias-bg-layer-1);
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+  border-radius: inherit;
+}
+
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+.summary:focus-visible {
+  outline: 2px solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: -2px;
+}
+
+.header,
+.nameLine {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.header {
+  margin-block-end: 12px;
+}
+
+.replyHeader {
+  gap: 6px;
+  margin-block-end: 4px;
+  font-size: 13px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.replyHeader :is(.avatar, .brandAvatar) {
+  width: 22px;
+  height: 22px;
+}
+
+.identity {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.avatar,
+.brandAvatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  corner-shape: round;
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.brandAvatar {
+  background: transparent;
+}
+
+.name {
+  font-weight: 500;
+}
+
+.meta,
+.metadata,
+.preview,
+.status {
+  color: var(--dsw-alias-label-secondary);
+  font-size: 13px;
+}
+
+.preview {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.chevron {
+  color: var(--dsw-alias-label-secondary);
+}
+
+.message[open] .chevron {
+  transform: rotate(180deg);
+}
+
+.body {
+  padding: 16px;
+  border-block-start: 0.5px solid var(--dsw-alias-border-l1);
+}
+
+.metadata {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  margin-block-start: 12px;
+}
+
+@media (max-width: 520px) {
+  .summary {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .status {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .chevron {
+    grid-column: 3;
+    grid-row: 1;
+  }
+}
+
+@media (hover: hover) {
+  .summary:hover {
+    background: var(--dsw-alias-interactive-bg-hover);
+  }
+}

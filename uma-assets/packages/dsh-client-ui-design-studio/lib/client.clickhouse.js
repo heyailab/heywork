@@ -547,7 +547,7 @@ What makes ClickHouse distinctive is the electrifying tension between the near-b
       .row-between { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
     </style>
 
-    <style data-hey-responsive-repair>
+    <style data-uma-responsive-repair>
       /* Grid and flex children may shrink; long labels wrap within their own column. */
       :where(*) { min-width: 0; }
       :where(h1, h2, h3, p, a, span, strong, label, code) { overflow-wrap: anywhere; }
@@ -655,7 +655,7 @@ What makes ClickHouse distinctive is the electrifying tension between the near-b
               Already running ClickHouse? <a href="#" class="link-accent">Connect an existing cluster</a>.
             </p>
           </div>
-          <div role="group" class="hey-preview-form form">
+          <div role="group" class="uma-preview-form form">
             <div class="field">
               <label for="email">Work email</label>
               <input id="email" type="email" placeholder="you@company.com" autocomplete="email" required />

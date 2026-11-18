@@ -495,8 +495,8 @@ The spacing system operates on an 8px base grid with values concentrated at the 
         align-items: start;
       }
       @media (max-width: 1023px) { .form-grid { grid-template-columns: 1fr; } }
-      .hey-preview-form { display: flex; flex-direction: column; gap: var(--space-4); max-width: 480px; }
-      .hey-preview-form .actions {
+      .uma-preview-form { display: flex; flex-direction: column; gap: var(--space-4); max-width: 480px; }
+      .uma-preview-form .actions {
         display: flex;
         gap: var(--space-3);
         margin-block-start: var(--space-2);
@@ -586,7 +586,7 @@ The spacing system operates on an 8px base grid with values concentrated at the 
             </p>
             <p class="meta">All values from tokens.css — no raw hex.</p>
           </div>
-          <div role="group" class="hey-preview-form">
+          <div role="group" class="uma-preview-form">
             <div class="field">
               <label for="email">Work email</label>
               <input id="email" type="email" placeholder="you@xai.com" />

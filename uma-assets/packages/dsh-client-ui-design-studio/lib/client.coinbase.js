@@ -532,7 +532,7 @@ Breakpoints: 400px, 576px, 640px, 768px, 896px, 1280px, 1440px, 1600px`,"compone
                 </span>
               </div>
             </div>
-            <div role="group" class="hey-preview-form form">
+            <div role="group" class="uma-preview-form form">
               <div class="field">
                 <label for="email" style="color: #ffffff">Work or personal email</label>
                 <input id="email" type="email" placeholder="you@example.com" autocomplete="email" required />

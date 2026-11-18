@@ -599,7 +599,7 @@ What makes BMW distinctive is its CSS variable-driven theming system. Context-aw
               Dealer network online
             </span>
           </div>
-          <div role="group" class="hey-preview-form form">
+          <div role="group" class="uma-preview-form form">
             <div class="field">
               <label for="name">Full name</label>
               <input id="name" type="text" placeholder="Driver" autocomplete="name" required />

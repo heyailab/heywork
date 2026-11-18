@@ -1,0 +1,18 @@
+/* Feature-contributed rows own their chrome and separators; the section
+ * strips the trailing separator wherever the column ends. */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 16px;
+}
+
+.title { margin: 0 0 4px; font-size: 20px; font-weight: 500; line-height: 28px; }
+.card { padding-block: 4px; }
+.card:has(> :global([data-slot='settings.general.item']):empty) { display: none; }
+.card > :global([data-slot='settings.general.item']) > :last-child { border-bottom: none; }
+
+.section > :global([data-slot='settings.general.item']) > :last-child {
+  border-bottom: none;
+}

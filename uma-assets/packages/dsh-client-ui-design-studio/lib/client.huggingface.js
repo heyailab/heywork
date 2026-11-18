@@ -403,7 +403,7 @@ Shapes are crisp, not soft: 4–6px radii, 1px solid borders that announce thems
               (#0d1117) with dark ring. Dark focus ring — 3px rgba(13,17,23,0.1).
             </p>
           </div>
-          <div role="group" class="hey-preview-form form">
+          <div role="group" class="uma-preview-form form">
             <div class="field">
               <label for="email">Email or username</label>
               <input id="email" type="email" placeholder="your@email.com" autocomplete="email" required />

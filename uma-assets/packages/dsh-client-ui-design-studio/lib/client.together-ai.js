@@ -551,7 +551,7 @@ What makes Together AI distinctive is its type system. "The Future" handles all 
                 with brand-tinted focus ring.
               </p>
             </div>
-            <div role="group" class="hey-preview-form form">
+            <div role="group" class="uma-preview-form form">
               <div class="field">
                 <label for="api-key">API key</label>
                 <input id="api-key" type="text" placeholder="sk-together-..." autocomplete="off" />

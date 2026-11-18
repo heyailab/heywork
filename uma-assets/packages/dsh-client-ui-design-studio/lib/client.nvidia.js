@@ -569,7 +569,7 @@ What distinguishes NVIDIA's design from other dark-background tech sites is the 
                 teal fill on hover.
               </p>
             </div>
-            <div role="group" class="hey-preview-form form">
+            <div role="group" class="uma-preview-form form">
               <div class="field" style="--border: #d0d0d0; --surface: #f5f5f5;">
                 <label for="api-key" style="color: #333;">API key</label>
                 <input id="api-key" type="text"

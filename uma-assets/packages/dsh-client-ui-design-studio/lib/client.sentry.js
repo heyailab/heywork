@@ -512,7 +512,7 @@ What makes Sentry distinctive is its embrace of the "dark IDE" aesthetic without
               Focus rings stay Sentry Purple (<code>#6a5fc1</code>).
             </p>
           </div>
-          <div role="group" class="hey-preview-form form">
+          <div role="group" class="uma-preview-form form">
             <div class="field">
               <label for="email">Work email</label>
               <input id="email" type="email" placeholder="you@sentry.io" autocomplete="email" required />
