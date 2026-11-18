@@ -150,3 +150,53 @@ beta5 下载完又是两份共存 → **累计约 840 MB 残留**。
    `notes/parity-gap-review.md` 里"beta4 是最新"的表述已过时；但插件层是否变化需用
    `scripts/inspect-mac-manifest.mjs` 对 beta5 包重新核对（这台 Mac 升级后才有新 asar）。
 4. **`desktop/latest` 与实际版本不一致**（显示 beta4、feed 是 beta5），说明官网手动下载链接是滞后的固定名。
+
+## 7. feed 的 `held` 状态与下载机制逆向（2026-11-18，待观察）
+
+> **状态：未证实的假设，保留观察，不下定论。** 结论会随后续复查更新。
+
+### 7.1 已确证事实（有证据）
+
+| 项 | 值 | 证据来源 |
+|---|---|---|
+| 下载成功时间 | 08:13 起，08:15:58 完成 | `update-info.json` / 缓存文件 mtime |
+| 当下 feed 状态 | `HTTP 410` + `x-uma-download-state: held` | curl 响应头（08:37–08:52 多次一致） |
+| retired 文案 | "This UMA Studio download is retired. Use the current release from studio.umayun.com." | 响应体 |
+| 官网 latest dmg | 仍是 beta4，`last-modified: 11/17 21:51`，未变 | curl HEAD |
+| CDN | EdgeOne（`studio.umayun.com.eo.dnse0.com`），多 IP 一致 410 | dig + curl `--resolve` |
+| feed 所有路径 | 清单/zip/blockmap/目录索引全部 410 held | 枚举请求 |
+
+### 7.2 下载链路逆向（beta5 主进程 `/tmp/beta5-main.js`，已导出留档）
+
+- `downloadUpdate()` → `updates.download(version, revision)` → `this.updater.downloadUpdate()`
+- `DesktopUpdateHttpExecutor extends ElectronHttpExecutor`，**只重写超时处理**
+  （`addErrorAndTimeoutHandlers`），**无签名、无 token、无自定义 header**
+- `selectUpdateChannel()` 仅设 `channel/allowDowngrade/allowPrerelease`
+- 强更策略 API `check_client_update`：`credentials: "omit"`（anonymous），
+  header 为 5 个 `x-client-*`（bundle-id 故意留空、locale=`zh_CN`、offset 为字符串）；
+  完整 header 下返回 `code:0, biz_data:null`（正常，与包分发无关）
+- feed URL 来自 `app-update.yml`：`https://studio.umayun.com/uma-studio/feeds/mac-arm64/`
+
+**推论**：zip 下载本身是匿名标准 electron-updater 请求，不存在可复现的"客户端签名"。
+
+### 7.3 已排除的假设
+
+- ❌ 客户端签名 —— 源码无签名逻辑
+- ❌ header 精确匹配 —— 带全套源码 header 后策略 API 正常但 zip 仍 410
+- ❌ 账号灰度 —— 内测用户少、全员可收（用户判断）
+- ❌ 单节点缓存 —— 多 CDN IP 一致
+
+### 7.4 待观察假设（保留）
+
+`held` 可能是 beta5 发布后被临时暂停分发（如发现问题紧急回滚），
+或分发窗口的常态机制。**当前不区分这两者**。判定方法：定期跑
+`scripts/probe-feed-status.mjs`，观察 `x-uma-download-state` 是否从 `held` 变化，
+以及官网 latest dmg 的 `last-modified` 是否更新到 beta5。若长期 held 且官网
+始终 beta4，则倾向"beta5 被撤回"；若状态恢复，则为临时窗口。
+
+### 7.5 对用户质疑的记录（重要）
+
+用户质疑："若服务端关了，其他 beta4 用户如何升 beta5？" —— 该质疑成立，
+推翻了"服务端恶意关门导致用户升不了"的说法。已升级用户不受影响，
+未升级用户停在完整可用的 beta4，不存在用户被卡住的情况。此点必须保留，
+防止后续把假设误当成"产品下线"的结论。

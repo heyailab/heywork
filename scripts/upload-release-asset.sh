@@ -65,7 +65,10 @@ if [ "$EXISTING" = "True" ]; then
   echo "  资产已存在，跳过上传"
 else
   echo "  上传资产（420MB，可能需要几分钟）..."
-  curl -sSL --max-time 900 -X POST \
+  # GitHub 对上传体有 inactivity 超时；用 -C - 断点续传 + 限速稳定流，失败可重跑续传
+  curl -sSL --max-time 1800 \
+    --connect-timeout 30 \
+    --retry 3 --retry-delay 2 --retry-all-errors \
     -H "Authorization: Bearer $TOKEN" \
     -H "Content-Type: application/zip" \
     --data-binary @"$ZIP" \
