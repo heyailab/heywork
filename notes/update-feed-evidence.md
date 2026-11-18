@@ -200,3 +200,28 @@ beta5 下载完又是两份共存 → **累计约 840 MB 残留**。
 推翻了"服务端恶意关门导致用户升不了"的说法。已升级用户不受影响，
 未升级用户停在完整可用的 beta4，不存在用户被卡住的情况。此点必须保留，
 防止后续把假设误当成"产品下线"的结论。
+
+## 8. beta5 安装包备份（GitHub Release）
+
+官方 feed 外部不可下（§7），故把 Mac 上已下好的 zip 备份到私有仓库 Release，
+供 Windows 端留存/分析。**仓库为私有，浏览器直链会 404，必须带 token 走 API。**
+
+| 项 | 值 |
+|---|---|
+| Release tag | `uma-beta5-archive` |
+| Release id | `449374944` |
+| 资产 id | `761257352` |
+| 资产名 | `uma-studio-1.0.0-beta5.20261118.3-mac-arm64.zip` |
+| 大小 | 420,140,017 字节（API 核对一致，state=uploaded） |
+| SHA-256 | `d79a560cfef0d12d6be3bf32ccad87c8f00e37db269be6feeb2cfe6c6b8e55c4` |
+| 上传脚本（Mac） | `scripts/upload-release-asset.sh`（token 从 `~/.github-token` 读） |
+| 下载脚本（Windows） | `scripts/download-beta5.ps1`（填 token，走 API 端点，自动校验大小+SHA256） |
+
+> 浏览器直链（仅公开仓库可用，本仓库私有**不可用**）：
+> `https://github.com/heyailab/uma-window/releases/download/uma-beta5-archive/<asset>`
+>
+> 可靠的下载方式是 Windows PowerShell 跑 `scripts/download-beta5.ps1`，
+> 它调用 `GET /repos/{owner}/{repo}/releases/assets/{id}` + `Accept: octet-stream`，
+> 由 GitHub 重定向到带签名的 CDN（已实测返回 206 并可取数据）。
+
+**注意**：这是 macOS 安装包，Windows 上只能留存/解包分析，不能安装运行。
