@@ -74,15 +74,16 @@ heywork/
 │   ├── packages.extras.json     ← 抽取清单：逐文件 SHA-256 与体积（可追溯）
 │   └── hey-platform.patch.mac.yml  ← Mac 原始 22 开关留档（真正随包的是 phase1 生成的 win32 版）
 ├── scripts/
-│   ├── inject-hey.mjs           ← 打包期注入：复制包 → 挂载 → 重算 desktop-runtime.json
-│   ├── verify-hey-platform.mjs  ← 合成门禁（源码模式 / --tree 模式）
-│   ├── verify-skill-container.mjs ← 解密技能容器，断言技能/设计系统/品牌/知识根齐全
-│   ├── inspect-mac-manifest.mjs ← 读 Mac 包的版本 / 内核 / commit / 强更策略（核对基线漂移）
-│   ├── extract-mac-extras.mjs   ← 从 Mac app.asar 按闭包抽取（换 Mac 版本时用）
-│   ├── inspect-skill-container.mjs ← 技能容器检查
-│   ├── build-ico.mjs            ← 零依赖 PNG→ICO
-│   ├── locale-port.mjs          ← locale 机械抽取
-│   └── overlay-renderer.mjs     ← renderer 覆盖
+│   ├── build-profile.mjs        ← 【V1】组装 heywork profile/bundle（配 --verify-only）
+│   ├── verify-skill-container.mjs ← 【当前】容器：技能/设计系统/品牌/知识根
+│   ├── verify-client-ui-deps.mjs ← 【当前】401/401 inject 依赖闭合
+│   ├── verify-uma-platform.mjs  ← 旧整合路线门禁（22 开关/工具/包名，供对照）
+│   ├── extract-client-ui.mjs    ← 从 beta5 抽取 82 个客户端 UI 包
+│   ├── extract-mac-extras.mjs   ← 从 Mac asar 抽取 11 个一等包（换版本时用）
+│   ├── inspect-mac-manifest.mjs ← 读 Mac 包版本/内核/commit，核对基线漂移
+│   ├── probe-feed-status.mjs    ← 观察 feed 的 held 状态（待观察假设）
+│   ├── watch-update.sh          ← 抓 in-app 更新的版本化文件名
+│   └── (legacy) inject-hey.mjs / overlay-renderer.mjs 等 ← 旧整合路线，V1 不用
 ├── notes/                       ← 分析、验收、工作日志（本文件索引）
 ├── .github/workflows/build-win.yml ← CI：出 Windows 包
 └── deepseek-harness/            ← 官方源码（gitignore，本地 clone 后应用补丁）
@@ -90,45 +91,40 @@ heywork/
 
 ---
 
-## 三、Windows 首次上手（5 步）
+## 三、Windows 首次上手 → 见 [P5-CHECKLIST.md](P5-CHECKLIST.md)
 
-完整版见 [WINDOWS-DEV.md](WINDOWS-DEV.md)。要点：
+> **V1 路线：官方 dsh 零补丁**（不打 `patches/*.patch`、不做品牌/账号壳层改写）。
+> 下面旧整合路线的 5 步已废弃，**不要照着做**；完整可执行步骤在 P5 清单。
 
 ```powershell
-# 1) 关闭换行转换（关键：补丁必须 LF）
-git config --global core.autocrlf false
-
-# 2) 取两个仓库
+# 1) clone 本仓库 + 干净 clone 官方 dsh @ 39163dd（不 apply 任何补丁）
 git clone git@github.com:heyailab/heywork.git
+cd heywork
 git clone https://github.com/deepseek-ai/deepseek-harness.git
-cd deepseek-harness && git checkout 39163dd30f703a79079e2d2446545cff3c453738
+cd deepseek-harness && git checkout 39163dd30f703a79079e2d2446545cff3c453738 && cd ..
 
-# 3) 顺序应用 5 段补丁（顺序不可乱）
-foreach ($p in "hey-phase1","hey-phase2","hey-phase2b","hey-phase2c","hey-phase3") {
-  git apply --check ..\heywork\patches\$p.patch
-  git apply ..\heywork\patches\$p.patch
-}
+# 2) 组装 heywork profile bundle（纯 Node，无需 pnpm）
+node scripts\build-profile.mjs
 
-# 4) 写 apps/desktop/.env.windows（内容见 WINDOWS-DEV.md 第 2 节）
-pnpm install
-node ..\heywork\scripts\verify-hey-platform.mjs     # 秒级门禁
-
-# 5) 出包（约 1–2 小时；或直接 push 让 Actions 出）
-pnpm run package:desktop:win:x64:unsigned
+# 3) 装依赖 + 跑端到端探针 + 真机验收 → 全部见 P5-CHECKLIST.md §3–§6
 ```
+
+`WINDOWS-DEV.md` 里的 inject/补丁/env 命令属旧整合路线，仅作历史参考。
 
 ---
 
-## 四、门禁（push 前先跑，秒级）
+## 四、门禁（秒级，push 前/改代码后跑）
 
 ```bash
-node scripts/verify-hey-platform.mjs          # 源码模式：开关 / 层引用 / 工具 / 客户端组合 / 强更策略
-node scripts/verify-hey-platform.mjs --tree <已注入的树>   # 注入后：检查真实 node_modules
-node scripts/verify-skill-container.mjs       # 容器内容：20 技能 / 507 设计系统 / 84 品牌 / 知识根
+node scripts/build-profile.mjs --verify-only     # profile/bundle 结构自洽
+node scripts/verify-skill-container.mjs          # 容器：20 技能 / 507 设计系统 / 84 品牌
+node scripts/verify-client-ui-deps.mjs           # 401/401 inject 依赖闭合
+node packages/heywork-ui/verify-mounts.mjs       # 17/17 UI slot 覆盖
+# 旧口径参考：node scripts/verify-uma-platform.mjs（整合路线的开关/工具/包名门禁）
 ```
 
-当前基线：**22 开关（8 启用 / 14 禁用）· 40 工具 · 23 包 · 7 个客户端插件全挂载 · 8 语种齐全 ·
-强更策略 anonymous（与 Mac 一致）· 容器内 507 套设计系统 / 84 个 DESIGN.md 品牌**。
+当前基线：**8 个 host 插件 · 40 工具 · 7 个 UI 模块 · 8 语种 · 20 技能 / 507 设计系统 / 84 品牌**。
+（V1 不挂 UMA 品牌/账号壳，旧的"22 开关/强更策略 anonymous"口径见 `notes/phase4-acceptance.md`，仅作行为对照。）
 
 门禁能挡住的问题类型：开关指向不存在的插件 id（会被静默忽略）、层引用悬空、
 客户端包缺 `lib/client.js`（UI 静默不出现）、`dsh.client.inject` 目标不可解析、
